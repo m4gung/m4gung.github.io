@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kalkulator Pembagian Hasil Panen</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    label { display: block; margin: 8px 0 4px; }
+    input { padding: 5px; width: 200px; }
+    button { padding: 8px 15px; margin-top: 10px; cursor: pointer; }
+    .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; width: 300px; }
+  </style>
+</head>
+<body>
+  <a href="./perhitungan-hasil-panen.html">Hasil Panen</a>
+
+  <h2>Kalkulator Pembagian Hasil Panen</h2>
+
+  <label>Total Karung Panen:</label>
+  <input type="number" id="totalKarung" placeholder="Misal: 100">
+
+  <label>Karung untuk Pupuk (custom):</label>
+  <input type="number" id="karungPupuk" placeholder="Misal: 10">
+
+  <label>Persentase Operasional (%):</label>
+  <input type="number" id="persenOperasional" placeholder="Misal: 15">
+
+  <button onclick="hitungPembagian()">Hitung</button>
+
+  <div class="result" id="output"></div>
+
+  <script>
+    function hitungPembagian() {
+      const total = parseFloat(document.getElementById('totalKarung').value) || 0;
+      const pupuk = parseFloat(document.getElementById('karungPupuk').value) || 0;
+      const persenOpr = parseFloat(document.getElementById('persenOperasional').value) || 0;
+
+      // Pompa 20%
+      const pompa = total * 0.20;
+      // Operasional custom %
+      const operasional = total * (persenOpr / 100);
+      
+      // Hasil bersih
+      const hasilBersih = total - (pompa + pupuk + operasional);
+
+      // Tampilkan hasil
+      document.getElementById('output').innerHTML = `
+        <strong>Hasil Perhitungan:</strong><br>
+        Total Karung: ${total}<br>
+        Pompa (20%): ${pompa}<br>
+        Pupuk: ${pupuk}<br>
+        Operasional (${persenOpr}%): ${operasional}<br>
+        <hr>
+        <strong>Hasil Bersih: ${hasilBersih}</strong>
+      `;
+    }
+  </script>
+
+</body>
+</html>
