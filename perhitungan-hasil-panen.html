@@ -85,9 +85,12 @@
     <label>1 Pupuk = ... Be'lle:</label>
     <input type="number" id="konversiPupuk" value="5">
 
-    <label>Operasional / Mentri (%):</label>
-    <input type="number" id="operasionalPersen" value="0.0">
-
+    <label>Mentri (%):</label>
+    <input type="number" id="operasionalPersen" value="0.0">  
+		
+		<label>Pompa (%):</label>
+    <input type="number" id="opPompa" value="20">			
+												
     <button onclick="hitungHasil()">Hitung</button>
 
     <div id="hasil" class="result-box" style="display:none;"></div>
@@ -103,6 +106,7 @@
       const jumlahPupuk = parseFloat(document.getElementById('jumlahPupuk').value);
       const konvPupuk = parseFloat(document.getElementById('konversiPupuk').value);
       const opPersen = parseFloat(document.getElementById('operasionalPersen').value);
+			const opPompa = parseFloat(document.getElementById('opPompa').value);
 
       // Total Ember Awal
       let totalEmber = (karungPanen * konvKarung) + emberTambahan;
@@ -118,7 +122,7 @@
       if (sisaEmber2 < 0) sisaEmber2 = 0;
 
       // Potongan Pompa 20% dari sisa setelah operasional
-      let emberPompa = sisaEmber2 * 0.20;
+      let emberPompa = sisaEmber2 * (opPompa/100);
       let emberBersih = sisaEmber2 - emberPompa;
       if (emberBersih < 0) emberBersih = 0;
 			
@@ -139,7 +143,7 @@
         "Sisa Setelah Pupuk: " + sisaEmber1 + " Be'lle\n" +
         "Operasional (" + opPersen + "%): " + konversiKeKarung(emberOperasional) + "\n" +
         "Sisa Setelah Operasional: " + sisaEmber2 + " Be'lle\n" +
-        "Pompa (20% dari sisa): " + konversiKeKarung(emberPompa) + "\n" +
+        "Pompa ("+opPompa+"% dari sisa): " + konversiKeKarung(emberPompa) + "\n" +
         "*Hasil Bersih Petani:* " + konversiKeKarung(emberBersih) + "\n" +
 				"*Hasil Bersih Pompa:* " + konversiKeKarung(hasilBersihPompa);
 
