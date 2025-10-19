@@ -6,53 +6,96 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     label { display: block; margin: 8px 0 4px; }
-    input { padding: 5px; width: 200px; }
+    input { padding: 5px; width: 250px; }
     button { padding: 8px 15px; margin-top: 10px; cursor: pointer; }
-    .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; width: 300px; }
+    .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; width: 360px; white-space: pre-line; }
   </style>
 </head>
 <body>
-  <a href="./index.html">Kembali</a>
 
-  <h2> Pembagian Hasil Panen</h2>
+  <h2>Kalkulator Pembagian Hasil Panen</h2>
 
-  <label>Total Karung Panen:</label>
-  <input type="number" id="totalKarung" placeholder="Misal: 100">
+  <label>Nama Petani:</label>
+  <input type="text" id="namaPetani" placeholder="Misal: Pak Budi">
 
-  <label>Karung untuk Pupuk (custom):</label>
-  <input type="number" id="karungPupuk" placeholder="Misal: 10">
+  <label>Jumlah Karung Utama:</label>
+  <input type="number" id="totalKarung" placeholder="Misal: 23">
+
+  <label>Tambahan Ember:</label>
+  <input type="number" id="extraEmber" placeholder="Misal: 4">
+
+  <label>Konversi: 1 Karung = ... Ember</label>
+  <input type="number" id="konversiEmber" placeholder="Misal: 5">
+
+  <label>Ember untuk Pupuk (custom):</label>
+  <input type="number" id="emberPupuk" placeholder="Misal: 12">
 
   <label>Persentase Operasional (%):</label>
-  <input type="number" id="persenOperasional" placeholder="Misal: 15">
+  <input type="number" id="persenOperasional" placeholder="Misal: 10">
 
   <button onclick="hitungPembagian()">Hitung</button>
 
   <div class="result" id="output"></div>
+  <button id="copyBtn" style="display:none;" onclick="copyHasil()">Copy Hasil</button>
 
   <script>
     function hitungPembagian() {
-      const total = parseFloat(document.getElementById('totalKarung').value) || 0;
-      const pupuk = parseFloat(document.getElementById('karungPupuk').value) || 0;
+      const namaPetani = document.getElementById('namaPetani').value || "-";
+      const totalKarung = parseFloat(document.getElementById('totalKarung').value) || 0;
+      const extraEmber = parseFloat(document.getElementById('extraEmber').value) || 0;
+      const konversi = parseFloat(document.getElementById('konversiEmber').value) || 1;
+      const emberPupuk = parseFloat(document.getElementById('emberPupuk').value) || 0;
       const persenOpr = parseFloat(document.getElementById('persenOperasional').value) || 0;
 
-      // Pompa 20%
-      const pompa = total * 0.20;
-      // Operasional custom %
-      const operasional = total * (persenOpr / 100);
-      
-      // Hasil bersih
-      const hasilBersih = total - (pompa + pupuk + operasional);
+      // Total ember panen (karung dikonversi + ember tambahan)
+      const totalEmber = (totalKarung * konversi) + extraEmber;
 
-      // Tampilkan hasil
-      document.getElementById('output').innerHTML = `
-        <strong>Hasil Perhitungan:</strong><br>
-        Total Karung: ${total}<br>
-        Pompa (20%): ${pompa}<br>
-        Pupuk: ${pupuk}<br>
-        Operasional (${persenOpr}%): ${operasional}<br>
-        <hr>
-        <strong>Hasil Bersih: ${hasilBersih}</strong>
-      `;
+      // Total karung setara
+      const totalKarungSetara = totalEmber / konversi;
+
+      // Perhitungan pembagian dari karung setara
+      const pompaKarung = totalKarungSetara * 0.20;
+      const operasionalKarung = totalKarungSetara * (persenOpr / 100);
+
+      // Konversi pembagian ke ember
+      const pompaEmber = pompaKarung * konversi;
+      const operasionalEmber = operasionalKarung * konversi;
+
+      // Ember yang dibagi: pupuk langsung dari input
+      const sisaEmber = totalEmber - (pompaEmber + emberPupuk + operasionalEmber);
+
+      // Fungsi untuk ubah ke karung + ember
+      function formatKarungEmber(emberTotal) {
+        const k = Math.floor(emberTotal / konversi);
+        const e = Math.round(emberTotal % konversi);
+        return `${k} karung + ${e} ember`;
+      }
+
+      const textHasil = 
+`Nama Petani: ${namaPetani}
+
+Total Panen:
+- ${totalKarung} karung + ${extraEmber} ember
+- Total ember setara: ${totalEmber} ember
+
+Pembagian:
+Pompa (20%): ${formatKarungEmber(pompaEmber)} (${pompaEmber} ember)
+Pupuk: ${formatKarungEmber(emberPupuk)} (${emberPupuk} ember)
+Operasional (${persenOpr}%): ${formatKarungEmber(operasionalEmber)} (${operasionalEmber} ember)
+
+------------------------
+Hasil Bersih:
+${formatKarungEmber(sisaEmber)} (${sisaEmber} ember)`;
+
+      document.getElementById('output').textContent = textHasil;
+      document.getElementById('copyBtn').style.display = 'inline-block';
+    }
+
+    function copyHasil() {
+      const hasilText = document.getElementById('output').textContent;
+      navigator.clipboard.writeText(hasilText)
+        .then(() => alert("✅ Hasil berhasil disalin!"))
+        .catch(() => alert("❌ Gagal menyalin"));
     }
   </script>
 
