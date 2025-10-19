@@ -3,65 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <title>Kalkulator Hasil Panen</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f4f4f4;
-    }
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 500px;
-      margin: auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+ <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 12px;
+    background: #f4f4f4;
+  }
+  .container {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 22px;
+  }
+  label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  button {
+    margin-top: 18px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: #007bff;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+  .result-box {
+    margin-top: 18px;
+    padding: 14px;
+    background: #e9f7ef;
+    border: 1px solid #a4d4ae;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    font-size: 16px;
+  }
+  .copy-btn {
+    background: #28a745;
+  }
+  .copy-btn:hover {
+    background: #1e7e34;
+  }
+
+  @media (max-width: 1000px) {
     h2 {
-      text-align: center;
-      margin-bottom: 20px;
+      font-size: 50px;
     }
     label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
+      font-size: 50px;
     }
     input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      font-size: 50px;
+      padding: 20px;
     }
     button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 10px;
-      border: none;
-      background: #007bff;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 4px;
+      font-size: 40px;
+      padding: 13px;
     }
-    button:hover {
-      background: #0056b3;
-    }
-    .result-box {
-      margin-top: 20px;
-      padding: 15px;
-      background: #e9f7ef;
-      border: 1px solid #a4d4ae;
-      border-radius: 4px;
-      white-space: pre-wrap;
-    }
-    .copy-btn {
-      background: #28a745;
-    }
-    .copy-btn:hover {
-      background: #1e7e34;
-    }
-  </style>
+		.result-box {
+			font-size: 32px;
+		}
+  }
+	</style>
 </head>
 <body>
   <div class="container">
