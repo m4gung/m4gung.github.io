@@ -91,7 +91,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>Kalkulator Hasil Panen</h2>
+    <h2>Perhitungan Hasil Panen</h2>
 
     <label>Nama Petani:</label>
     <input type="text" id="namaPetani">
@@ -133,7 +133,7 @@
       const konvPupuk = parseFloat(document.getElementById('konversiPupuk').value);
       const opPersen = parseFloat(document.getElementById('operasionalPersen').value);
 			const opPompa = parseFloat(document.getElementById('opPompa').value);
-
+			
       // Total Ember Awal
       let totalEmber = (karungPanen * konvKarung) + emberTambahan;
 
@@ -164,7 +164,7 @@
       const hasilText = 
         "Nama Petani: " + nama + "\n" +
         "Total Panen: " + karungPanen + " Karung + " + emberTambahan + " Be'lle\n" +
-        "Total Ember: " + totalEmber + "\n" +
+        "Total Be'lle: " + totalEmber + "\n" +
         "Pupuk: " + emberPupuk + " Be'lle\n" +
         "Sisa Setelah Pupuk: " + sisaEmber1 + " Be'lle\n" +
         "Mentri (" + opPersen + "%): " + konversiKeKarung(emberOperasional) + "\n" +
