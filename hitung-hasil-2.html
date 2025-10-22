@@ -144,13 +144,13 @@
 
       // Potongan Operasional
       let emberOperasional = sisaEmber1 * (opPersen / 100);
-			emberOperasional = ceilBelle(emberOperasional);
+			emberOperasional = bulatBelle(emberOperasional);
       let sisaEmber2 = sisaEmber1 - emberOperasional;
       if (sisaEmber2 < 0) sisaEmber2 = 0;
 
       // Potongan Pompa 20% dari sisa setelah operasional
       let emberPompa = sisaEmber2 * (opPompa/100);
-      emberPompa = ceilBelle(emberPompa);			
+      emberPompa = bulatBelle(emberPompa);			
       let emberBersih = sisaEmber2 - emberPompa;
       if (emberBersih < 0) emberBersih = 0;
 			
@@ -163,8 +163,8 @@
         return karung + " K " + sisa + " B";
       }
 						
-			function ceilBelle(belle) {
-  				return Math.ceil(belle); // bulatkan ke atas 3 desimal
+			function bulatBelle(belle) {
+  				return Math.round(belle); // bulatkan ke atas 3 desimal
 			}
 
       const hasilText = 
