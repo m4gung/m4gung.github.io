@@ -2,92 +2,121 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Kalkulator Hasil Panen</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f4f4f4;
-    }
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 500px;
-      margin: auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+  <title>Perhitungan Hasil Panen</title>
+ <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 12px;
+    background: #f4f4f4;
+  }
+  .container {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 22px;
+  }
+  label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  button {
+    margin-top: 18px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: #007bff;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+  .result-box {
+    margin-top: 18px;
+    padding: 14px;
+    background: #e9f7ef;
+    border: 1px solid #a4d4ae;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    font-size: 16px;
+  }
+  .copy-btn {
+    background: #28a745;
+  }
+  .copy-btn:hover {
+    background: #1e7e34;
+  }
+
+  @media (max-width: 1000px) {
     h2 {
-      text-align: center;
-      margin-bottom: 20px;
+      font-size: 50px;
     }
     label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
+      font-size: 50px;
     }
     input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      font-size: 50px;
+      padding: 20px;
     }
     button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 10px;
-      border: none;
-      background: #007bff;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 4px;
+      font-size: 50px;
+      padding: 13px;
     }
-    button:hover {
-      background: #0056b3;
-    }
-    .result-box {
-      margin-top: 20px;
-      padding: 15px;
-      background: #e9f7ef;
-      border: 1px solid #a4d4ae;
-      border-radius: 4px;
-      white-space: pre-wrap;
-    }
-    .copy-btn {
-      background: #28a745;
-    }
-    .copy-btn:hover {
-      background: #1e7e34;
-    }
-  </style>
+		.result-box {
+			font-size: 40px;
+		}
+  }
+	</style>
 </head>
 <body>
   <div class="container">
-    <h2>Kalkulator Hasil Panen</h2>
+    <h2>Perhitungan Hasil Panen</h2>
 
     <label>Nama Petani:</label>
     <input type="text" id="namaPetani">
 
-    <label>Konversi 1 Karung = ... Ember:</label>
-    <input type="number" id="konversiKarung" value="5">
+    <label>Konversi 1 K (Karung) = ... B (Be'lle):</label>
+    <input type="number" id="konversiKarung" value="10">
 
     <label>Jumlah Karung Panen:</label>
     <input type="number" id="karungPanen" value="0">
 
-    <label>Tambahan Ember:</label>
+    <label>Tambahan Be'lle:</label>
     <input type="number" id="emberTambahan" value="0">
 
     <label>Jumlah Pupuk yang Digunakan:</label>
     <input type="number" id="jumlahPupuk" value="0">
 
-    <label>1 Pupuk = ... Ember:</label>
-    <input type="number" id="konversiPupuk" value="0">
+    <label>1 Pupuk = ... Be'lle:</label>
+    <input type="number" id="konversiPupuk" value="5">
 
-    <label>Operasional (%):</label>
-    <input type="number" id="operasionalPersen" value="0">
-
+    <label>Mentri (%):</label>
+    <input type="number" id="operasionalPersen" value="0.0">  
+		
+		<label>Pompa (%):</label>
+    <input type="number" id="opPompa" value="20">			
+												
     <button onclick="hitungHasil()">Hitung</button>
 
     <div id="hasil" class="result-box" style="display:none;"></div>
@@ -97,13 +126,14 @@
   <script>
     function hitungHasil() {
       const nama = document.getElementById('namaPetani').value || '-';
-      const konvKarung = parseFloat(document.getElementById('konversiKarung').value);
-      const karungPanen = parseFloat(document.getElementById('karungPanen').value);
-      const emberTambahan = parseFloat(document.getElementById('emberTambahan').value);
-      const jumlahPupuk = parseFloat(document.getElementById('jumlahPupuk').value);
-      const konvPupuk = parseFloat(document.getElementById('konversiPupuk').value);
-      const opPersen = parseFloat(document.getElementById('operasionalPersen').value);
-
+      const konvKarung = parseFloat(document.getElementById('konversiKarung').value) || 0;
+      const karungPanen = parseFloat(document.getElementById('karungPanen').value) || 0;
+      const emberTambahan = parseFloat(document.getElementById('emberTambahan').value) || 0;
+      const jumlahPupuk = parseFloat(document.getElementById('jumlahPupuk').value) || 0;
+      const konvPupuk = parseFloat(document.getElementById('konversiPupuk').value) || 0;
+      const opPersen = parseFloat(document.getElementById('operasionalPersen').value) || 0;
+			const opPompa = parseFloat(document.getElementById('opPompa').value) || 0;
+			
       // Total Ember Awal
       let totalEmber = (karungPanen * konvKarung) + emberTambahan;
 
@@ -114,30 +144,40 @@
 
       // Potongan Operasional
       let emberOperasional = sisaEmber1 * (opPersen / 100);
+			emberOperasional = ceilBelle(emberOperasional);
       let sisaEmber2 = sisaEmber1 - emberOperasional;
       if (sisaEmber2 < 0) sisaEmber2 = 0;
 
       // Potongan Pompa 20% dari sisa setelah operasional
-      let emberPompa = sisaEmber2 * 0.20;
+      let emberPompa = sisaEmber2 * (opPompa/100);
+      emberPompa = ceilBelle(emberPompa);			
       let emberBersih = sisaEmber2 - emberPompa;
       if (emberBersih < 0) emberBersih = 0;
+			
+			// Hasil Bersih Pompa
+			let hasilBersihPompa = emberPompa + emberPupuk +emberOperasional;
 
       function konversiKeKarung(ember) {
         let karung = Math.floor(ember / konvKarung);
         let sisa = ember % konvKarung;
-        return karung + " karung " + sisa + " ember";
+        return karung + " K " + sisa + " B";
       }
+						
+			function ceilBelle(belle) {
+  				return Math.ceil(belle); // bulatkan ke atas 3 desimal
+			}
 
       const hasilText = 
         "Nama Petani: " + nama + "\n" +
-        "Total Panen: " + karungPanen + " karung + " + emberTambahan + " ember\n" +
-        "Total Ember: " + totalEmber + "\n" +
-        "Pupuk: " + emberPupuk + " ember\n" +
-        "Sisa Setelah Pupuk: " + sisaEmber1 + " ember\n" +
-        "Operasional (" + opPersen + "%): " + konversiKeKarung(emberOperasional) + "\n" +
-        "Sisa Setelah Operasional: " + sisaEmber2 + " ember\n" +
-        "Pompa (20% dari sisa): " + konversiKeKarung(emberPompa) + "\n" +
-        "Hasil Bersih: " + konversiKeKarung(emberBersih);
+        "Total Panen: " + karungPanen + " K + " + emberTambahan + " B\n" +
+        "Total Be'lle: " + totalEmber + "\n" +
+        "Pupuk: " + emberPupuk + " B\n" +
+        "Sisa Setelah Pupuk: " + sisaEmber1 + " B\n" +
+        "Mentri (" + opPersen + "%): " + konversiKeKarung(emberOperasional) + "\n" +
+        "Sisa Setelah Mentri: " + sisaEmber2 + " B\n" +
+        "Pompa ("+opPompa+"%): " + konversiKeKarung(emberPompa) + "\n\n" +
+        "*Hasil Bersih Petani:* " + konversiKeKarung(emberBersih) + "\n" +
+				"*Hasil Bersih Pompa:* " + konversiKeKarung(hasilBersihPompa) +"\n\n K=Karung, B=Be'lle";
 
       const hasilDiv = document.getElementById('hasil');
       hasilDiv.style.display = 'block';
@@ -155,4 +195,3 @@
   </script>
 </body>
 </html>
-
