@@ -11,7 +11,7 @@
     background: #f4f4f4;
   }
   .container {
-    background: white;
+    background: white;k
     padding: 18px;
     border-radius: 10px;
     width: 100%;
@@ -102,8 +102,8 @@
     <label>Jumlah Karung Panen:</label>
     <input type="number" id="karungPanen" value="0">
 
-    <label>Tambahan Be'lle:</label>
-    <input type="number" id="emberTambahan" value="0">
+    <label>Alat:</label>
+    <input type="number" id="alat" value="0">
 
     <label>Jumlah Pupuk yang Digunakan:</label>
     <input type="number" id="jumlahPupuk" value="0">
@@ -111,7 +111,7 @@
     <label>1 Pupuk = ... Be'lle:</label>
     <input type="number" id="konversiPupuk" value="5">
 
-    <label>Mentri (%):</label>
+    <label>Mentri & Irigasi (%):</label>
     <input type="number" id="operasionalPersen" value="0.0">  
 		
 		<label>Pompa (%):</label>
@@ -128,14 +128,14 @@
       const nama = document.getElementById('namaPetani').value || '-';
       const konvKarung = parseFloat(document.getElementById('konversiKarung').value) || 0;
       const karungPanen = parseFloat(document.getElementById('karungPanen').value) || 0;
-      const emberTambahan = parseFloat(document.getElementById('emberTambahan').value) || 0;
+      const alat = parseFloat(document.getElementById('alat').value) || 0;
       const jumlahPupuk = parseFloat(document.getElementById('jumlahPupuk').value) || 0;
       const konvPupuk = parseFloat(document.getElementById('konversiPupuk').value) || 0;
       const opPersen = parseFloat(document.getElementById('operasionalPersen').value) || 0;
 			const opPompa = parseFloat(document.getElementById('opPompa').value) || 0;
 			
       // Total Ember Awal
-      let totalEmber = (karungPanen * konvKarung) + emberTambahan;
+      let totalEmber = (karungPanen - alat) * konvKarung;
 
       // Potongan Pupuk
       let emberPupuk = jumlahPupuk * konvPupuk;
@@ -158,26 +158,24 @@
 			let hasilBersihPompa = emberPompa + emberPupuk +emberOperasional;
 
       function konversiKeKarung(ember) {
-        let karung = Math.floor(ember / konvKarung);
+        let karung = (ember / konvKarung);
         let sisa = ember % konvKarung;
-        return karung + " K " + sisa + " B";
+        return karung + " K ";
       }
 						
 			function bulatBelle(belle) {
-  				return Math.round(belle); // bulatkan ke atas 3 desimal
+  				return belle;//Math.round(belle); // bulatkan ke atas 3 desimal
 			}
 
       const hasilText = 
         "Nama Petani: " + nama + "\n" +
-        "Total Panen: " + karungPanen + " K + " + emberTambahan + " B\n" +
-        "Total Be'lle: " + totalEmber + "\n" +
+        "Total Panen: " + karungPanen + " K "  + " \n" +
+				"Alat: " + alat + " K \n" +
         "Pupuk: " + emberPupuk + " B\n" +
-        "Sisa Setelah Pupuk: " + sisaEmber1 + " B\n" +
-        "Mentri (" + opPersen + "%): " + konversiKeKarung(emberOperasional) + "\n" +
-        "Sisa Setelah Mentri: " + sisaEmber2 + " B\n" +
-        "Pompa ("+opPompa+"%): " + konversiKeKarung(emberPompa) + "\n\n" +
-        "*Hasil Bersih Petani:* " + konversiKeKarung(emberBersih) + "\n" +
-				"*Hasil Bersih Pompa:* " + konversiKeKarung(hasilBersihPompa) +"\n\n K=Karung, B=Be'lle";
+        "Mentri & Irigasi (" + opPersen + "% dari "+sisaEmber1+" B): " + emberOperasional + " B \n" +
+        "Pompa ("+opPompa+"% dari "+sisaEmber2+" B): " + emberPompa + " B\n\n" +
+        
+				"*Hasil Bersih Pompa:* " + hasilBersihPompa +" B = " + konversiKeKarung(hasilBersihPompa) + "\n\n K=Karung, B=Be'lle";
 
       const hasilDiv = document.getElementById('hasil');
       hasilDiv.style.display = 'block';
