@@ -2,39 +2,45 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Aplikasi Penjualan</title>
+<title>Aplikasi Penjualan Final</title>
 
+<!-- Excel Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
     body { font-family: Arial; margin: 20px; }
     input, select { padding: 6px; margin: 5px; }
     button { padding: 6px 12px; margin: 5px; cursor: pointer; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #333; padding: 6px; }
+    th, td { border: 1px solid #444; padding: 6px; }
     th { background: #eee; }
     .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 25px; }
 </style>
 </head>
 <body>
 
-<h1>Aplikasi Penjualan (FINAL)</h1>
+<h1>Aplikasi Penjualan (Final Version + Nama Pembeli)</h1>
 
-<!-- ============================================================= -->
+<!-- =========================================================== -->
 <!-- MASTER PRODUK -->
-<!-- ============================================================= -->
+<!-- =========================================================== -->
 <div class="card">
     <h2>Master Produk</h2>
 
     <input id="id_produk" placeholder="ID Produk">
     <input id="nama_produk" placeholder="Nama Produk">
-    <input id="modal_total" type="number" placeholder="Modal Total (semua stok)">
-    <input id="stok_produk" type="number" placeholder="Stok Produk">
+    <input id="modal_total" type="number" placeholder="Modal Total">
+    <input id="stok_produk" type="number" placeholder="Stok">
     <input id="harga_jual_satuan" type="number" placeholder="Harga Jual / pcs">
 
     <button onclick="simpanProduk()">Simpan</button>
     <button onclick="clearProdukForm()">Clear</button>
+
     <br>
+    <label>Import Produk:</label>
     <input type="file" id="importProduk" accept=".xlsx,.xls" onchange="importProdukExcel()">
     <button onclick="exportProduk()">Export Produk</button>
 
@@ -49,20 +55,24 @@
     </table>
 </div>
 
-<!-- ============================================================= -->
+<!-- =========================================================== -->
 <!-- TRANSAKSI -->
-<!-- ============================================================= -->
+<!-- =========================================================== -->
 <div class="card">
     <h2>Transaksi Penjualan</h2>
+
+    <input id="nama_pembeli" placeholder="Nama Pembeli">
 
     <select id="pilih_produk" onchange="isiInfoProduk()"></select>
 
     <input id="harga_trans_modal" type="number" placeholder="Modal/pcs" disabled>
-    <input id="harga_trans_jual" type="number" placeholder="Harga Jual/pcs">
+    <input id="harga_trans_jual" type="number" placeholder="Harga Jual / pcs">
     <input id="qty_jual" type="number" placeholder="Qty">
 
     <button onclick="simpanTransaksi()">Proses</button>
+
     <br>
+    <label>Import Transaksi:</label>
     <input type="file" id="importTransaksi" accept=".xlsx,.xls" onchange="importTransaksiExcel()">
     <button onclick="exportTransaksi()">Export Transaksi</button>
 
@@ -70,77 +80,99 @@
     <table>
         <thead>
             <tr>
-                <th>Produk</th><th>Modal/pcs</th><th>Jual/pcs</th><th>Qty</th>
-                <th>Total Modal</th><th>Total Jual</th><th>Laba</th><th>Tanggal</th><th>Aksi</th>
+                <th>Pembeli</th>
+                <th>Produk</th>
+                <th>Modal/pcs</th>
+                <th>Jual/pcs</th>
+                <th>Qty</th>
+                <th>Total Modal</th>
+                <th>Total Jual</th>
+                <th>Laba</th>
+                <th>Tanggal</th>
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody id="tabelTransaksi"></tbody>
     </table>
 </div>
 
-<!-- ============================================================= -->
+<!-- =========================================================== -->
 <!-- REPORT -->
-<!-- ============================================================= -->
+<!-- =========================================================== -->
 <div class="card">
-    <h2>Report</h2>
+    <h2>Report Penjualan</h2>
+
+    <label>Filter Produk:</label>
+    <select id="filter_produk" onchange="filterReport()"></select>
+
+    <br>
+
+    <label>Dari Tanggal:</label>
+    <input type="date" id="filter_mulai" onchange="filterReport()">
+
+    <label>Sampai:</label>
+    <input type="date" id="filter_akhir" onchange="filterReport()">
+
+    <br><br>
+
     <p>Total Modal: <span id="totalModal">0</span></p>
     <p>Total Omzet: <span id="totalOmzet">0</span></p>
     <p>Total Laba: <span id="totalLaba">0</span></p>
+
     <button onclick="exportLaporan()">Export Laporan</button>
+
+    <br><br>
+    <canvas id="chartLaporan" height="100"></canvas>
 </div>
 
 <script>
-/* ==========================================
-   STORAGE
-========================================== */
+/* STORAGE */
 function load(k){ return JSON.parse(localStorage.getItem(k)||"[]"); }
 function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
 
-/* ==========================================
+/* ============================================================
    MASTER PRODUK
-========================================== */
+============================================================ */
 function simpanProduk(){
-    let id = document.getElementById("id_produk").value.trim();
-    let nama = document.getElementById("nama_produk").value.trim();
-    let modal_total = parseFloat(document.getElementById("modal_total").value);
-    let stok = parseInt(document.getElementById("stok_produk").value);
-    let harga_jual = parseFloat(document.getElementById("harga_jual_satuan").value);
+    let id = id_produk.value.trim();
+    let nama = nama_produk.value.trim();
+    let modal_total = parseFloat(modal_total.value);
+    let stok = parseInt(stok_produk.value);
+    let harga_jual = parseFloat(harga_jual_satuan.value);
 
     if(!id || !nama || !modal_total || !stok || !harga_jual){
-        alert("Lengkapi semua data produk!");
-        return;
+        alert("Lengkapi semua data produk!"); return;
     }
 
     let modal_per_pcs = modal_total / stok;
 
     let produk = load("produk");
-    let idx = produk.findIndex(x=>x.id===id);
+    let idx = produk.findIndex(p=>p.id===id);
 
-    let data = {
-        id, nama, modal_total, modal_per_pcs, stok, harga_jual
-    };
+    let data = { id,nama,modal_total,modal_per_pcs,stok,harga_jual };
 
-    if(idx >= 0) produk[idx] = data;
+    if(idx>=0) produk[idx]=data;
     else produk.push(data);
 
-    save("produk", produk);
+    save("produk",produk);
     clearProdukForm();
     renderProduk();
 }
 
 function clearProdukForm(){
-    document.getElementById("id_produk").value="";
-    document.getElementById("nama_produk").value="";
-    document.getElementById("modal_total").value="";
-    document.getElementById("stok_produk").value="";
-    document.getElementById("harga_jual_satuan").value="";
+    id_produk.value="";
+    nama_produk.value="";
+    modal_total.value="";
+    stok_produk.value="";
+    harga_jual_satuan.value="";
 }
 
 function renderProduk(){
-    let produk = load("produk");
-    let html = "";
+    let produk=load("produk");
+    let html="";
+
     produk.forEach((p,i)=>{
-        html += `
+        html+=`
         <tr>
             <td>${p.id}</td>
             <td>${p.nama}</td>
@@ -154,149 +186,149 @@ function renderProduk(){
             </td>
         </tr>`;
     });
-    document.getElementById("tabelProduk").innerHTML = html;
+
+    tabelProduk.innerHTML = html;
     renderDropdownProduk();
 }
 
 function editProduk(i){
     let p = load("produk")[i];
-    document.getElementById("id_produk").value = p.id;
-    document.getElementById("nama_produk").value = p.nama;
-    document.getElementById("modal_total").value = p.modal_total;
-    document.getElementById("stok_produk").value = p.stok;
-    document.getElementById("harga_jual_satuan").value = p.harga_jual;
+    id_produk.value=p.id;
+    nama_produk.value=p.nama;
+    modal_total.value=p.modal_total;
+    stok_produk.value=p.stok;
+    harga_jual_satuan.value=p.harga_jual;
 }
 
 function hapusProduk(i){
-    let produk = load("produk");
+    let produk=load("produk");
     produk.splice(i,1);
     save("produk",produk);
     renderProduk();
 }
 
-/* ==========================================
-   EXPORT PRODUK
-========================================== */
+/* EXPORT PRODUK */
 function exportProduk(){
-    let data = load("produk");
-    if(data.length===0) return alert("Tidak ada data");
+    let data=load("produk");
+    if(data.length===0) return alert("Tidak ada produk!");
 
-    let exportData = data.map(p => ({
-        id: p.id,
-        nama: p.nama,
-        modal_total: p.modal_total,
-        stok: p.stok,
-        harga_jual: p.harga_jual
+    let cleaned=data.map(p=>({
+        id:p.id,
+        nama:p.nama,
+        modal_total:p.modal_total,
+        stok:p.stok,
+        harga_jual:p.harga_jual
     }));
 
-    let ws = XLSX.utils.json_to_sheet(exportData);
-    let wb = XLSX.utils.book_new();
+    let ws=XLSX.utils.json_to_sheet(cleaned);
+    let wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,ws,"Produk");
     XLSX.writeFile(wb,"Master_Produk.xlsx");
 }
 
-/* ==========================================
-   IMPORT PRODUK
-========================================== */
+/* IMPORT PRODUK */
 function importProdukExcel(){
-    let file = document.getElementById("importProduk").files[0];
-    let reader = new FileReader();
+    let file=importProduk.files[0];
+    let reader=new FileReader();
 
-    reader.onload = e=>{
-        let wb = XLSX.read(new Uint8Array(e.target.result),{type:"array"});
-        let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+    reader.onload=e=>{
+        let wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+        let rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
 
-        // tambah modal/pcs otomatis
-        rows = rows.map(p => ({
-            id: p.id,
-            nama: p.nama,
-            modal_total: p.modal_total,
-            stok: p.stok,
-            harga_jual: p.harga_jual,
-            modal_per_pcs: p.modal_total / p.stok
+        rows=rows.map(p=>({
+            id:p.id,
+            nama:p.nama,
+            modal_total:p.modal_total,
+            stok:p.stok,
+            harga_jual:p.harga_jual,
+            modal_per_pcs:p.modal_total / p.stok
         }));
 
-        save("produk", rows);
+        save("produk",rows);
         renderProduk();
     };
 
     reader.readAsArrayBuffer(file);
 }
 
-/* ==========================================
-   TRANSAKSI
-========================================== */
+/* DROPDOWN PRODUK */
 function renderDropdownProduk(){
-    let produk = load("produk");
-    let html = `<option value="">Pilih Produk...</option>`;
-    produk.forEach(p=>{
-        html += `<option value="${p.id}">${p.nama}</option>`;
-    });
-    document.getElementById("pilih_produk").innerHTML = html;
+    let produk=load("produk");
+
+    // transaksi
+    let html=`<option value="">Pilih Produk...</option>`;
+    produk.forEach(p=> html+=`<option value="${p.id}">${p.nama}</option>`);
+    pilih_produk.innerHTML=html;
+
+    // filter report
+    let f=`<option value="">Semua Produk</option>`;
+    produk.forEach(p=> f+=`<option value="${p.id}">${p.nama}</option>`);
+    filter_produk.innerHTML=f;
 }
 
+/* ============================================================
+   TRANSAKSI
+============================================================ */
 function isiInfoProduk(){
-    let produk = load("produk");
-    let p = produk.find(x=>x.id==document.getElementById("pilih_produk").value);
+    let p = load("produk").find(x=>x.id==pilih_produk.value);
     if(!p) return;
-    document.getElementById("harga_trans_modal").value = p.modal_per_pcs;
-    document.getElementById("harga_trans_jual").value = p.harga_jual;
+    harga_trans_modal.value = p.modal_per_pcs;
+    harga_trans_jual.value = p.harga_jual;
 }
 
 function simpanTransaksi(){
-    let id = document.getElementById("pilih_produk").value;
-    let qty = parseInt(document.getElementById("qty_jual").value);
-    let harga_jual = parseFloat(document.getElementById("harga_trans_jual").value);
+    let namaPembeli = nama_pembeli.value.trim();
+    let idProduk = pilih_produk.value;
+    let qty = parseInt(qty_jual.value);
+    let hargaJual = parseFloat(harga_trans_jual.value);
 
-    if(!id || !qty || !harga_jual){
-        alert("Lengkapi transaksi!");
-        return;
-    }
+    if(!namaPembeli){ alert("Nama pembeli wajib diisi!"); return; }
+    if(!idProduk || !qty || !hargaJual){ alert("Lengkapi transaksi!"); return; }
 
     let produk = load("produk");
-    let p = produk.find(x=>x.id==id);
+    let p = produk.find(x=>x.id==idProduk);
 
-    if(p.stok < qty){
-        alert("Stok tidak cukup!");
-        return;
-    }
+    if(!p) return alert("Produk tidak ditemukan!");
+    if(p.stok < qty) return alert("Stok tidak cukup!");
 
-    let modal_per_pcs = p.modal_per_pcs;
-
-    let total_modal = modal_per_pcs * qty;
-    let total_jual = harga_jual * qty;
-    let laba = total_jual - total_modal;
+    let modal = p.modal_per_pcs;
+    let totalModal = modal * qty;
+    let totalJual = hargaJual * qty;
+    let laba = totalJual - totalModal;
 
     let trx = load("transaksi");
     trx.push({
-        id_produk:id,
-        nama:p.nama,
-        harga_modal_per_pcs:modal_per_pcs,
-        harga_jual_per_pcs:harga_jual,
+        pembeli: namaPembeli,
+        id_produk: idProduk,
+        nama: p.nama,
+        harga_modal_per_pcs: modal,
+        harga_jual_per_pcs: hargaJual,
         qty,
-        total_modal,
-        total_jual,
+        total_modal: totalModal,
+        total_jual: totalJual,
         laba,
-        tanggal:new Date().toLocaleString()
+        tanggal: new Date().toLocaleString()
     });
 
     p.stok -= qty;
 
-    save("produk",produk);
-    save("transaksi",trx);
+    save("produk", produk);
+    save("transaksi", trx);
 
     renderProduk();
     renderTransaksi();
     renderReport();
+    updateChart(trx);
 }
 
 function renderTransaksi(){
     let trx = load("transaksi");
-    let html = "";
+    let html="";
 
     trx.forEach((t,i)=>{
         html += `
         <tr>
+            <td>${t.pembeli}</td>
             <td>${t.nama}</td>
             <td>${t.harga_modal_per_pcs.toFixed(2)}</td>
             <td>${t.harga_jual_per_pcs}</td>
@@ -305,16 +337,15 @@ function renderTransaksi(){
             <td>${t.total_jual}</td>
             <td>${t.laba}</td>
             <td>${t.tanggal}</td>
-            <td><button onclick="hapusTransaksi(${i})">Hapus</button></td>
+            <td>
+                <button onclick="hapusTransaksi(${i})">Hapus</button>
+            </td>
         </tr>`;
     });
 
-    document.getElementById("tabelTransaksi").innerHTML = html;
+    tabelTransaksi.innerHTML = html;
 }
 
-/* ==========================================
-   DELETE TRANSAKSI
-========================================== */
 function hapusTransaksi(i){
     let trx = load("transaksi");
     trx.splice(i,1);
@@ -323,58 +354,113 @@ function hapusTransaksi(i){
     renderReport();
 }
 
-/* ==========================================
-   IMPORT TRANSAKSI
-========================================== */
+/* IMPORT TRANSAKSI */
 function importTransaksiExcel(){
-    let file = document.getElementById("importTransaksi").files[0];
-    let reader = new FileReader();
+    let file=importTransaksi.files[0];
+    let reader=new FileReader();
 
-    reader.onload = e=>{
-        let wb = XLSX.read(new Uint8Array(e.target.result),{type:"array"});
-        let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+    reader.onload=e=>{
+        let wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+        let rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         save("transaksi",rows);
         renderTransaksi();
         renderReport();
+        updateChart(rows);
     };
 
     reader.readAsArrayBuffer(file);
 }
 
-/* ==========================================
-   EXPORT TRANSAKSI
-========================================== */
+/* EXPORT TRANSAKSI */
 function exportTransaksi(){
-    let trx = load("transaksi");
+    let trx=load("transaksi");
     if(trx.length===0) return alert("Tidak ada transaksi!");
 
-    let ws = XLSX.utils.json_to_sheet(trx);
-    let wb = XLSX.utils.book_new();
+    let ws=XLSX.utils.json_to_sheet(trx);
+    let wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,ws,"Transaksi");
     XLSX.writeFile(wb,"Data_Transaksi.xlsx");
 }
 
-/* ==========================================
-   REPORT
-========================================== */
-function renderReport(){
-    let trx = load("transaksi");
-    document.getElementById("totalModal").innerText = trx.reduce((a,b)=>a+b.total_modal,0);
-    document.getElementById("totalOmzet").innerText = trx.reduce((a,b)=>a+b.total_jual,0);
-    document.getElementById("totalLaba").innerText = trx.reduce((a,b)=>a+b.laba,0);
+/* ============================================================
+   REPORT FILTER
+============================================================ */
+function filterReport(){
+    let mulai=filter_mulai.value;
+    let akhir=filter_akhir.value;
+    let fp=filter_produk.value;
+
+    let trx=load("transaksi");
+
+    let tMulai = mulai ? new Date(mulai+" 00:00:00").getTime() : 0;
+    let tAkhir = akhir ? new Date(akhir+" 23:59:59").getTime() : Infinity;
+
+    let filtered = trx.filter(t=>{
+        let tgl=new Date(t.tanggal).getTime();
+        let matchTgl = tgl >= tMulai && tgl <= tAkhir;
+        let matchProduk = fp ? t.id_produk === fp : true;
+        return matchTgl && matchProduk;
+    });
+
+    let html="";
+    filtered.forEach(t=>{
+        html+=`
+        <tr>
+            <td>${t.pembeli}</td>
+            <td>${t.nama}</td>
+            <td>${t.harga_modal_per_pcs}</td>
+            <td>${t.harga_jual_per_pcs}</td>
+            <td>${t.qty}</td>
+            <td>${t.total_modal}</td>
+            <td>${t.total_jual}</td>
+            <td>${t.laba}</td>
+            <td>${t.tanggal}</td>
+            <td></td>
+        </tr>`;
+    });
+    tabelTransaksi.innerHTML = html;
+
+    totalModal.innerText = filtered.reduce((a,b)=>a+b.total_modal,0);
+    totalOmzet.innerText = filtered.reduce((a,b)=>a+b.total_jual,0);
+    totalLaba.innerText  = filtered.reduce((a,b)=>a+b.laba,0);
+
+    updateChart(filtered);
 }
 
-/* ==========================================
-   EXPORT LAPORAN = EXPORT TRANSAKSI
-========================================== */
+/* EXPORT LAPORAN */
 function exportLaporan(){ exportTransaksi(); }
 
-/* ==========================================
-   INIT
-========================================== */
+/* ============================================================
+   GRAFIK
+============================================================ */
+let chart=null;
+
+function updateChart(data){
+    let modal= data.reduce((a,b)=>a+b.total_modal,0);
+    let omzet= data.reduce((a,b)=>a+b.total_jual,0);
+    let laba = data.reduce((a,b)=>a+b.laba,0);
+
+    let ctx=document.getElementById("chartLaporan");
+
+    if(chart) chart.destroy();
+
+    chart=new Chart(ctx,{
+        type:"bar",
+        data:{
+            labels:["Modal","Omzet","Laba"],
+            datasets:[{
+                label:"Grafik Laporan",
+                data:[modal,omzet,laba]
+            }]
+        }
+    });
+}
+
+/* INIT */
 renderProduk();
 renderTransaksi();
 renderReport();
+updateChart(load("transaksi"));
 </script>
 
 </body>
