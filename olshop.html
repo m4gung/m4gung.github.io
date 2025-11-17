@@ -2,12 +2,12 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Aplikasi Penjualan - Hybrid + Rupiah</title>
+<title>Aplikasi Penjualan - Hybrid + Rupiah + Stok 0</title>
 
-<!-- SheetJS -->
+<!-- SheetJS untuk import/export Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- Chart.js (optional) -->
+<!-- Chart.js (opsional – otomatis mati di browser jadul) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -22,7 +22,7 @@
 </head>
 <body>
 
-<h2>Aplikasi Penjualan - Final Hybrid + Format Rupiah</h2>
+<h2>Aplikasi Penjualan - FINAL (Hybrid + Rupiah + Stok 0)</h2>
 
 <!-- =========================================================== -->
 <!-- MASTER PRODUK -->
@@ -33,7 +33,7 @@
   <input id="id_produk" placeholder="ID Produk">
   <input id="nama_produk" placeholder="Nama Produk">
   <input id="modal_total" type="number" placeholder="Modal Total">
-  <input id="stok_produk" type="number" placeholder="Stok">
+  <input id="stok_produk" type="number" placeholder="Stok (boleh 0)">
   <input id="harga_jual_satuan" type="number" placeholder="Harga Jual / pcs">
   <br>
   <button id="btnSimpanProduk">Simpan</button>
@@ -129,504 +129,534 @@
 </div>
 
 <script>
-/* ============================
-   Format Rupiah Indonesia
-============================ */
+/* ============================================================
+   FORMAT RUPIAH (AMAN DI SEMUA BROWSER)
+============================================================ */
 function formatRupiah(angka){
-  if(angka === null || angka === undefined) return "Rp 0,00";
-  angka = parseFloat(angka);
-  if(isNaN(angka)) return "Rp 0,00";
-
-  var parts = angka.toFixed(2).split(".");
-  var ribuan = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return "Rp " + ribuan + "," + parts[1];
+    if(angka === null || angka === undefined) return "Rp 0,00";
+    angka = parseFloat(angka);
+    if(isNaN(angka)) return "Rp 0,00";
+    var parts = angka.toFixed(2).split(".");
+    var ribuan = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return "Rp " + ribuan + "," + parts[1];
 }
 
-/* ============================
-   Local Storage Helper
-============================ */
-function load(k){ 
-  try { return JSON.parse(localStorage.getItem(k) || "[]"); }
-  catch(e){ return []; }
-}
-function save(k,v){
-  try { localStorage.setItem(k,JSON.stringify(v)); } catch(e){}
-}
+/* ============================================================
+   LOCAL STORAGE HELPER
+============================================================ */
+function load(k){ try { return JSON.parse(localStorage.getItem(k)||"[]"); } catch(e){ return []; } }
+function save(k,v){ try { localStorage.setItem(k,JSON.stringify(v)); } catch(e){} }
 
 function escapeHtml(s){
-  if(s===null || s===undefined) return "";
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    if(s===null || s===undefined) return "";
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
-/* ============================
-   MASTER PRODUK
-============================ */
+/* ============================================================
+   MASTER PRODUK — STOK 0 AMAN
+============================================================ */
 function renderProduk(){
-  var produk = load("produk");
-  var tbody = document.getElementById("tabelProduk");
-  var out = "";
+    var produk = load("produk");
+    var tbody = document.getElementById("tabelProduk");
+    var html = "";
 
-  for(var i=0;i<produk.length;i++){
-    var p = produk[i];
-    var modalPer = p.modal_per_pcs || (p.modal_total / p.stok);
+    for(var i=0;i<produk.length;i++){
+        var p = produk[i];
+        var modalPer = p.modal_per_pcs || 0;
 
-    out += "<tr>";
-    out += "<td>"+p.id+"</td>";
-    out += "<td>"+escapeHtml(p.nama)+"</td>";
-    out += "<td>"+formatRupiah(p.modal_total)+"</td>";
-    out += "<td>"+formatRupiah(modalPer)+"</td>";
-    out += "<td>"+p.stok+"</td>";
-    out += "<td>"+formatRupiah(p.harga_jual)+"</td>";
-    out += "<td><button class='editProduk' data-idx='"+i+"'>Edit</button> <button class='delProduk' data-idx='"+i+"'>Hapus</button></td>";
-    out += "</tr>";
-  }
+        html += "<tr>";
+        html += "<td>"+p.id+"</td>";
+        html += "<td>"+escapeHtml(p.nama)+"</td>";
+        html += "<td>"+formatRupiah(p.modal_total)+"</td>";
+        html += "<td>"+formatRupiah(modalPer)+"</td>";
+        html += "<td>"+p.stok+"</td>";
+        html += "<td>"+formatRupiah(p.harga_jual)+"</td>";
+        html += "<td><button class='editProduk' data-idx='"+i+"'>Edit</button> <button class='delProduk' data-idx='"+i+"'>Hapus</button></td>";
+        html += "</tr>";
+    }
 
-  tbody.innerHTML = out;
-  renderDropdowns();
+    tbody.innerHTML = html;
+    renderDropdowns();
 }
 
 function simpanProduk(){
-  var id = document.getElementById("id_produk").value.trim();
-  var nama = document.getElementById("nama_produk").value.trim();
-  var modal = parseFloat(document.getElementById("modal_total").value);
-  var stok = parseInt(document.getElementById("stok_produk").value);
-  var harga = parseFloat(document.getElementById("harga_jual_satuan").value);
+    var id = id_produk.value.trim();
+    var nama = nama_produk.value.trim();
+    var modal = parseFloat(modal_total.value);
+    var stok = parseInt(stok_produk.value);
+    var harga = parseFloat(harga_jual_satuan.value);
 
-  if(!id || !nama || modal<=0 || stok<=0 || harga<=0){
-    alert("Lengkapi data produk!");
-    return;
-  }
+    if(!id || !nama || harga <= 0){
+        alert("ID, Nama dan Harga Jual wajib diisi. Modal & Stok boleh 0.");
+        return;
+    }
 
-  var modalPer = modal/stok;
+    if(modal < 0) modal = 0;
+    if(stok < 0) stok = 0;
 
-  var produk = load("produk");
-  var idx=-1;
-  for(var i=0;i<produk.length;i++){
-    if(produk[i].id===id){ idx=i; break; }
-  }
+    var modalPer = 0;
 
-  var data = {
-    id:id, nama:nama,
-    modal_total:modal,
-    modal_per_pcs:modalPer,
-    stok:stok,
-    harga_jual:harga
-  };
+    if(stok > 0){
+        modalPer = modal / stok;
+    } else {
+        // jika stok 0 → pakai modal lama jika ada
+        var produkLama = load("produk");
+        for(var i=0;i<produkLama.length;i++){
+            if(produkLama[i].id === id){
+                modalPer = produkLama[i].modal_per_pcs || 0;
+                break;
+            }
+        }
+    }
 
-  if(idx>=0) produk[idx]=data; else produk.push(data);
+    var produk = load("produk");
+    var idx = -1;
+    for(var j=0;j<produk.length;j++){
+        if(produk[j].id === id){
+            idx = j; break;
+        }
+    }
 
-  save("produk",produk);
-  clearProdukForm();
-  renderProduk();
+    var data = {
+        id:id,
+        nama:nama,
+        modal_total:modal,
+        modal_per_pcs:modalPer,
+        stok:stok,
+        harga_jual:harga
+    };
+
+    if(idx >= 0) produk[idx] = data;
+    else produk.push(data);
+
+    save("produk", produk);
+    clearProdukForm();
+    renderProduk();
 }
 
 function clearProdukForm(){
-  id_produk.value="";
-  nama_produk.value="";
-  modal_total.value="";
-  stok_produk.value="";
-  harga_jual_satuan.value="";
+    id_produk.value="";
+    nama_produk.value="";
+    modal_total.value="";
+    stok_produk.value="";
+    harga_jual_satuan.value="";
 }
 
 function produkTableClick(e){
-  var t = e.target;
-  if(t.tagName!=="BUTTON") return;
-  var idx = parseInt(t.getAttribute("data-idx"));
-  var produk = load("produk");
+    var t = e.target;
+    if(t.tagName !== "BUTTON") return;
 
-  if(t.className==="editProduk"){
-    var p = produk[idx];
-    id_produk.value=p.id;
-    nama_produk.value=p.nama;
-    modal_total.value=p.modal_total;
-    stok_produk.value=p.stok;
-    harga_jual_satuan.value=p.harga_jual;
-  }
-  else if(t.className==="delProduk"){
-    if(confirm("Hapus produk?")){
-      produk.splice(idx,1);
-      save("produk",produk);
-      renderProduk();
+    var idx = parseInt(t.getAttribute("data-idx"));
+    var produk = load("produk");
+
+    if(t.className === "editProduk"){
+        var p = produk[idx];
+        id_produk.value = p.id;
+        nama_produk.value = p.nama;
+        modal_total.value = p.modal_total;
+        stok_produk.value = p.stok;
+        harga_jual_satuan.value = p.harga_jual;
     }
-  }
+    else if(t.className === "delProduk"){
+        if(confirm("Hapus produk?")){
+            produk.splice(idx,1);
+            save("produk",produk);
+            renderProduk();
+        }
+    }
 }
 
+/* ============================================================
+   IMPORT PRODUK — STOK 0 AMAN
+============================================================ */
 function importProdukExcel(){
-  var fi = document.getElementById("importProduk");
-  if(!fi.files[0]) return;
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
-    var sheet=wb.Sheets[wb.SheetNames[0]];
-    var rows=XLSX.utils.sheet_to_json(sheet);
+    var fi = document.getElementById("importProduk");
+    if(!fi.files[0]) return;
 
-    var out=[];
-    for(var i=0;i<rows.length;i++){
-      var r=rows[i];
-      var id=r.id;
-      var nama=r.nama;
-      var modal=r.modal_total;
-      var stok=r.stok;
-      var harga=r.harga_jual;
-      if(id && nama && modal>0 && stok>0){
-        out.push({
-          id:id,
-          nama:nama,
-          modal_total:modal,
-          modal_per_pcs:modal/stok,
-          stok:stok,
-          harga_jual:harga
-        });
-      }
-    }
+    var reader = new FileReader();
+    reader.onload = function(e){
+        var wb = XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+        var sheet = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(sheet);
 
-    save("produk",out);
-    renderProduk();
-  };
-  reader.readAsArrayBuffer(fi.files[0]);
+        var out = [];
+
+        for(var i=0;i<rows.length;i++){
+            var r = rows[i];
+            var id = r.id;
+            var nama = r.nama;
+
+            if(!id || !nama) continue;
+
+            var modal = parseFloat(r.modal_total || 0);
+            var stok = parseInt(r.stok || 0);
+            var harga = parseFloat(r.harga_jual || 0);
+
+            var modalPer = 0;
+
+            if(stok > 0){
+                modalPer = modal / stok;
+            } else {
+                modalPer = parseFloat(r.modal_per_pcs || 0);
+            }
+
+            out.push({
+                id:id,
+                nama:nama,
+                modal_total:modal,
+                modal_per_pcs:modalPer,
+                stok:stok,
+                harga_jual:harga
+            });
+        }
+
+        save("produk", out);
+        renderProduk();
+        alert("Import produk selesai.");
+    };
+
+    reader.readAsArrayBuffer(fi.files[0]);
 }
 
 function exportProduk(){
-  var data=load("produk");
-  if(!data.length){ alert("Tidak ada produk!"); return; }
+    var produk = load("produk");
+    if(!produk.length){ alert("Tidak ada produk!"); return; }
 
-  var out=[];
-  for(var i=0;i<data.length;i++){
-    out.push({
-      id:data[i].id,
-      nama:data[i].nama,
-      modal_total:data[i].modal_total,
-      stok:data[i].stok,
-      harga_jual:data[i].harga_jual
-    });
-  }
-
-  var ws=XLSX.utils.json_to_sheet(out);
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Produk");
-  XLSX.writeFile(wb,"Master_Produk.xlsx");
+    var ws = XLSX.utils.json_to_sheet(produk);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Produk");
+    XLSX.writeFile(wb, "Master_Produk.xlsx");
 }
 
-/* ============================
-   Dropdowns
-============================ */
+/* ============================================================
+   DROPDOWN PRODUK
+============================================================ */
 function renderDropdowns(){
-  var produk=load("produk");
-  var sel=document.getElementById("pilih_produk");
-  var opt="<option value=''>Pilih Produk...</option>";
-  for(var i=0;i<produk.length;i++){
-    opt += "<option value='"+produk[i].id+"'>"+escapeHtml(produk[i].nama)+"</option>";
-  }
-  sel.innerHTML=opt;
+    var produk = load("produk");
+    var sel = pilih_produk;
+    var fp = filter_produk;
 
-  var fp=document.getElementById("filter_produk");
-  var opt2="<option value=''>Semua Produk</option>";
-  for(var j=0;j<produk.length;j++){
-    opt2 += "<option value='"+produk[j].id+"'>"+escapeHtml(produk[j].nama)+"</option>";
-  }
-  fp.innerHTML=opt2;
+    var html = "<option value=''>Pilih Produk...</option>";
+    var html2 = "<option value=''>Semua Produk</option>";
+
+    for(var i=0;i<produk.length;i++){
+        html += "<option value='"+produk[i].id+"'>"+escapeHtml(produk[i].nama)+"</option>";
+        html2 += "<option value='"+produk[i].id+"'>"+escapeHtml(produk[i].nama)+"</option>";
+    }
+
+    sel.innerHTML = html;
+    fp.innerHTML = html2;
 }
 
-/* ============================
+/* ============================================================
    TRANSAKSI
-============================ */
+============================================================ */
 function isiInfoProduk(){
-  var pid=document.getElementById("pilih_produk").value;
-  if(!pid){ harga_trans_modal.value=""; harga_trans_jual.value=""; return; }
+    var id = pilih_produk.value;
+    var produk = load("produk");
 
-  var produk=load("produk");
-  for(var i=0;i<produk.length;i++){
-    if(produk[i].id===pid){
-      harga_trans_modal.value = produk[i].modal_per_pcs;
-      harga_trans_jual.value = produk[i].harga_jual;
+    for(var i=0;i<produk.length;i++){
+        if(produk[i].id === id){
+            harga_trans_modal.value = produk[i].modal_per_pcs || 0;
+            harga_trans_jual.value = produk[i].harga_jual;
+        }
     }
-  }
 }
 
 function simpanTransaksi(){
-  var nama=document.getElementById("nama_pembeli").value.trim();
-  var pid=document.getElementById("pilih_produk").value;
-  var qty=parseInt(document.getElementById("qty_jual").value);
-  var harga=parseFloat(document.getElementById("harga_trans_jual").value);
+    var nama = nama_pembeli.value.trim();
+    var pid = pilih_produk.value;
+    var qty = parseInt(qty_jual.value);
+    var harga = parseFloat(harga_trans_jual.value);
 
-  if(!nama){ alert("Nama pembeli wajib!"); return; }
-  if(!pid || qty<=0 || harga<=0){ alert("Lengkapi transaksi!"); return; }
+    if(!nama){ alert("Nama pembeli wajib!"); return; }
+    if(!pid || qty <= 0 || harga <= 0){ alert("Data transaksi kurang lengkap."); return; }
 
-  var produk=load("produk");
-  var p=null;
-  for(var i=0;i<produk.length;i++){
-    if(produk[i].id===pid){ p=produk[i]; break; }
-  }
-  if(!p){ alert("Produk tidak ditemukan!"); return; }
-  if(p.stok<qty){ alert("Stok tidak cukup!"); return; }
+    var produk = load("produk");
+    var p = null;
 
-  var modal=p.modal_per_pcs;
-  var totalModal = modal*qty;
-  var totalJual = harga*qty;
-  var laba = totalJual-totalModal;
-
-  var trx=load("transaksi");
-  trx.push({
-    pembeli:nama,
-    id_produk:pid,
-    nama:p.nama,
-    harga_modal_per_pcs:modal,
-    harga_jual_per_pcs:harga,
-    qty:qty,
-    total_modal:totalModal,
-    total_jual:totalJual,
-    laba:laba,
-    tanggal:new Date().toString()
-  });
-
-  // kurangi stok
-  p.stok -= qty;
-  save("produk",produk);
-  save("transaksi",trx);
-
-  renderProduk();
-  renderTransaksi();
-  renderReport();
-  updateChartSafe();
-  
-  document.getElementById("nama_pembeli").value="";
-  document.getElementById("qty_jual").value="";
-}
-
-function renderTransaksi(){
-  var trx=load("transaksi");
-  var tbody=document.getElementById("tabelTransaksi");
-  var out="";
-
-  for(var i=0;i<trx.length;i++){
-    var t=trx[i];
-    out+="<tr>";
-    out+="<td>"+escapeHtml(t.pembeli)+"</td>";
-    out+="<td>"+escapeHtml(t.nama)+"</td>";
-    out+="<td>"+formatRupiah(t.harga_modal_per_pcs)+"</td>";
-    out+="<td>"+formatRupiah(t.harga_jual_per_pcs)+"</td>";
-    out+="<td>"+t.qty+"</td>";
-    out+="<td>"+formatRupiah(t.total_modal)+"</td>";
-    out+="<td>"+formatRupiah(t.total_jual)+"</td>";
-    out+="<td>"+formatRupiah(t.laba)+"</td>";
-    out+="<td>"+escapeHtml(t.tanggal)+"</td>";
-    out+="<td><button class='delTrans' data-idx='"+i+"'>Hapus</button></td>";
-    out+="</tr>";
-  }
-
-  tbody.innerHTML=out;
-}
-
-function transaksiTableClick(e){
-  var t=e.target;
-  if(t.tagName!=="BUTTON") return;
-  var idx=parseInt(t.getAttribute("data-idx"));
-  var trx=load("transaksi");
-
-  if(t.className==="delTrans"){
-    if(confirm("Hapus transaksi ini?")){
-      trx.splice(idx,1);
-      save("transaksi",trx);
-      renderTransaksi();
-      renderReport();
-      updateChartSafe();
+    for(var i=0;i<produk.length;i++){
+        if(produk[i].id === pid){
+            p = produk[i];
+            break;
+        }
     }
-  }
-}
 
-function importTransaksiExcel(){
-  var fi=document.getElementById("importTransaksi");
-  if(!fi.files[0]) return;
+    if(!p){ alert("Produk tidak ditemukan!"); return; }
+    if(p.stok < qty){ alert("Stok tidak cukup!"); return; }
 
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
-    var sheet=wb.Sheets[wb.SheetNames[0]];
-    var rows=XLSX.utils.sheet_to_json(sheet);
-    save("transaksi",rows);
+    var modal = p.modal_per_pcs || 0;
+
+    var total_modal = modal * qty;
+    var total_jual = harga * qty;
+    var laba = total_jual - total_modal;
+
+    var trx = load("transaksi");
+
+    trx.push({
+        pembeli:nama,
+        id_produk:pid,
+        nama:p.nama,
+        harga_modal_per_pcs:modal,
+        harga_jual_per_pcs:harga,
+        qty:qty,
+        total_modal:total_modal,
+        total_jual:total_jual,
+        laba:laba,
+        tanggal:new Date().toString()
+    });
+
+    p.stok -= qty;
+
+    save("produk",produk);
+    save("transaksi",trx);
+
+    renderProduk();
     renderTransaksi();
     renderReport();
     updateChartSafe();
-  };
-  reader.readAsArrayBuffer(fi.files[0]);
+
+    nama_pembeli.value="";
+    qty_jual.value="";
+}
+
+function renderTransaksi(){
+    var trx = load("transaksi");
+    var tbody = tabelTransaksi;
+    var html = "";
+
+    for(var i=0;i<trx.length;i++){
+        var t = trx[i];
+
+        html += "<tr>";
+        html += "<td>"+escapeHtml(t.pembeli)+"</td>";
+        html += "<td>"+escapeHtml(t.nama)+"</td>";
+        html += "<td>"+formatRupiah(t.harga_modal_per_pcs)+"</td>";
+        html += "<td>"+formatRupiah(t.harga_jual_per_pcs)+"</td>";
+        html += "<td>"+t.qty+"</td>";
+        html += "<td>"+formatRupiah(t.total_modal)+"</td>";
+        html += "<td>"+formatRupiah(t.total_jual)+"</td>";
+        html += "<td>"+formatRupiah(t.laba)+"</td>";
+        html += "<td>"+escapeHtml(t.tanggal)+"</td>";
+        html += "<td><button class='delTrans' data-idx='"+i+"'>Hapus</button></td>";
+        html += "</tr>";
+    }
+
+    tbody.innerHTML = html;
+}
+
+function transaksiTableClick(e){
+    var t = e.target;
+    if(t.tagName !== "BUTTON") return;
+
+    var idx = parseInt(t.getAttribute("data-idx"));
+    var trx = load("transaksi");
+
+    if(confirm("Hapus transaksi ini?")){
+        trx.splice(idx,1);
+        save("transaksi",trx);
+        renderTransaksi();
+        renderReport();
+        updateChartSafe();
+    }
+}
+
+function importTransaksiExcel(){
+    var fi = importTransaksi;
+    if(!fi.files[0]) return;
+
+    var reader = new FileReader();
+    reader.onload = function(e){
+        var wb = XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+        var sheet = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(sheet);
+
+        save("transaksi", rows);
+        renderTransaksi();
+        renderReport();
+        updateChartSafe();
+    };
+    reader.readAsArrayBuffer(fi.files[0]);
 }
 
 function exportTransaksi(){
-  var trx=load("transaksi");
-  if(!trx.length){ alert("Tidak ada transaksi!"); return; }
+    var trx = load("transaksi");
+    if(!trx.length){ alert("Tidak ada transaksi!"); return; }
 
-  var ws=XLSX.utils.json_to_sheet(trx);
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Transaksi");
-  XLSX.writeFile(wb,"Data_Transaksi.xlsx");
+    var ws = XLSX.utils.json_to_sheet(trx);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,"Transaksi");
+    XLSX.writeFile(wb,"Data_Transaksi.xlsx");
 }
 
-/* ============================
+/* ============================================================
    REPORT & FILTER
-============================ */
+============================================================ */
 function applyFilter(){
-  var mulai=document.getElementById("filter_mulai").value;
-  var akhir=document.getElementById("filter_akhir").value;
-  var fp=document.getElementById("filter_produk").value;
+    var mulai = filter_mulai.value;
+    var akhir = filter_akhir.value;
+    var fp = filter_produk.value;
 
-  var trx=load("transaksi");
-  var out=[];
+    var trx = load("transaksi");
+    var out = [];
 
-  var tMulai = mulai ? new Date(mulai+" 00:00:00").getTime() : -Infinity;
-  var tAkhir = akhir ? new Date(akhir+" 23:59:59").getTime() : Infinity;
+    var tMulai = mulai ? new Date(mulai+" 00:00:00").getTime() : -Infinity;
+    var tAkhir = akhir ? new Date(akhir+" 23:59:59").getTime() : Infinity;
 
-  for(var i=0;i<trx.length;i++){
-    var t=trx[i];
-    var time=new Date(t.tanggal).getTime();
-    if(time>=tMulai && time<=tAkhir){
-      if(fp){
-        if(t.id_produk===fp) out.push(t);
-      } else out.push(t);
+    for(var i=0;i<trx.length;i++){
+        var t = trx[i];
+        var time = new Date(t.tanggal).getTime();
+
+        if(time >= tMulai && time <= tAkhir){
+            if(fp){
+                if(t.id_produk === fp) out.push(t);
+            } else out.push(t);
+        }
     }
-  }
 
-  // tampilkan hasil filter
-  var tbody=document.getElementById("tabelTransaksi");
-  var html="";
-  for(var j=0;j<out.length;j++){
-    var t=out[j];
-    html+="<tr>";
-    html+="<td>"+escapeHtml(t.pembeli)+"</td>";
-    html+="<td>"+escapeHtml(t.nama)+"</td>";
-    html+="<td>"+formatRupiah(t.harga_modal_per_pcs)+"</td>";
-    html+="<td>"+formatRupiah(t.harga_jual_per_pcs)+"</td>";
-    html+="<td>"+t.qty+"</td>";
-    html+="<td>"+formatRupiah(t.total_modal)+"</td>";
-    html+="<td>"+formatRupiah(t.total_jual)+"</td>";
-    html+="<td>"+formatRupiah(t.laba)+"</td>";
-    html+="<td>"+escapeHtml(t.tanggal)+"</td>";
-    html+="<td></td>";
-    html+="</tr>";
-  }
-  tbody.innerHTML=html;
+    // tampilkan hasil filter
+    var tbody = tabelTransaksi;
+    var html = "";
 
-  // hitung ulang total
-  var tm=0, to=0, tl=0;
-  for(var k=0;k<out.length;k++){
-    tm += out[k].total_modal || 0;
-    to += out[k].total_jual || 0;
-    tl += out[k].laba || 0;
-  }
+    for(var j=0;j<out.length;j++){
+        var t = out[j];
+        html += "<tr>";
+        html += "<td>"+escapeHtml(t.pembeli)+"</td>";
+        html += "<td>"+escapeHtml(t.nama)+"</td>";
+        html += "<td>"+formatRupiah(t.harga_modal_per_pcs)+"</td>";
+        html += "<td>"+formatRupiah(t.harga_jual_per_pcs)+"</td>";
+        html += "<td>"+t.qty+"</td>";
+        html += "<td>"+formatRupiah(t.total_modal)+"</td>";
+        html += "<td>"+formatRupiah(t.total_jual)+"</td>";
+        html += "<td>"+formatRupiah(t.laba)+"</td>";
+        html += "<td>"+escapeHtml(t.tanggal)+"</td>";
+        html += "<td></td>";
+        html += "</tr>";
+    }
 
-  document.getElementById("totalModal").innerText=formatRupiah(tm);
-  document.getElementById("totalOmzet").innerText=formatRupiah(to);
-  document.getElementById("totalLaba").innerText=formatRupiah(tl);
+    tbody.innerHTML = html;
 
-  updateChartSafe(out);
+    // total
+    var tm=0,to=0,tl=0;
+    for(var k=0;k<out.length;k++){
+        tm+=out[k].total_modal||0;
+        to+=out[k].total_jual||0;
+        tl+=out[k].laba||0;
+    }
+
+    totalModal.innerText = formatRupiah(tm);
+    totalOmzet.innerText = formatRupiah(to);
+    totalLaba.innerText = formatRupiah(tl);
+
+    updateChartSafe(out);
 }
 
 function resetFilter(){
-  filter_mulai.value="";
-  filter_akhir.value="";
-  filter_produk.value="";
+    filter_mulai.value="";
+    filter_akhir.value="";
+    filter_produk.value="";
 
-  renderTransaksi();
-  renderReport();
-  updateChartSafe();
+    renderTransaksi();
+    renderReport();
+    updateChartSafe();
 }
 
 function renderReport(){
-  var trx=load("transaksi");
-  var tm=0,to=0,tl=0;
+    var trx = load("transaksi");
+    var tm=0,to=0,tl=0;
 
-  for(var i=0;i<trx.length;i++){
-    tm += trx[i].total_modal||0;
-    to += trx[i].total_jual||0;
-    tl += trx[i].laba||0;
-  }
+    for(var i=0;i<trx.length;i++){
+        tm += trx[i].total_modal||0;
+        to += trx[i].total_jual||0;
+        tl += trx[i].laba||0;
+    }
 
-  totalModal.innerText=formatRupiah(tm);
-  totalOmzet.innerText=formatRupiah(to);
-  totalLaba.innerText=formatRupiah(tl);
+    totalModal.innerText=formatRupiah(tm);
+    totalOmzet.innerText=formatRupiah(to);
+    totalLaba.innerText=formatRupiah(tl);
 }
 
 function exportLaporan(){
-  alert("Gunakan Export Transaksi (hasil filter) untuk laporan format Excel.");
+    alert("Gunakan 'Export Transaksi' setelah filter untuk laporan Excel.");
 }
 
-/* ============================
-   CHART SAFE MODE
-============================ */
-var chartInstance=null;
+/* ============================================================
+   CHART SAFE MODE (HYBRID)
+============================================================ */
+var chartInstance = null;
 
 function updateChartSafe(data){
-  try {
-    var canvasSupported = !!document.createElement('canvas').getContext;
-    if(!canvasSupported || typeof Chart==="undefined"){
-      chartLaporan.style.display="none";
-      chartFallback.className="";
-      chartFallback.innerHTML="Grafik tidak tersedia di browser ini.";
-      return;
+    try{
+        var can = document.createElement("canvas").getContext;
+        if(!can || typeof Chart === "undefined"){
+            chartLaporan.style.display="none";
+            chartFallback.style.display="";
+            chartFallback.innerHTML="Grafik tidak tersedia di browser ini.";
+            return;
+        }
+
+        var arr = data || load("transaksi");
+
+        var tm=0,to=0,tl=0;
+        for(var i=0;i<arr.length;i++){
+            tm+=arr[i].total_modal||0;
+            to+=arr[i].total_jual||0;
+            tl+=arr[i].laba||0;
+        }
+
+        chartFallback.style.display="none";
+        chartLaporan.style.display="";
+
+        var ctx = chartLaporan.getContext("2d");
+
+        if(chartInstance){
+            try{ chartInstance.destroy(); }catch(e){}
+        }
+
+        chartInstance = new Chart(ctx,{
+            type:"bar",
+            data:{
+                labels:["Total Modal","Total Omzet","Total Laba"],
+                datasets:[{
+                    label:"Jumlah",
+                    data:[tm,to,tl]
+                }]
+            }
+        });
+
+    }catch(err){
+        chartLaporan.style.display="none";
+        chartFallback.style.display="";
     }
-
-    var arr = data || load("transaksi");
-    var tm=0,to=0,tl=0;
-
-    for(var i=0;i<arr.length;i++){
-      tm+=arr[i].total_modal||0;
-      to+=arr[i].total_jual||0;
-      tl+=arr[i].laba||0;
-    }
-
-    chartFallback.style.display="none";
-    chartLaporan.style.display="";
-
-    var ctx=chartLaporan.getContext("2d");
-
-    if(chartInstance){
-      try{ chartInstance.destroy(); }catch(e){}
-    }
-
-    chartInstance=new Chart(ctx,{
-      type:"bar",
-      data:{
-        labels:["Total Modal","Total Omzet","Total Laba"],
-        datasets:[{
-          label:"Jumlah",
-          data:[tm,to,tl]
-        }]
-      }
-    });
-
-  } catch(e){
-    chartLaporan.style.display="none";
-    chartFallback.innerHTML="Grafik tidak tersedia.";
-  }
 }
 
-/* ============================
+/* ============================================================
    INIT
-============================ */
+============================================================ */
 window.onload=function(){
-  btnSimpanProduk.onclick=simpanProduk;
-  btnClearProduk.onclick=clearProdukForm;
-  tabelProduk.onclick=produkTableClick;
-  pilih_produk.onchange=isiInfoProduk;
-  btnProses.onclick=simpanTransaksi;
-  tabelTransaksi.onclick=transaksiTableClick;
+    btnSimpanProduk.onclick=simpanProduk;
+    btnClearProduk.onclick=clearProdukForm;
+    tabelProduk.onclick=produkTableClick;
 
-  importProduk.onchange=importProdukExcel;
-  btnExportProduk.onclick=exportProduk;
+    pilih_produk.onchange=isiInfoProduk;
+    btnProses.onclick=simpanTransaksi;
+    tabelTransaksi.onclick=transaksiTableClick;
 
-  importTransaksi.onchange=importTransaksiExcel;
-  btnExportTransaksi.onclick=exportTransaksi;
+    importProduk.onchange=importProdukExcel;
+    btnExportProduk.onclick=exportProduk;
 
-  btnFilter.onclick=applyFilter;
-  btnResetFilter.onclick=resetFilter;
+    importTransaksi.onchange=importTransaksiExcel;
+    btnExportTransaksi.onclick=exportTransaksi;
 
-  btnExportLaporan.onclick=exportLaporan;
+    btnFilter.onclick=applyFilter;
+    btnResetFilter.onclick=resetFilter;
+    btnExportLaporan.onclick=exportLaporan;
 
-  renderProduk();
-  renderTransaksi();
-  renderReport();
-  updateChartSafe();
+    renderProduk();
+    renderTransaksi();
+    renderReport();
+    updateChartSafe();
 };
 </script>
-
 </body>
 </html>
