@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Aplikasi Penjualan Lengkap</title>
 
+    <!-- Library Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -18,11 +19,11 @@
 </head>
 <body>
 
-<h1>Aplikasi Penjualan (HTML + JS + LocalStorage)</h1>
+<h1>Aplikasi Penjualan (CRUD + Transaksi + Report)</h1>
 
-<!-- ------------------------------------------------------ -->
+<!-- ===================================================== -->
 <!-- MASTER PRODUK CRUD -->
-<!-- ------------------------------------------------------ -->
+<!-- ===================================================== -->
 <div class="card">
     <h2>Master Produk</h2>
 
@@ -34,6 +35,7 @@
 
     <button onclick="simpanProduk()">Simpan</button>
     <button onclick="clearProdukForm()">Clear</button>
+    <input type="file" id="importProduk" accept=".xlsx,.xls" onchange="importProdukExcel()">
 
     <h3>Daftar Produk</h3>
     <table>
@@ -46,9 +48,9 @@
     </table>
 </div>
 
-<!-- ------------------------------------------------------ -->
+<!-- ===================================================== -->
 <!-- TRANSAKSI -->
-<!-- ------------------------------------------------------ -->
+<!-- ===================================================== -->
 <div class="card">
     <h2>Transaksi Penjualan</h2>
 
@@ -56,121 +58,87 @@
 
     <input id="harga_jual" type="number" placeholder="Harga">
     <input id="qty_jual" type="number" placeholder="Qty">
+
     <button onclick="simpanTransaksi()">Proses</button>
+    <input type="file" id="importTransaksi" accept=".xlsx,.xls" onchange="importTransaksiExcel()">
 
     <h3>Daftar Transaksi</h3>
     <table>
         <thead>
             <tr>
-                <th>Produk</th><th>Harga</th><th>Qty</th><th>Total</th><th>Laba</th><th>Tanggal</th>
+                <th>Produk</th><th>Harga</th><th>Qty</th><th>Total</th><th>Laba</th><th>Tanggal</th><th>Aksi</th>
             </tr>
         </thead>
         <tbody id="tabelTransaksi"></tbody>
     </table>
 </div>
 
-<!-- ------------------------------------------------------ -->
+<!-- ===================================================== -->
 <!-- REPORT -->
-<!-- ------------------------------------------------------ -->
+<!-- ===================================================== -->
 <div class="card">
     <h2>Report Penjualan</h2>
 
     <p><b>Total Omzet:</b> <span id="totalOmzet">0</span></p>
     <p><b>Total Laba:</b> <span id="totalLaba">0</span></p>
 
-    <button onclick="exportExcel()">Export Laporan ke Excel</button>
+    <button onclick="exportExcel()">Export Report to Excel</button>
 </div>
 
 <script>
-/* ================================================================
-   DATABASE LOCAL
-================================================================ */
+/* ============================================================
+    DATABASE LOCALSTORAGE
+============================================================ */
 function load(key) {
     let data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
 }
-
 function save(key, data) {
     localStorage.setItem(key, JSON.stringify(data));
 }
 
-/* ================================================================
-   MASTER PRODUK (CRUD)
-================================================================ */
+/* ============================================================
+    CRUD MASTER PRODUK
+============================================================ */
 function renderProduk() {
     let db = load("produk");
     let html = "";
-
     db.forEach((p, i) => {
         html += `
-            <tr>
-                <td>${p.id}</td>
-                <td>${p.nama}</td>
-                <td>${p.modal}</td>
-                <td>${p.harga}</td>
-                <td>${p.stok}</td>
-                <td>
-                    <button onclick="editProduk(${i})">Edit</button>
-                    <button onclick="hapusProduk(${i})">Hapus</button>
-                </td>
-            </tr>
-        `;
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.nama}</td>
+            <td>${p.modal}</td>
+            <td>${p.harga}</td>
+            <td>${p.stok}</td>
+            <td>
+                <button onclick="editProduk(${i})">Edit</button>
+                <button onclick="hapusProduk(${i})">Delete</button>
+            </td>
+        </tr>`;
     });
-
-    document.getElementById("tabelProduk").innerHTML = html;
-
+    tabelProduk.innerHTML = html;
     renderDropdownProduk();
 }
 
-function renderDropdownProduk() {
-    let db = load("produk");
-    let html = `<option value="">Pilih Produk...</option>`;
-
-    db.forEach(p => {
-        html += `<option value="${p.id}">${p.nama}</option>`;
-    });
-
-    document.getElementById("pilih_produk").innerHTML = html;
-}
-
 function simpanProduk() {
-    let id = document.getElementById("id_produk").value;
-    let nama = document.getElementById("nama_produk").value;
-    let modal = parseInt(document.getElementById("modal_produk").value);
-    let harga = parseInt(document.getElementById("harga_produk").value);
-    let stok = parseInt(document.getElementById("stok_produk").value);
-
+    let id = id_produk.value;
+    let nama = nama_produk.value;
+    let modal = parseInt(modal_produk.value);
+    let harga = parseInt(harga_produk.value);
+    let stok = parseInt(stok_produk.value);
     if (!id || !nama) return alert("Lengkapi data!");
 
     let db = load("produk");
-
-    // cek jika sudah ada → update
     let idx = db.findIndex(p => p.id === id);
-    if (idx >= 0) {
-        db[idx] = { id, nama, modal, harga, stok };
-    } else {
-        db.push({ id, nama, modal, harga, stok });
-    }
+
+    if (idx >= 0)
+        db[idx] = { id, nama, modal, harga, stok }; // Update
+    else
+        db.push({ id, nama, modal, harga, stok }); // Insert
 
     save("produk", db);
     clearProdukForm();
-    renderProduk();
-}
-
-function editProduk(i) {
-    let p = load("produk")[i];
-
-    document.getElementById("id_produk").value = p.id;
-    document.getElementById("nama_produk").value = p.nama;
-    document.getElementById("modal_produk").value = p.modal;
-    document.getElementById("harga_produk").value = p.harga;
-    document.getElementById("stok_produk").value = p.stok;
-}
-
-function hapusProduk(i) {
-    let db = load("produk");
-    db.splice(i, 1);
-    save("produk", db);
     renderProduk();
 }
 
@@ -182,16 +150,84 @@ function clearProdukForm() {
     stok_produk.value = "";
 }
 
-/* ================================================================
-   TRANSAKSI
-================================================================ */
+function editProduk(i) {
+    let p = load("produk")[i];
+    id_produk.value = p.id;
+    nama_produk.value = p.nama;
+    modal_produk.value = p.modal;
+    harga_produk.value = p.harga;
+    stok_produk.value = p.stok;
+}
+
+function hapusProduk(i) {
+    let db = load("produk");
+    db.splice(i, 1);
+    save("produk", db);
+    renderProduk();
+}
+
+/* ============================================================
+    IMPORT EXCEL MASTER PRODUK
+============================================================ */
+function importProdukExcel() {
+    let file = importProduk.files[0];
+    let reader = new FileReader();
+
+    reader.onload = function(e) {
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, { type: "array" });
+        let sheet = workbook.Sheets[workbook.SheetNames[0]];
+        let rows = XLSX.utils.sheet_to_json(sheet);
+
+        save("produk", rows);
+        renderProduk();
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+/* ============================================================
+    DROPDOWN PRODUK UNTUK TRANSAKSI
+============================================================ */
+function renderDropdownProduk() {
+    let db = load("produk");
+    let html = `<option value="">Pilih Produk...</option>`;
+    db.forEach(p => {
+        html += `<option value="${p.id}">${p.nama}</option>`;
+    });
+    pilih_produk.innerHTML = html;
+}
+
 function isiInfoProduk() {
-    let id = document.getElementById("pilih_produk").value;
+    let id = pilih_produk.value;
     let db = load("produk");
     let p = db.find(x => x.id == id);
-    if (!p) return;
+    if (p) harga_jual.value = p.harga;
+}
 
-    document.getElementById("harga_jual").value = p.harga;
+/* ============================================================
+    TRANSAKSI (ADD, EDIT, DELETE)
+============================================================ */
+function renderTransaksi() {
+    let db = load("transaksi");
+    let html = "";
+    db.forEach((t, i) => {
+        html += `
+        <tr>
+            <td>${t.nama}</td>
+            <td>${t.harga}</td>
+            <td>${t.qty}</td>
+            <td>${t.total}</td>
+            <td>${t.laba}</td>
+            <td>${t.tanggal}</td>
+            <td>
+                <button onclick="editTransaksi(${i})">Edit</button>
+                <button onclick="hapusTransaksi(${i})">Delete</button>
+            </td>
+        </tr>`;
+    });
+    tabelTransaksi.innerHTML = html;
+    renderReport();
 }
 
 function simpanTransaksi() {
@@ -199,17 +235,18 @@ function simpanTransaksi() {
     let qty = parseInt(qty_jual.value);
     let harga = parseInt(harga_jual.value);
 
-    if (!id || !qty) return alert("Lengkapi transaksi!");
+    if (!id || !qty) return alert("Isi data transaksi!");
 
     let produk = load("produk");
     let p = produk.find(x => x.id == id);
 
-    if (p.stok < qty) return alert("Stok tidak cukup!");
+    if (p.stok < qty) return alert("Stok kurang!");
 
     let total = harga * qty;
     let laba = (harga - p.modal) * qty;
 
     let trx = load("transaksi");
+
     trx.push({
         id_produk: id,
         nama: p.nama,
@@ -220,52 +257,106 @@ function simpanTransaksi() {
         tanggal: new Date().toLocaleString()
     });
 
-    // update stok
     p.stok -= qty;
     save("produk", produk);
     save("transaksi", trx);
 
     renderProduk();
     renderTransaksi();
-    renderReport();
 }
 
-function renderTransaksi() {
-    let db = load("transaksi");
-    let html = "";
+/* ============================================================
+    EDIT TRANSAKSI
+============================================================ */
+let transaksiIndex = -1;
 
-    db.forEach(t => {
-        html += `
-            <tr>
-                <td>${t.nama}</td>
-                <td>${t.harga}</td>
-                <td>${t.qty}</td>
-                <td>${t.total}</td>
-                <td>${t.laba}</td>
-                <td>${t.tanggal}</td>
-            </tr>
-        `;
-    });
+function editTransaksi(i) {
+    let t = load("transaksi")[i];
+    transaksiIndex = i;
 
-    tabelTransaksi.innerHTML = html;
+    pilih_produk.value = t.id_produk;
+    harga_jual.value = t.harga;
+    qty_jual.value = t.qty;
+
+    // Ganti tombol proses
+    document.querySelector("button[onclick='simpanTransaksi()']").innerText = "Update Transaksi";
+    document.querySelector("button[onclick='simpanTransaksi()']").onclick = updateTransaksi;
 }
 
-/* ================================================================
-   REPORT
-================================================================ */
+function updateTransaksi() {
+    let trx = load("transaksi");
+    let t = trx[transaksiIndex];
+
+    let id = pilih_produk.value;
+    let qty = parseInt(qty_jual.value);
+    let harga = parseInt(harga_jual.value);
+
+    let produk = load("produk");
+    let p = produk.find(x => x.id == id);
+
+    let total = harga * qty;
+    let laba = (harga - p.modal) * qty;
+
+    trx[transaksiIndex] = {
+        id_produk: id,
+        nama: p.nama,
+        harga,
+        qty,
+        total,
+        laba,
+        tanggal: new Date().toLocaleString()
+    };
+
+    save("transaksi", trx);
+    renderTransaksi();
+
+    // Reset tombol
+    document.querySelector("button[onclick='updateTransaksi()']").innerText = "Proses";
+    document.querySelector("button[onclick='updateTransaksi()']").onclick = simpanTransaksi;
+}
+
+/* ============================================================
+    HAPUS TRANSAKSI
+============================================================ */
+function hapusTransaksi(i) {
+    let trx = load("transaksi");
+    trx.splice(i, 1);
+    save("transaksi", trx);
+    renderTransaksi();
+}
+
+/* ============================================================
+    IMPORT EXCEL TRANSAKSI
+============================================================ */
+function importTransaksiExcel() {
+    let file = importTransaksi.files[0];
+    let reader = new FileReader();
+
+    reader.onload = function(e) {
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, { type: "array" });
+        let sheet = workbook.Sheets[workbook.SheetNames[0]];
+        let rows = XLSX.utils.sheet_to_json(sheet);
+
+        save("transaksi", rows);
+        renderTransaksi();
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+/* ============================================================
+    REPORT
+============================================================ */
 function renderReport() {
     let trx = load("transaksi");
-
-    let omzet = trx.reduce((a, b) => a + b.total, 0);
-    let laba = trx.reduce((a, b) => a + b.laba, 0);
-
-    totalOmzet.innerHTML = omzet;
-    totalLaba.innerHTML = laba;
+    totalOmzet.innerHTML = trx.reduce((a, b) => a + b.total, 0);
+    totalLaba.innerHTML = trx.reduce((a, b) => a + b.laba, 0);
 }
 
-/* ================================================================
-   EXPORT EXCEL
-================================================================ */
+/* ============================================================
+    EXPORT EXCEL
+============================================================ */
 function exportExcel() {
     let trx = load("transaksi");
     let ws = XLSX.utils.json_to_sheet(trx);
@@ -274,9 +365,9 @@ function exportExcel() {
     XLSX.writeFile(wb, "laporan_penjualan.xlsx");
 }
 
-/* ================================================================
-   STARTUP
-================================================================ */
+/* ============================================================
+    ONLOAD INIT
+============================================================ */
 renderProduk();
 renderTransaksi();
 renderReport();
