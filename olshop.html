@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Aplikasi Penjualan Lengkap</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        input, select { padding: 5px; margin: 5px; }
+        button { padding: 6px 12px; margin: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #333; padding: 6px; text-align: left; }
+        th { background: #eee; }
+        .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 25px; }
+    </style>
+</head>
+<body>
+
+<h1>Aplikasi Penjualan (HTML + JS + LocalStorage)</h1>
+
+<!-- ------------------------------------------------------ -->
+<!-- MASTER PRODUK CRUD -->
+<!-- ------------------------------------------------------ -->
+<div class="card">
+    <h2>Master Produk</h2>
+
+    <input id="id_produk" placeholder="ID Produk">
+    <input id="nama_produk" placeholder="Nama Produk">
+    <input id="modal_produk" type="number" placeholder="Harga Modal">
+    <input id="harga_produk" type="number" placeholder="Harga Jual">
+    <input id="stok_produk" type="number" placeholder="Stok">
+
+    <button onclick="simpanProduk()">Simpan</button>
+    <button onclick="clearProdukForm()">Clear</button>
+
+    <h3>Daftar Produk</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th><th>Nama</th><th>Modal</th><th>Harga</th><th>Stok</th><th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="tabelProduk"></tbody>
+    </table>
+</div>
+
+<!-- ------------------------------------------------------ -->
+<!-- TRANSAKSI -->
+<!-- ------------------------------------------------------ -->
+<div class="card">
+    <h2>Transaksi Penjualan</h2>
+
+    <select id="pilih_produk" onchange="isiInfoProduk()"></select>
+
+    <input id="harga_jual" type="number" placeholder="Harga">
+    <input id="qty_jual" type="number" placeholder="Qty">
+    <button onclick="simpanTransaksi()">Proses</button>
+
+    <h3>Daftar Transaksi</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Produk</th><th>Harga</th><th>Qty</th><th>Total</th><th>Laba</th><th>Tanggal</th>
+            </tr>
+        </thead>
+        <tbody id="tabelTransaksi"></tbody>
+    </table>
+</div>
+
+<!-- ------------------------------------------------------ -->
+<!-- REPORT -->
+<!-- ------------------------------------------------------ -->
+<div class="card">
+    <h2>Report Penjualan</h2>
+
+    <p><b>Total Omzet:</b> <span id="totalOmzet">0</span></p>
+    <p><b>Total Laba:</b> <span id="totalLaba">0</span></p>
+
+    <button onclick="exportExcel()">Export Laporan ke Excel</button>
+</div>
+
+<script>
+/* ================================================================
+   DATABASE LOCAL
+================================================================ */
+function load(key) {
+    let data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+}
+
+function save(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+}
+
+/* ================================================================
+   MASTER PRODUK (CRUD)
+================================================================ */
+function renderProduk() {
+    let db = load("produk");
+    let html = "";
+
+    db.forEach((p, i) => {
+        html += `
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.nama}</td>
+                <td>${p.modal}</td>
+                <td>${p.harga}</td>
+                <td>${p.stok}</td>
+                <td>
+                    <button onclick="editProduk(${i})">Edit</button>
+                    <button onclick="hapusProduk(${i})">Hapus</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("tabelProduk").innerHTML = html;
+
+    renderDropdownProduk();
+}
+
+function renderDropdownProduk() {
+    let db = load("produk");
+    let html = `<option value="">Pilih Produk...</option>`;
+
+    db.forEach(p => {
+        html += `<option value="${p.id}">${p.nama}</option>`;
+    });
+
+    document.getElementById("pilih_produk").innerHTML = html;
+}
+
+function simpanProduk() {
+    let id = document.getElementById("id_produk").value;
+    let nama = document.getElementById("nama_produk").value;
+    let modal = parseInt(document.getElementById("modal_produk").value);
+    let harga = parseInt(document.getElementById("harga_produk").value);
+    let stok = parseInt(document.getElementById("stok_produk").value);
+
+    if (!id || !nama) return alert("Lengkapi data!");
+
+    let db = load("produk");
+
+    // cek jika sudah ada → update
+    let idx = db.findIndex(p => p.id === id);
+    if (idx >= 0) {
+        db[idx] = { id, nama, modal, harga, stok };
+    } else {
+        db.push({ id, nama, modal, harga, stok });
+    }
+
+    save("produk", db);
+    clearProdukForm();
+    renderProduk();
+}
+
+function editProduk(i) {
+    let p = load("produk")[i];
+
+    document.getElementById("id_produk").value = p.id;
+    document.getElementById("nama_produk").value = p.nama;
+    document.getElementById("modal_produk").value = p.modal;
+    document.getElementById("harga_produk").value = p.harga;
+    document.getElementById("stok_produk").value = p.stok;
+}
+
+function hapusProduk(i) {
+    let db = load("produk");
+    db.splice(i, 1);
+    save("produk", db);
+    renderProduk();
+}
+
+function clearProdukForm() {
+    id_produk.value = "";
+    nama_produk.value = "";
+    modal_produk.value = "";
+    harga_produk.value = "";
+    stok_produk.value = "";
+}
+
+/* ================================================================
+   TRANSAKSI
+================================================================ */
+function isiInfoProduk() {
+    let id = document.getElementById("pilih_produk").value;
+    let db = load("produk");
+    let p = db.find(x => x.id == id);
+    if (!p) return;
+
+    document.getElementById("harga_jual").value = p.harga;
+}
+
+function simpanTransaksi() {
+    let id = pilih_produk.value;
+    let qty = parseInt(qty_jual.value);
+    let harga = parseInt(harga_jual.value);
+
+    if (!id || !qty) return alert("Lengkapi transaksi!");
+
+    let produk = load("produk");
+    let p = produk.find(x => x.id == id);
+
+    if (p.stok < qty) return alert("Stok tidak cukup!");
+
+    let total = harga * qty;
+    let laba = (harga - p.modal) * qty;
+
+    let trx = load("transaksi");
+    trx.push({
+        id_produk: id,
+        nama: p.nama,
+        harga,
+        qty,
+        total,
+        laba,
+        tanggal: new Date().toLocaleString()
+    });
+
+    // update stok
+    p.stok -= qty;
+    save("produk", produk);
+    save("transaksi", trx);
+
+    renderProduk();
+    renderTransaksi();
+    renderReport();
+}
+
+function renderTransaksi() {
+    let db = load("transaksi");
+    let html = "";
+
+    db.forEach(t => {
+        html += `
+            <tr>
+                <td>${t.nama}</td>
+                <td>${t.harga}</td>
+                <td>${t.qty}</td>
+                <td>${t.total}</td>
+                <td>${t.laba}</td>
+                <td>${t.tanggal}</td>
+            </tr>
+        `;
+    });
+
+    tabelTransaksi.innerHTML = html;
+}
+
+/* ================================================================
+   REPORT
+================================================================ */
+function renderReport() {
+    let trx = load("transaksi");
+
+    let omzet = trx.reduce((a, b) => a + b.total, 0);
+    let laba = trx.reduce((a, b) => a + b.laba, 0);
+
+    totalOmzet.innerHTML = omzet;
+    totalLaba.innerHTML = laba;
+}
+
+/* ================================================================
+   EXPORT EXCEL
+================================================================ */
+function exportExcel() {
+    let trx = load("transaksi");
+    let ws = XLSX.utils.json_to_sheet(trx);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Report");
+    XLSX.writeFile(wb, "laporan_penjualan.xlsx");
+}
+
+/* ================================================================
+   STARTUP
+================================================================ */
+renderProduk();
+renderTransaksi();
+renderReport();
+
+</script>
+
+</body>
+</html>
