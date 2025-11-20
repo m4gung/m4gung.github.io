@@ -135,42 +135,44 @@ function clearProdukForm() {
   stok_produk.value = "";
   harga_jual_satuan.value = "";
 }
+
 /* ===========================================================
-   IMPORT PRODUK (EXCEL)
+   IMPORT PRODUK (EXCEL) — Trigger via Button Click
 =========================================================== */
-document.getElementById("importProduk").addEventListener("change", function () {
-  var file = this.files[0];
-  if (!file) return alert("Pilih file Excel produk dulu!");
+document.getElementById("btnImportProduk").onclick = function () {
+  var file = document.getElementById("importProduk").files[0];
+
+  if (!file) {
+    alert("Pilih file Excel produk terlebih dahulu!");
+    return;
+  }
 
   var reader = new FileReader();
 
   reader.onload = function (e) {
-    var data = new Uint8Array(e.target.result);
-    var wb = XLSX.read(data, { type: "array" });
-
+    var wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
     var sheet = wb.Sheets[wb.SheetNames[0]];
     var rows = XLSX.utils.sheet_to_json(sheet);
 
     if (!rows.length) {
-      alert("File Excel kosong atau format tidak sesuai.");
+      alert("File Excel kosong atau format tidak valid.");
       return;
     }
 
     var produk = load("produk");
 
     rows.forEach(r => {
-      var id = String(r.id || "").trim();
-      var nama = String(r.nama || "").trim();
+      var id = (r.id || "").toString().trim();
+      var nama = (r.nama || "").toString().trim();
       var modal_total = parseFloat(r.modal_total) || 0;
       var stok = parseInt(r.stok) || 0;
       var harga_jual = parseFloat(r.harga_jual) || 0;
 
-      if (!id || !nama) return; // skip data rusak
+      if (!id || !nama) return; // skip baris rusak
 
-      // hitung ulang modal per pcs
       var modal_per = stok > 0 ? (modal_total / stok) : 0;
 
-      // cek apakah data sudah ada → replace
+      // cek data sudah ada?
       var idx = produk.findIndex(p => p.id === id);
 
       var obj = {
@@ -182,18 +184,20 @@ document.getElementById("importProduk").addEventListener("change", function () {
         harga_jual: harga_jual
       };
 
-      if (idx >= 0) produk[idx] = obj;
+      if (idx >= 0) produk[idx] = obj; 
       else produk.push(obj);
     });
 
     save("produk", produk);
     renderProduk();
+    renderDropdowns();
 
-    alert("Import produk selesai!");
+    alert("Import Produk selesai!");
   };
 
   reader.readAsArrayBuffer(file);
-});
+};
+
 /* ===========================================================
    EXPORT PRODUK (EXCEL)
 =========================================================== */
@@ -519,32 +523,61 @@ document.getElementById("modalSave").onclick = function () {
 
 
 /* ===========================================================
-   IMPORT TRANSAKSI (EXCEL)
+   IMPORT PRODUK (EXCEL) — FINAL
 =========================================================== */
-document.getElementById("btnImportTransaksi").onclick = function () {
-  var file = importTransaksi.files[0];
-  if (!file) return alert("Pilih file transaksi dulu!");
+document.getElementById("importProduk").addEventListener("change", function () {
+  var file = this.files[0];
+  if (!file) return alert("Pilih file Excel produk dulu!");
 
   var reader = new FileReader();
 
   reader.onload = function (e) {
-    var data = new Uint8Array(e.target.result);
-    var wb = XLSX.read(data, { type: "array" });
+    var wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
     var sheet = wb.Sheets[wb.SheetNames[0]];
     var rows = XLSX.utils.sheet_to_json(sheet);
 
-    var trx = load("transaksi");
+    if (!rows.length) {
+      alert("File Excel tidak berisi data atau format salah.");
+      return;
+    }
 
-    rows.forEach(r => trx.push(r));
+    var produk = load("produk");
 
-    save("transaksi", trx);
-    renderTransaksi();
+    rows.forEach(r => {
+      var id = (r.id || "").toString().trim();
+      var nama = (r.nama || "").toString().trim();
+      var modal_total = parseFloat(r.modal_total) || 0;
+      var stok = parseInt(r.stok) || 0;
+      var harga_jual = parseFloat(r.harga_jual) || 0;
 
-    alert("Import transaksi selesai!");
+      if (!id || !nama) return; // skip baris rusak
+
+      var modal_per = stok > 0 ? (modal_total / stok) : 0;
+
+      var idx = produk.findIndex(p => p.id === id);
+
+      var obj = {
+        id: id,
+        nama: nama,
+        modal_total: modal_total,
+        modal_per_pcs: modal_per,
+        stok: stok,
+        harga_jual: harga_jual
+      };
+
+      if (idx >= 0) produk[idx] = obj;
+      else produk.push(obj);
+    });
+
+    save("produk", produk);
+    renderProduk();
+    renderDropdowns();
+
+    alert("Import Produk selesai!");
   };
 
   reader.readAsArrayBuffer(file);
-};
+});
 
 
 /* ===========================================================
