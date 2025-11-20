@@ -135,8 +135,86 @@ function clearProdukForm() {
   stok_produk.value = "";
   harga_jual_satuan.value = "";
 }
+/* ===========================================================
+   IMPORT PRODUK (EXCEL)
+=========================================================== */
+document.getElementById("importProduk").addEventListener("change", function () {
+  var file = this.files[0];
+  if (!file) return alert("Pilih file Excel produk dulu!");
 
+  var reader = new FileReader();
 
+  reader.onload = function (e) {
+    var data = new Uint8Array(e.target.result);
+    var wb = XLSX.read(data, { type: "array" });
+
+    var sheet = wb.Sheets[wb.SheetNames[0]];
+    var rows = XLSX.utils.sheet_to_json(sheet);
+
+    if (!rows.length) {
+      alert("File Excel kosong atau format tidak sesuai.");
+      return;
+    }
+
+    var produk = load("produk");
+
+    rows.forEach(r => {
+      var id = String(r.id || "").trim();
+      var nama = String(r.nama || "").trim();
+      var modal_total = parseFloat(r.modal_total) || 0;
+      var stok = parseInt(r.stok) || 0;
+      var harga_jual = parseFloat(r.harga_jual) || 0;
+
+      if (!id || !nama) return; // skip data rusak
+
+      // hitung ulang modal per pcs
+      var modal_per = stok > 0 ? (modal_total / stok) : 0;
+
+      // cek apakah data sudah ada → replace
+      var idx = produk.findIndex(p => p.id === id);
+
+      var obj = {
+        id: id,
+        nama: nama,
+        modal_total: modal_total,
+        modal_per_pcs: modal_per,
+        stok: stok,
+        harga_jual: harga_jual
+      };
+
+      if (idx >= 0) produk[idx] = obj;
+      else produk.push(obj);
+    });
+
+    save("produk", produk);
+    renderProduk();
+
+    alert("Import produk selesai!");
+  };
+
+  reader.readAsArrayBuffer(file);
+});
+/* ===========================================================
+   EXPORT PRODUK (EXCEL)
+=========================================================== */
+document.getElementById("btnExportProduk").onclick = function () {
+  var data = load("produk");
+
+  if (!data.length) {
+    alert("Tidak ada data produk untuk diexport!");
+    return;
+  }
+
+  // Buat worksheet dari JSON
+  var ws = XLSX.utils.json_to_sheet(data);
+
+  // Buat workbook baru
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Produk");
+
+  // Export ke file
+  XLSX.writeFile(wb, "Data_Produk.xlsx");
+};
 /* ===========================================================
    DROPDOWN PRODUK (POS + FILTER)
 =========================================================== */
