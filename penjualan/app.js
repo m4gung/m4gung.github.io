@@ -384,6 +384,7 @@ function renderTransaksi() {
   trx.forEach(function (t, i) {
     var tr = document.createElement("tr");
     tr.innerHTML = `
+		  <td>${i+1}</td>
       <td>${t.pembeli}</td>
       <td>${t.nama}</td>
       <td>${formatRupiah(t.harga_modal_per_pcs)}</td>
