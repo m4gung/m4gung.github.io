@@ -395,7 +395,7 @@ function renderTransaksi() {
       <td>${formatRupiah(t.laba)}</td>
       <td>${t.status_pembayaran}</td>
       <td>${t.metode_pembayaran}</td>
-      <td>${t.tanggal}</td>
+      <td>${formatTanggal(t.tanggal)}</td>
       <td>
         <button class="btn btn-sm btn-warning" onclick="openEdit(${i})">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="hapusTransaksi(${i})">Hapus</button>
@@ -691,6 +691,20 @@ function updateChart(arr) {
   });
 }
 
+/* ===========================================================
+   FORMAT TANGGAL DD/MM/YYYY
+=========================================================== */
+function formatTanggal(tgl) {
+  if (!tgl) return "";
+  var d = new Date(tgl);
+  if (isNaN(d)) return tgl;
+
+  var hari = String(d.getDate()).padStart(2, '0');
+  var bulan = String(d.getMonth() + 1).padStart(2, '0');
+  var tahun = d.getFullYear();
+
+  return hari + "/" + bulan + "/" + tahun;
+}
 
 
 /* ===========================================================
