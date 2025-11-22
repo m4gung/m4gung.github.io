@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Pembukuan Usaha Pompanisasi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0 16px 40px 16px;
+      background: #f5f5f5;
+    }
+    header {
+      padding: 16px 0;
+    }
+    h1 {
+      margin: 0;
+    }
+    nav {
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    nav button {
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    nav button.active {
+      background: #007bff;
+      color: #fff;
+      border-color: #007bff;
+    }
+    section {
+      display: none;
+      background: #fff;
+      padding: 12px 16px 16px 16px;
+      border-radius: 4px;
+      box-shadow: 0 0 3px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    section.active {
+      display: block;
+    }
+    form {
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px 16px;
+      align-items: flex-end;
+    }
+    label {
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    input, select, textarea {
+      padding: 4px 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+    textarea {
+      min-height: 40px;
+      resize: vertical;
+    }
+    form button {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    th {
+      background: #eee;
+    }
+    .text-right {
+      text-align: right;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      background: #eee;
+    }
+    .muted {
+      color: #666;
+      font-size: 0.85rem;
+    }
+    .btn-danger {
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .summary-boxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .summary-box {
+      background: #fff;
+      border-radius: 4px;
+      padding: 8px 10px;
+      box-shadow: 0 0 3px rgba(0,0,0,0.1);
+    }
+    .summary-box h3 {
+      margin: 0 0 4px 0;
+      font-size: 1rem;
+    }
+    .summary-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Pembukuan Usaha Pompanisasi</h1>
+  <p class="muted">Pencatatan pembagian hasil petani, penjualan ke pengepul, dan biaya operasional.</p>
+</header>
+
+<nav>
+  <button data-menu="dashboard" class="active">Dashboard</button>
+  <button data-menu="master-petani">Master Petani</button>
+  <button data-menu="master-pengepul">Master Pengepul</button>
+  <button data-menu="transaksi-petani">Transaksi Pembagian Hasil</button>
+  <button data-menu="transaksi-pengepul">Penjualan ke Pengepul</button>
+  <button data-menu="biaya">Biaya Operasional</button>
+  <button data-menu="laporan">Laporan</button>
+  <button data-menu="backup">Backup & Restore</button>
+</nav>
+
+<main>
+  <!-- Dashboard -->
+  <section id="menu-dashboard" class="active">
+    <h2>Dashboard</h2>
+    <div class="summary-boxes">
+      <div class="summary-box">
+        <h3>Total Pemasukan (Penjualan)</h3>
+        <div id="dash-total-pemasukan" class="summary-value">Rp 0</div>
+      </div>
+      <div class="summary-box">
+        <h3>Total Biaya Operasional</h3>
+        <div id="dash-total-biaya" class="summary-value">Rp 0</div>
+      </div>
+      <div class="summary-box">
+        <h3>Laba / Rugi</h3>
+        <div id="dash-laba-rugi" class="summary-value">Rp 0</div>
+      </div>
+      <div class="summary-box">
+        <h3>Total Bagi Hasil untuk Petani</h3>
+        <div id="dash-bagi-petani" class="summary-value">Rp 0</div>
+      </div>
+      <div class="summary-box">
+        <h3>Total Bagi Hasil untuk Usaha</h3>
+        <div id="dash-bagi-usaha" class="summary-value">Rp 0</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:8px;">
+      *Pemasukan utama diambil dari transaksi penjualan ke pengepul. Bagi hasil dari petani dicatat untuk melihat porsi usaha & petani.
+    </p>
+  </section>
+
+  <!-- Master Petani -->
+  <section id="menu-master-petani">
+    <h2>Master Petani</h2>
+    <form id="form-petani">
+      <label>
+        Nama Petani
+        <input type="text" id="petani-nama" required>
+      </label>
+      <label>
+        Catatan
+        <input type="text" id="petani-catatan">
+      </label>
+      <button type="submit">Tambah Petani</button>
+    </form>
+    <table>
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Nama</th>
+        <th>Catatan</th>
+        <th>Aksi</th>
+      </tr>
+      </thead>
+      <tbody id="table-petani-body"></tbody>
+    </table>
+  </section>
+
+  <!-- Master Pengepul -->
+  <section id="menu-master-pengepul">
+    <h2>Master Pengepul</h2>
+    <form id="form-pengepul">
+      <label>
+        Nama Pengepul
+        <input type="text" id="pengepul-nama" required>
+      </label>
+      <label>
+        Catatan
+        <input type="text" id="pengepul-catatan">
+      </label>
+      <button type="submit">Tambah Pengepul</button>
+    </form>
+    <table>
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Nama</th>
+        <th>Catatan</th>
+        <th>Aksi</th>
+      </tr>
+      </thead>
+      <tbody id="table-pengepul-body"></tbody>
+    </table>
+  </section>
+
+  <!-- Transaksi Pembagian Hasil -->
+  <section id="menu-transaksi-petani">
+    <h2>Transaksi Pembagian Hasil dari Petani</h2>
+    <form id="form-transaksi-petani">
+      <label>
+        Tanggal
+        <input type="date" id="tp-tanggal" required>
+      </label>
+      <label>
+        Petani
+        <select id="tp-petani-id" required></select>
+      </label>
+      <label>
+        Volume (misal: kg/ton)
+        <input type="number" step="0.01" id="tp-volume">
+      </label>
+      <label>
+        Bagi Hasil untuk Petani (Rp)
+        <input type="number" step="1" id="tp-bagi-petani">
+      </label>
+      <label>
+        Bagi Hasil untuk Usaha (Rp)
+        <input type="number" step="1" id="tp-bagi-usaha">
+      </label>
+      <label>
+        Keterangan
+        <textarea id="tp-keterangan"></textarea>
+      </label>
+      <button type="submit">Tambah Transaksi</button>
+    </form>
+    <table>
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Tanggal</th>
+        <th>Petani</th>
+        <th>Volume</th>
+        <th>Bagi Petani</th>
+        <th>Bagi Usaha</th>
+        <th>Keterangan</th>
+        <th>Aksi</th>
+      </tr>
+      </thead>
+      <tbody id="table-transaksi-petani-body"></tbody>
+    </table>
+  </section>
+
+  <!-- Transaksi Penjualan ke Pengepul -->
+  <section id="menu-transaksi-pengepul">
+    <h2>Penjualan ke Pengepul</h2>
+    <form id="form-transaksi-pengepul">
+      <label>
+        Tanggal
+        <input type="date" id="tpen-tanggal" required>
+      </label>
+      <label>
+        Pengepul
+        <select id="tpen-pengepul-id" required></select>
+      </label>
+      <label>
+        Volume (misal: kg/ton)
+        <input type="number" step="0.01" id="tpen-volume">
+      </label>
+      <label>
+        Harga per Unit (Rp)
+        <input type="number" step="1" id="tpen-harga">
+      </label>
+      <label>
+        Total (Rp) [otomatis]
+        <input type="number" step="1" id="tpen-total" readonly>
+      </label>
+      <label>
+        Keterangan
+        <textarea id="tpen-keterangan"></textarea>
+      </label>
+      <button type="submit">Tambah Penjualan</button>
+    </form>
+    <table>
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Tanggal</th>
+        <th>Pengepul</th>
+        <th>Volume</th>
+        <th>Harga/Unit</th>
+        <th>Total</th>
+        <th>Keterangan</th>
+        <th>Aksi</th>
+      </tr>
+      </thead>
+      <tbody id="table-transaksi-pengepul-body"></tbody>
+    </table>
+  </section>
+
+  <!-- Biaya Operasional -->
+  <section id="menu-biaya">
+    <h2>Biaya Operasional</h2>
+    <form id="form-biaya">
+      <label>
+        Tanggal
+        <input type="date" id="biaya-tanggal" required>
+      </label>
+      <label>
+        Kategori
+        <select id="biaya-kategori">
+          <option>Solar</option>
+          <option>Listrik Pompa</option>
+          <option>Service</option>
+          <option>Gaji Karyawan</option>
+          <option>Gaji Pelaksana</option>
+          <option>Lain-lain</option>
+        </select>
+      </label>
+      <label>
+        Deskripsi
+        <input type="text" id="biaya-deskripsi">
+      </label>
+      <label>
+        Nominal (Rp)
+        <input type="number" step="1" id="biaya-nominal" required>
+      </label>
+      <button type="submit">Tambah Biaya</button>
+    </form>
+    <table>
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Tanggal</th>
+        <th>Kategori</th>
+        <th>Deskripsi</th>
+        <th>Nominal</th>
+        <th>Aksi</th>
+      </tr>
+      </thead>
+      <tbody id="table-biaya-body"></tbody>
+    </table>
+  </section>
+
+  <!-- Laporan -->
+  <section id="menu-laporan">
+    <h2>Laporan Laba / Rugi</h2>
+    <form id="form-laporan">
+      <label>
+        Periode (Bulan)
+        <input type="month" id="laporan-bulan">
+      </label>
+      <button type="button" id="btn-hitung-laporan">Hitung</button>
+    </form>
+    <div class="summary-boxes">
+      <div class="summary-box">
+        <h3>Pemasukan (Penjualan)</h3>
+        <div id="lap-total-pemasukan" class="summary-value">Rp 0</div>
+      </div>
+      <div class="summary-box">
+        <h3>Biaya Operasional</h3>
+        <div id="lap-total-biaya" class="summary-value">Rp 0</div>
+      </div>
+      <div class="summary-box">
+        <h3>Laba / Rugi</h3>
+        <div id="lap-laba-rugi" class="summary-value">Rp 0</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:8px;">
+      Jika periode kosong, laporan akan menghitung semua data yang ada.
+    </p>
+  </section>
+
+  <!-- Backup & Restore -->
+  <section id="menu-backup">
+    <h2>Backup & Restore Data</h2>
+    <p>
+      <button id="btn-export">Export Data ke JSON</button>
+    </p>
+    <p>
+      Import Data dari JSON:
+      <input type="file" id="input-import" accept="application/json">
+    </p>
+    <p class="muted">
+      Export akan mengunduh file <code>data-pembukuan-pompa.json</code> yang berisi semua master dan transaksi.
+      Import akan menimpa data yang ada, jadi hati-hati.
+    </p>
+  </section>
+</main>
+
+<script>
+  const STORAGE_KEY = 'pembukuan_pompanisasi_data';
+
+  function getDefaultData() {
+    return {
+      petani: [],
+      pengepul: [],
+      transaksiPetani: [],
+      penjualanPengepul: [],
+      biaya: []
+    };
+  }
+
+  let data = loadData();
+
+  function loadData() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return getDefaultData();
+    try {
+      const obj = JSON.parse(raw);
+      return Object.assign(getDefaultData(), obj);
+    } catch (e) {
+      console.error('Gagal parse data, pakai default.', e);
+      return getDefaultData();
+    }
+  }
+
+  function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    updateAllUI();
+  }
+
+  function formatRupiah(num) {
+    if (!num) num = 0;
+    const sign = num < 0 ? '-' : '';
+    num = Math.abs(num);
+    return sign + 'Rp ' + num.toLocaleString('id-ID');
+  }
+
+  function formatDateID(iso) {
+    if (!iso) return '';
+    const parts = iso.split('-');
+    if (parts.length !== 3) return iso;
+    return parts[2] + '/' + parts[1] + '/' + parts[0];
+  }
+
+  function switchMenu(menuName) {
+    document.querySelectorAll('nav button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.menu === menuName);
+    });
+    document.querySelectorAll('main section').forEach(sec => {
+      sec.classList.toggle('active', sec.id === 'menu-' + menuName);
+    });
+  }
+
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchMenu(btn.dataset.menu);
+    });
+  });
+
+  // ====== Master Petani ======
+  document.getElementById('form-petani').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nama = document.getElementById('petani-nama').value.trim();
+    const catatan = document.getElementById('petani-catatan').value.trim();
+    if (!nama) return;
+    data.petani.push({
+      id: Date.now(),
+      nama,
+      catatan
+    });
+    document.getElementById('petani-nama').value = '';
+    document.getElementById('petani-catatan').value = '';
+    saveData();
+  });
+
+  function renderPetani() {
+    const tbody = document.getElementById('table-petani-body');
+    tbody.innerHTML = '';
+    data.petani.forEach((p, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${p.nama}</td>
+        <td>${p.catatan || ''}</td>
+        <td><button class="btn-danger" data-id="${p.id}">Hapus</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        if (!confirm('Hapus petani ini?')) return;
+        data.petani = data.petani.filter(p => p.id !== id);
+        // juga hapus referensi di transaksi
+        data.transaksiPetani = data.transaksiPetani.filter(t => t.petaniId !== id);
+        saveData();
+      });
+    });
+
+    // isi dropdown petani di transaksi
+    const sel = document.getElementById('tp-petani-id');
+    sel.innerHTML = '<option value="">-- Pilih Petani --</option>';
+    data.petani.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.nama;
+      sel.appendChild(opt);
+    });
+  }
+
+  // ====== Master Pengepul ======
+  document.getElementById('form-pengepul').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nama = document.getElementById('pengepul-nama').value.trim();
+    const catatan = document.getElementById('pengepul-catatan').value.trim();
+    if (!nama) return;
+    data.pengepul.push({
+      id: Date.now(),
+      nama,
+      catatan
+    });
+    document.getElementById('pengepul-nama').value = '';
+    document.getElementById('pengepul-catatan').value = '';
+    saveData();
+  });
+
+  function renderPengepul() {
+    const tbody = document.getElementById('table-pengepul-body');
+    tbody.innerHTML = '';
+    data.pengepul.forEach((p, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${p.nama}</td>
+        <td>${p.catatan || ''}</td>
+        <td><button class="btn-danger" data-id="${p.id}">Hapus</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        if (!confirm('Hapus pengepul ini?')) return;
+        data.pengepul = data.pengepul.filter(p => p.id !== id);
+        data.penjualanPengepul = data.penjualanPengepul.filter(t => t.pengepulId !== id);
+        saveData();
+      });
+    });
+
+    // isi dropdown pengepul
+    const sel = document.getElementById('tpen-pengepul-id');
+    sel.innerHTML = '<option value="">-- Pilih Pengepul --</option>';
+    data.pengepul.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.nama;
+      sel.appendChild(opt);
+    });
+  }
+
+  // ====== Transaksi Pembagian Hasil (Petani) ======
+  document.getElementById('form-transaksi-petani').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const tanggal = document.getElementById('tp-tanggal').value;
+    const petaniId = Number(document.getElementById('tp-petani-id').value);
+    const volume = Number(document.getElementById('tp-volume').value || 0);
+    const bagiPetani = Number(document.getElementById('tp-bagi-petani').value || 0);
+    const bagiUsaha = Number(document.getElementById('tp-bagi-usaha').value || 0);
+    const ket = document.getElementById('tp-keterangan').value.trim();
+    if (!tanggal || !petaniId) return;
+    data.transaksiPetani.push({
+      id: Date.now(),
+      tanggal,
+      petaniId,
+      volume,
+      bagiPetani,
+      bagiUsaha,
+      keterangan: ket
+    });
+    document.getElementById('tp-tanggal').value = '';
+    document.getElementById('tp-petani-id').value = '';
+    document.getElementById('tp-volume').value = '';
+    document.getElementById('tp-bagi-petani').value = '';
+    document.getElementById('tp-bagi-usaha').value = '';
+    document.getElementById('tp-keterangan').value = '';
+    saveData();
+  });
+
+  function renderTransaksiPetani() {
+    const tbody = document.getElementById('table-transaksi-petani-body');
+    tbody.innerHTML = '';
+    data.transaksiPetani
+      .sort((a,b) => a.tanggal.localeCompare(b.tanggal))
+      .forEach((t, idx) => {
+        const petani = data.petani.find(p => p.id === t.petaniId);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${formatDateID(t.tanggal)}</td>
+          <td>${petani ? petani.nama : '-'}</td>
+          <td class="text-right">${t.volume}</td>
+          <td class="text-right">${formatRupiah(t.bagiPetani)}</td>
+          <td class="text-right">${formatRupiah(t.bagiUsaha)}</td>
+          <td>${t.keterangan || ''}</td>
+          <td><button class="btn-danger" data-id="${t.id}">Hapus</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        if (!confirm('Hapus transaksi ini?')) return;
+        data.transaksiPetani = data.transaksiPetani.filter(t => t.id !== id);
+        saveData();
+      });
+    });
+  }
+
+  // ====== Transaksi Penjualan ke Pengepul ======
+  // Hitung total otomatis
+  function updatePenjualanTotal() {
+    const volume = Number(document.getElementById('tpen-volume').value || 0);
+    const harga = Number(document.getElementById('tpen-harga').value || 0);
+    document.getElementById('tpen-total').value = volume * harga;
+  }
+  document.getElementById('tpen-volume').addEventListener('input', updatePenjualanTotal);
+  document.getElementById('tpen-harga').addEventListener('input', updatePenjualanTotal);
+
+  document.getElementById('form-transaksi-pengepul').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const tanggal = document.getElementById('tpen-tanggal').value;
+    const pengepulId = Number(document.getElementById('tpen-pengepul-id').value);
+    const volume = Number(document.getElementById('tpen-volume').value || 0);
+    const harga = Number(document.getElementById('tpen-harga').value || 0);
+    const total = Number(document.getElementById('tpen-total').value || (volume * harga));
+    const ket = document.getElementById('tpen-keterangan').value.trim();
+    if (!tanggal || !pengepulId) return;
+    data.penjualanPengepul.push({
+      id: Date.now(),
+      tanggal,
+      pengepulId,
+      volume,
+      harga,
+      total,
+      keterangan: ket
+    });
+    document.getElementById('tpen-tanggal').value = '';
+    document.getElementById('tpen-pengepul-id').value = '';
+    document.getElementById('tpen-volume').value = '';
+    document.getElementById('tpen-harga').value = '';
+    document.getElementById('tpen-total').value = '';
+    document.getElementById('tpen-keterangan').value = '';
+    saveData();
+  });
+
+  function renderPenjualanPengepul() {
+    const tbody = document.getElementById('table-transaksi-pengepul-body');
+    tbody.innerHTML = '';
+    data.penjualanPengepul
+      .sort((a,b) => a.tanggal.localeCompare(b.tanggal))
+      .forEach((t, idx) => {
+        const pengepul = data.pengepul.find(p => p.id === t.pengepulId);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${formatDateID(t.tanggal)}</td>
+          <td>${pengepul ? pengepul.nama : '-'}</td>
+          <td class="text-right">${t.volume}</td>
+          <td class="text-right">${formatRupiah(t.harga)}</td>
+          <td class="text-right">${formatRupiah(t.total)}</td>
+          <td>${t.keterangan || ''}</td>
+          <td><button class="btn-danger" data-id="${t.id}">Hapus</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        if (!confirm('Hapus penjualan ini?')) return;
+        data.penjualanPengepul = data.penjualanPengepul.filter(t => t.id !== id);
+        saveData();
+      });
+    });
+  }
+
+  // ====== Biaya Operasional ======
+  document.getElementById('form-biaya').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const tanggal = document.getElementById('biaya-tanggal').value;
+    const kategori = document.getElementById('biaya-kategori').value;
+    const deskripsi = document.getElementById('biaya-deskripsi').value.trim();
+    const nominal = Number(document.getElementById('biaya-nominal').value || 0);
+    if (!tanggal || !nominal) return;
+    data.biaya.push({
+      id: Date.now(),
+      tanggal,
+      kategori,
+      deskripsi,
+      nominal
+    });
+    document.getElementById('biaya-tanggal').value = '';
+    document.getElementById('biaya-deskripsi').value = '';
+    document.getElementById('biaya-nominal').value = '';
+    saveData();
+  });
+
+  function renderBiaya() {
+    const tbody = document.getElementById('table-biaya-body');
+    tbody.innerHTML = '';
+    data.biaya
+      .sort((a,b) => a.tanggal.localeCompare(b.tanggal))
+      .forEach((b, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${formatDateID(b.tanggal)}</td>
+          <td><span class="badge">${b.kategori}</span></td>
+          <td>${b.deskripsi || ''}</td>
+          <td class="text-right">${formatRupiah(b.nominal)}</td>
+          <td><button class="btn-danger" data-id="${b.id}">Hapus</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        if (!confirm('Hapus biaya ini?')) return;
+        data.biaya = data.biaya.filter(b => b.id !== id);
+        saveData();
+      });
+    });
+  }
+
+  // ====== Dashboard ======
+  function updateDashboard() {
+    const totalPenjualan = data.penjualanPengepul.reduce((sum, t) => sum + (t.total || 0), 0);
+    const totalBiaya = data.biaya.reduce((sum, b) => sum + (b.nominal || 0), 0);
+    const labaRugi = totalPenjualan - totalBiaya;
+    const totalBagiPetani = data.transaksiPetani.reduce((sum, t) => sum + (t.bagiPetani || 0), 0);
+    const totalBagiUsaha = data.transaksiPetani.reduce((sum, t) => sum + (t.bagiUsaha || 0), 0);
+
+    document.getElementById('dash-total-pemasukan').textContent = formatRupiah(totalPenjualan);
+    document.getElementById('dash-total-biaya').textContent = formatRupiah(totalBiaya);
+    document.getElementById('dash-laba-rugi').textContent = formatRupiah(labaRugi);
+    document.getElementById('dash-bagi-petani').textContent = formatRupiah(totalBagiPetani);
+    document.getElementById('dash-bagi-usaha').textContent = formatRupiah(totalBagiUsaha);
+  }
+
+  // ====== Laporan ======
+  function hitungLaporan() {
+    const bulanVal = document.getElementById('laporan-bulan').value; // format yyyy-mm
+    let filterYear = null, filterMonth = null;
+    if (bulanVal) {
+      const parts = bulanVal.split('-');
+      if (parts.length === 2) {
+        filterYear = parts[0];
+        filterMonth = parts[1];
+      }
+    }
+    function matchPeriode(isoDate) {
+      if (!filterYear || !filterMonth) return true; // tanpa filter
+      const [y, m] = isoDate.split('-');
+      return y === filterYear && m === filterMonth;
+    }
+
+    const totalPenjualan = data.penjualanPengepul
+      .filter(t => matchPeriode(t.tanggal))
+      .reduce((sum, t) => sum + (t.total || 0), 0);
+
+    const totalBiaya = data.biaya
+      .filter(b => matchPeriode(b.tanggal))
+      .reduce((sum, b) => sum + (b.nominal || 0), 0);
+
+    const labaRugi = totalPenjualan - totalBiaya;
+
+    document.getElementById('lap-total-pemasukan').textContent = formatRupiah(totalPenjualan);
+    document.getElementById('lap-total-biaya').textContent = formatRupiah(totalBiaya);
+    document.getElementById('lap-laba-rugi').textContent = formatRupiah(labaRugi);
+  }
+
+  document.getElementById('btn-hitung-laporan').addEventListener('click', hitungLaporan);
+
+  // ====== Backup & Restore ======
+  document.getElementById('btn-export').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data-pembukuan-pompa.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('input-import').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!confirm('Import akan menimpa data yang ada. Lanjutkan?')) {
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const imported = JSON.parse(evt.target.result);
+        if (!imported || typeof imported !== 'object') throw new Error('Format tidak sesuai');
+        data = Object.assign(getDefaultData(), imported);
+        saveData();
+        alert('Import berhasil.');
+      } catch (err) {
+        console.error(err);
+        alert('File JSON tidak valid.');
+      } finally {
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // ====== Render All ======
+  function updateAllUI() {
+    renderPetani();
+    renderPengepul();
+    renderTransaksiPetani();
+    renderPenjualanPengepul();
+    renderBiaya();
+    updateDashboard();
+    // laporan tidak otomatis, user klik "Hitung"
+  }
+
+  // Inisialisasi saat halaman load
+  updateAllUI();
+</script>
+</body>
+</html>
