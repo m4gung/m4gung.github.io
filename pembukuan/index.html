@@ -3,422 +3,865 @@
 <head>
   <meta charset="UTF-8">
   <title>Pembukuan Usaha Pompanisasi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0 16px 40px 16px;
-      background: #f5f5f5;
+      background-color: #f5f5f5;
     }
-    header {
-      padding: 16px 0;
+    .app-container {
+      min-height: 100vh;
     }
-    h1 {
-      margin: 0;
+    .sidebar {
+      min-width: 230px;
+      max-width: 230px;
+      background-color: #ffffff;
+      border-right: 1px solid #dee2e6;
     }
-    nav {
-      margin-bottom: 16px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+    .sidebar .nav-link {
+      border-radius: 0.375rem;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
     }
-    nav button {
-      border: 1px solid #ccc;
-      background: #fff;
-      padding: 6px 12px;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    nav button.active {
-      background: #007bff;
+    .sidebar .nav-link.active {
+      background-color: #0d6efd;
       color: #fff;
-      border-color: #007bff;
     }
-    section {
+    .content-area {
+      padding: 1rem 1.5rem;
+    }
+    .section {
       display: none;
-      background: #fff;
-      padding: 12px 16px 16px 16px;
-      border-radius: 4px;
-      box-shadow: 0 0 3px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
     }
-    section.active {
+    .section.active {
       display: block;
     }
-    form {
-      margin-bottom: 12px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 8px 16px;
-      align-items: flex-end;
+    .table-sm td, .table-sm th {
+      padding: 0.3rem 0.4rem;
     }
-    label {
-      font-size: 0.9rem;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    input, select, textarea {
-      padding: 4px 6px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      font-size: 0.9rem;
-    }
-    textarea {
-      min-height: 40px;
-      resize: vertical;
-    }
-    form button {
-      padding: 6px 10px;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 4px 6px;
-      text-align: left;
-    }
-    th {
-      background: #eee;
-    }
-    .text-right {
-      text-align: right;
-    }
-    .badge {
-      display: inline-block;
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      background: #eee;
-    }
-    .muted {
-      color: #666;
+    .text-small {
       font-size: 0.85rem;
     }
-    .btn-danger {
-      background: #dc3545;
+
+    /* Dark mode */
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    body.dark-mode .sidebar {
+      background-color: #1e1e1e;
+      border-color: #333;
+    }
+    body.dark-mode .sidebar .nav-link {
+      color: #e0e0e0;
+    }
+    body.dark-mode .sidebar .nav-link.active {
+      background-color: #0d6efd;
       color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 2px 8px;
-      cursor: pointer;
-      font-size: 0.8rem;
     }
-    .summary-boxes {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 8px;
-      margin-top: 8px;
+    body.dark-mode .card {
+      background-color: #1e1e1e;
+      border-color: #333;
+      color: #e0e0e0;
     }
-    .summary-box {
-      background: #fff;
-      border-radius: 4px;
-      padding: 8px 10px;
-      box-shadow: 0 0 3px rgba(0,0,0,0.1);
+    body.dark-mode .table {
+      color: #e0e0e0;
     }
-    .summary-box h3 {
-      margin: 0 0 4px 0;
-      font-size: 1rem;
+    body.dark-mode .table thead {
+      background-color: #2a2a2a;
     }
-    .summary-value {
-      font-size: 1.1rem;
-      font-weight: bold;
+    body.dark-mode .table-striped>tbody>tr:nth-of-type(odd)>* {
+      --bs-table-accent-bg: #181818;
+      color: #e0e0e0;
+    }
+    body.dark-mode .form-control,
+    body.dark-mode .form-select,
+    body.dark-mode textarea {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+      border-color: #444;
+    }
+    body.dark-mode .form-control:focus,
+    body.dark-mode .form-select:focus,
+    body.dark-mode textarea:focus {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+      border-color: #666;
+    }
+    body.dark-mode .modal-content {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+    body.dark-mode .navbar {
+      background-color: #1e1e1e !important;
+    }
+    body.dark-mode .btn-outline-light {
+      border-color: #e0e0e0;
+      color: #e0e0e0;
     }
   </style>
 </head>
 <body>
-<header>
-  <h1>Pembukuan Usaha Pompanisasi</h1>
-  <p class="muted">Pencatatan pembagian hasil petani, penjualan ke pengepul, dan biaya operasional.</p>
-</header>
-
-<nav>
-  <button data-menu="dashboard" class="active">Dashboard</button>
-  <button data-menu="master-petani">Master Petani</button>
-  <button data-menu="master-pengepul">Master Pengepul</button>
-  <button data-menu="transaksi-petani">Transaksi Pembagian Hasil</button>
-  <button data-menu="transaksi-pengepul">Penjualan ke Pengepul</button>
-  <button data-menu="biaya">Biaya Operasional</button>
-  <button data-menu="laporan">Laporan</button>
-  <button data-menu="backup">Backup & Restore</button>
-</nav>
-
-<main>
-  <!-- Dashboard -->
-  <section id="menu-dashboard" class="active">
-    <h2>Dashboard</h2>
-    <div class="summary-boxes">
-      <div class="summary-box">
-        <h3>Total Pemasukan (Penjualan)</h3>
-        <div id="dash-total-pemasukan" class="summary-value">Rp 0</div>
-      </div>
-      <div class="summary-box">
-        <h3>Total Biaya Operasional</h3>
-        <div id="dash-total-biaya" class="summary-value">Rp 0</div>
-      </div>
-      <div class="summary-box">
-        <h3>Laba / Rugi</h3>
-        <div id="dash-laba-rugi" class="summary-value">Rp 0</div>
-      </div>
-      <div class="summary-box">
-        <h3>Total Bagi Hasil untuk Petani</h3>
-        <div id="dash-bagi-petani" class="summary-value">Rp 0</div>
-      </div>
-      <div class="summary-box">
-        <h3>Total Bagi Hasil untuk Usaha</h3>
-        <div id="dash-bagi-usaha" class="summary-value">Rp 0</div>
-      </div>
+<div class="app-container d-flex">
+  <!-- Sidebar -->
+  <div class="sidebar d-flex flex-column p-3">
+    <div class="d-flex align-items-center mb-3">
+      <i class="bi bi-droplet-half fs-4 me-2"></i>
+      <span class="fw-bold">Pompanisasi</span>
     </div>
-    <p class="muted" style="margin-top:8px;">
-      *Pemasukan utama diambil dari transaksi penjualan ke pengepul. Bagi hasil dari petani dicatat untuk melihat porsi usaha & petani.
-    </p>
-  </section>
-
-  <!-- Master Petani -->
-  <section id="menu-master-petani">
-    <h2>Master Petani</h2>
-    <form id="form-petani">
-      <label>
-        Nama Petani
-        <input type="text" id="petani-nama" required>
-      </label>
-      <label>
-        Catatan
-        <input type="text" id="petani-catatan">
-      </label>
-      <button type="submit">Tambah Petani</button>
-    </form>
-    <table>
-      <thead>
-      <tr>
-        <th>#</th>
-        <th>Nama</th>
-        <th>Catatan</th>
-        <th>Aksi</th>
-      </tr>
-      </thead>
-      <tbody id="table-petani-body"></tbody>
-    </table>
-  </section>
-
-  <!-- Master Pengepul -->
-  <section id="menu-master-pengepul">
-    <h2>Master Pengepul</h2>
-    <form id="form-pengepul">
-      <label>
-        Nama Pengepul
-        <input type="text" id="pengepul-nama" required>
-      </label>
-      <label>
-        Catatan
-        <input type="text" id="pengepul-catatan">
-      </label>
-      <button type="submit">Tambah Pengepul</button>
-    </form>
-    <table>
-      <thead>
-      <tr>
-        <th>#</th>
-        <th>Nama</th>
-        <th>Catatan</th>
-        <th>Aksi</th>
-      </tr>
-      </thead>
-      <tbody id="table-pengepul-body"></tbody>
-    </table>
-  </section>
-
-  <!-- Transaksi Pembagian Hasil -->
-  <section id="menu-transaksi-petani">
-    <h2>Transaksi Pembagian Hasil dari Petani</h2>
-    <form id="form-transaksi-petani">
-      <label>
-        Tanggal
-        <input type="date" id="tp-tanggal" required>
-      </label>
-      <label>
-        Petani
-        <select id="tp-petani-id" required></select>
-      </label>
-      <label>
-        Volume (misal: kg/ton)
-        <input type="number" step="0.01" id="tp-volume">
-      </label>
-      <label>
-        Bagi Hasil untuk Petani (Rp)
-        <input type="number" step="1" id="tp-bagi-petani">
-      </label>
-      <label>
-        Bagi Hasil untuk Usaha (Rp)
-        <input type="number" step="1" id="tp-bagi-usaha">
-      </label>
-      <label>
-        Keterangan
-        <textarea id="tp-keterangan"></textarea>
-      </label>
-      <button type="submit">Tambah Transaksi</button>
-    </form>
-    <table>
-      <thead>
-      <tr>
-        <th>#</th>
-        <th>Tanggal</th>
-        <th>Petani</th>
-        <th>Volume</th>
-        <th>Bagi Petani</th>
-        <th>Bagi Usaha</th>
-        <th>Keterangan</th>
-        <th>Aksi</th>
-      </tr>
-      </thead>
-      <tbody id="table-transaksi-petani-body"></tbody>
-    </table>
-  </section>
-
-  <!-- Transaksi Penjualan ke Pengepul -->
-  <section id="menu-transaksi-pengepul">
-    <h2>Penjualan ke Pengepul</h2>
-    <form id="form-transaksi-pengepul">
-      <label>
-        Tanggal
-        <input type="date" id="tpen-tanggal" required>
-      </label>
-      <label>
-        Pengepul
-        <select id="tpen-pengepul-id" required></select>
-      </label>
-      <label>
-        Volume (misal: kg/ton)
-        <input type="number" step="0.01" id="tpen-volume">
-      </label>
-      <label>
-        Harga per Unit (Rp)
-        <input type="number" step="1" id="tpen-harga">
-      </label>
-      <label>
-        Total (Rp) [otomatis]
-        <input type="number" step="1" id="tpen-total" readonly>
-      </label>
-      <label>
-        Keterangan
-        <textarea id="tpen-keterangan"></textarea>
-      </label>
-      <button type="submit">Tambah Penjualan</button>
-    </form>
-    <table>
-      <thead>
-      <tr>
-        <th>#</th>
-        <th>Tanggal</th>
-        <th>Pengepul</th>
-        <th>Volume</th>
-        <th>Harga/Unit</th>
-        <th>Total</th>
-        <th>Keterangan</th>
-        <th>Aksi</th>
-      </tr>
-      </thead>
-      <tbody id="table-transaksi-pengepul-body"></tbody>
-    </table>
-  </section>
-
-  <!-- Biaya Operasional -->
-  <section id="menu-biaya">
-    <h2>Biaya Operasional</h2>
-    <form id="form-biaya">
-      <label>
-        Tanggal
-        <input type="date" id="biaya-tanggal" required>
-      </label>
-      <label>
-        Kategori
-        <select id="biaya-kategori">
-          <option>Solar</option>
-          <option>Listrik Pompa</option>
-          <option>Service</option>
-          <option>Gaji Karyawan</option>
-          <option>Gaji Pelaksana</option>
-          <option>Lain-lain</option>
-        </select>
-      </label>
-      <label>
-        Deskripsi
-        <input type="text" id="biaya-deskripsi">
-      </label>
-      <label>
-        Nominal (Rp)
-        <input type="number" step="1" id="biaya-nominal" required>
-      </label>
-      <button type="submit">Tambah Biaya</button>
-    </form>
-    <table>
-      <thead>
-      <tr>
-        <th>#</th>
-        <th>Tanggal</th>
-        <th>Kategori</th>
-        <th>Deskripsi</th>
-        <th>Nominal</th>
-        <th>Aksi</th>
-      </tr>
-      </thead>
-      <tbody id="table-biaya-body"></tbody>
-    </table>
-  </section>
-
-  <!-- Laporan -->
-  <section id="menu-laporan">
-    <h2>Laporan Laba / Rugi</h2>
-    <form id="form-laporan">
-      <label>
-        Periode (Bulan)
-        <input type="month" id="laporan-bulan">
-      </label>
-      <button type="button" id="btn-hitung-laporan">Hitung</button>
-    </form>
-    <div class="summary-boxes">
-      <div class="summary-box">
-        <h3>Pemasukan (Penjualan)</h3>
-        <div id="lap-total-pemasukan" class="summary-value">Rp 0</div>
-      </div>
-      <div class="summary-box">
-        <h3>Biaya Operasional</h3>
-        <div id="lap-total-biaya" class="summary-value">Rp 0</div>
-      </div>
-      <div class="summary-box">
-        <h3>Laba / Rugi</h3>
-        <div id="lap-laba-rugi" class="summary-value">Rp 0</div>
-      </div>
+    <hr>
+    <nav class="nav nav-pills flex-column mb-auto" id="side-nav">
+      <a class="nav-link active" href="#" data-section="dashboard">
+        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+      </a>
+      <div class="mt-2 mb-1 text-uppercase text-small text-muted">Master</div>
+      <a class="nav-link" href="#" data-section="master-petani">
+        <i class="bi bi-person-lines-fill me-2"></i>Petani
+      </a>
+      <a class="nav-link" href="#" data-section="master-pengepul">
+        <i class="bi bi-people-fill me-2"></i>Pengepul
+      </a>
+      <div class="mt-3 mb-1 text-uppercase text-small text-muted">Transaksi</div>
+      <a class="nav-link" href="#" data-section="transaksi-petani">
+        <i class="bi bi-diagram-3 me-2"></i>Pembagian Hasil
+      </a>
+      <a class="nav-link" href="#" data-section="transaksi-pengepul">
+        <i class="bi bi-truck me-2"></i>Penjualan Pengepul
+      </a>
+      <a class="nav-link" href="#" data-section="biaya">
+        <i class="bi bi-cash-coin me-2"></i>Biaya Operasional
+      </a>
+      <div class="mt-3 mb-1 text-uppercase text-small text-muted">Laporan & Data</div>
+      <a class="nav-link" href="#" data-section="laporan">
+        <i class="bi bi-clipboard-data me-2"></i>Laporan
+      </a>
+      <a class="nav-link" href="#" data-section="backup">
+        <i class="bi bi-hdd-stack me-2"></i>Backup & Restore
+      </a>
+    </nav>
+    <hr>
+    <div class="mt-auto">
+      <button id="btn-dark-mode" class="btn btn-sm btn-outline-secondary w-100">
+        <i class="bi bi-moon-stars me-1"></i><span>Dark Mode</span>
+      </button>
     </div>
-    <p class="muted" style="margin-top:8px;">
-      Jika periode kosong, laporan akan menghitung semua data yang ada.
-    </p>
-  </section>
+  </div>
 
-  <!-- Backup & Restore -->
-  <section id="menu-backup">
-    <h2>Backup & Restore Data</h2>
-    <p>
-      <button id="btn-export">Export Data ke JSON</button>
-    </p>
-    <p>
-      Import Data dari JSON:
-      <input type="file" id="input-import" accept="application/json">
-    </p>
-    <p class="muted">
-      Export akan mengunduh file <code>data-pembukuan-pompa.json</code> yang berisi semua master dan transaksi.
-      Import akan menimpa data yang ada, jadi hati-hati.
-    </p>
-  </section>
-</main>
+  <!-- Content -->
+  <div class="flex-grow-1 d-flex flex-column">
+    <!-- Top bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h6">
+          Pembukuan Usaha Pompanisasi
+        </span>
+        <span class="text-muted text-small">
+          Pencatatan bagi hasil petani, penjualan ke pengepul, dan biaya operasional
+        </span>
+      </div>
+    </nav>
+
+    <!-- Content area -->
+    <div class="content-area">
+      <!-- Dashboard -->
+      <section id="section-dashboard" class="section active">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="text-muted text-small">Total Pemasukan (Penjualan)</div>
+                    <div id="dash-total-pemasukan" class="fs-5 fw-bold">Rp 0</div>
+                  </div>
+                  <i class="bi bi-graph-up-arrow fs-2 text-success"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="text-muted text-small">Total Biaya Operasional</div>
+                    <div id="dash-total-biaya" class="fs-5 fw-bold">Rp 0</div>
+                  </div>
+                  <i class="bi bi-wallet2 fs-2 text-danger"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="text-muted text-small">Laba / Rugi</div>
+                    <div id="dash-laba-rugi" class="fs-5 fw-bold">Rp 0</div>
+                  </div>
+                  <i class="bi bi-cash-coin fs-2 text-primary"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <div class="text-muted text-small mb-1">Total Hasil Pompa (Karung)</div>
+                <div id="dash-bagi-pompa" class="fs-5 fw-bold">0 Karung</div>
+                <div class="text-small text-muted mt-1">
+                  Akumulasi hasil panen yang menjadi jatah usaha pompa dalam satuan karung.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <div class="text-muted text-small mb-1">Total Hasil Petani (Karung)</div>
+                <div id="dash-bagi-petani" class="fs-5 fw-bold">0 Karung</div>
+                <div class="text-small text-muted mt-1">
+                  Akumulasi hasil panen yang menjadi jatah petani dalam satuan karung.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Master Petani -->
+      <section id="section-master-petani" class="section">
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-semibold"><i class="bi bi-person-plus me-1"></i>Tambah Petani</span>
+          </div>
+          <div class="card-body">
+            <form id="form-petani" class="row g-2">
+              <div class="col-md-4">
+                <label class="form-label text-small">Nama Petani</label>
+                <input type="text" id="petani-nama" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-small">Catatan</label>
+                <input type="text" id="petani-catatan" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                  <i class="bi bi-plus-circle me-1"></i>Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header fw-semibold">
+            Daftar Petani
+          </div>
+          <div class="card-body p-2">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                  <th style="width:40px;">#</th>
+                  <th>Nama</th>
+                  <th>Catatan</th>
+                  <th style="width:140px;">Aksi</th>
+                </tr>
+                </thead>
+                <tbody id="table-petani-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Master Pengepul -->
+      <section id="section-master-pengepul" class="section">
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-semibold"><i class="bi bi-person-plus me-1"></i>Tambah Pengepul</span>
+          </div>
+          <div class="card-body">
+            <form id="form-pengepul" class="row g-2">
+              <div class="col-md-4">
+                <label class="form-label text-small">Nama Pengepul</label>
+                <input type="text" id="pengepul-nama" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-small">Catatan</label>
+                <input type="text" id="pengepul-catatan" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                  <i class="bi bi-plus-circle me-1"></i>Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header fw-semibold">
+            Daftar Pengepul
+          </div>
+          <div class="card-body p-2">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                  <th style="width:40px;">#</th>
+                  <th>Nama</th>
+                  <th>Catatan</th>
+                  <th style="width:140px;">Aksi</th>
+                </tr>
+                </thead>
+                <tbody id="table-pengepul-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transaksi Pembagian Hasil -->
+      <section id="section-transaksi-petani" class="section">
+        <div class="card mb-3">
+          <div class="card-header fw-semibold">
+            Input Transaksi Pembagian Hasil dari Petani
+          </div>
+          <div class="card-body">
+            <form id="form-transaksi-petani" class="row g-2">
+              <div class="col-md-2">
+                <label class="form-label text-small">Tanggal</label>
+                <input type="date" id="tp-tanggal" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label text-small">Petani</label>
+                <select id="tp-petani-id" class="form-select form-select-sm" required></select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-small">Jumlah Karung Panen</label>
+                <input type="number" id="tp-karung" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-small">Jumlah Pupuk</label>
+                <input type="number" id="tp-pupuk" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-small">Hasil Pompa (Karung)</label>
+                <input type="number" id="tp-hasil-pompa" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-small">Hasil Petani (Karung)</label>
+                <input type="number" id="tp-hasil-petani" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-8">
+                <label class="form-label text-small">Keterangan</label>
+                <textarea id="tp-keterangan" class="form-control form-control-sm" rows="1"></textarea>
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                  <i class="bi bi-plus-circle me-1"></i>Simpan Transaksi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header fw-semibold">
+            Daftar Transaksi Pembagian Hasil
+          </div>
+          <div class="card-body p-2">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                  <th style="width:40px;">#</th>
+                  <th>Tanggal</th>
+                  <th>Petani</th>
+                  <th class="text-end">Karung Panen</th>
+                  <th class="text-end">Pupuk</th>
+                  <th class="text-end">Hasil Pompa</th>
+                  <th class="text-end">Hasil Petani</th>
+                  <th>Keterangan</th>
+                  <th style="width:140px;">Aksi</th>
+                </tr>
+                </thead>
+                <tbody id="table-transaksi-petani-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transaksi Penjualan ke Pengepul -->
+      <section id="section-transaksi-pengepul" class="section">
+        <div class="card mb-3">
+          <div class="card-header fw-semibold">
+            Input Penjualan ke Pengepul
+          </div>
+          <div class="card-body">
+            <form id="form-transaksi-pengepul" class="row g-2">
+              <div class="col-md-2">
+                <label class="form-label text-small">Tanggal</label>
+                <input type="date" id="tpen-tanggal" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label text-small">Pengepul</label>
+                <select id="tpen-pengepul-id" class="form-select form-select-sm" required></select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-small">Jumlah Karung</label>
+                <input type="number" id="tpen-karung" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-small">Total Berat (Kg)</label>
+                <input type="number" id="tpen-totalkg" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label text-small">Harga per Kg (Rp)</label>
+                <input type="number" id="tpen-harga-kg" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label text-small">Total Harga (Rp)</label>
+                <input type="number" id="tpen-total-harga" class="form-control form-control-sm" readonly>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label text-small">Status Pembayaran</label>
+                <select id="tpen-status" class="form-select form-select-sm">
+                  <option value="Lunas">Lunas</option>
+                  <option value="Belum Lunas">Belum Lunas</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label text-small">Metode Pembayaran</label>
+                <select id="tpen-metode" class="form-select form-select-sm">
+                  <option value="Tunai">Tunai</option>
+                  <option value="Transfer">Transfer</option>
+                </select>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label text-small">Keterangan</label>
+                <textarea id="tpen-keterangan" class="form-control form-control-sm" rows="1"></textarea>
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                  <i class="bi bi-plus-circle me-1"></i>Simpan Penjualan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header fw-semibold">
+            Daftar Penjualan ke Pengepul
+          </div>
+          <div class="card-body p-2">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                  <th style="width:40px;">#</th>
+                  <th>Tanggal</th>
+                  <th>Pengepul</th>
+                  <th class="text-end">Karung</th>
+                  <th class="text-end">Total Kg</th>
+                  <th class="text-end">Harga/Kg</th>
+                  <th class="text-end">Total Harga</th>
+                  <th>Status</th>
+                  <th>Metode</th>
+                  <th>Keterangan</th>
+                  <th style="width:140px;">Aksi</th>
+                </tr>
+                </thead>
+                <tbody id="table-transaksi-pengepul-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Biaya Operasional -->
+      <section id="section-biaya" class="section">
+        <div class="card mb-3">
+          <div class="card-header fw-semibold">
+            Input Biaya Operasional
+          </div>
+          <div class="card-body">
+            <form id="form-biaya" class="row g-2">
+              <div class="col-md-2">
+                <label class="form-label text-small">Tanggal</label>
+                <input type="date" id="biaya-tanggal" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label text-small">Kategori</label>
+                <select id="biaya-kategori" class="form-select form-select-sm">
+                  <option>Solar</option>
+                  <option>Listrik Pompa</option>
+                  <option>Service</option>
+                  <option>Gaji Karyawan</option>
+                  <option>Gaji Pelaksana</option>
+                  <option>Lain-lain</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label text-small">Deskripsi</label>
+                <input type="text" id="biaya-deskripsi" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-small">Nominal (Rp)</label>
+                <input type="number" id="biaya-nominal" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                  <i class="bi bi-plus-circle"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header fw-semibold">
+            Daftar Biaya Operasional
+          </div>
+          <div class="card-body p-2">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                  <th style="width:40px;">#</th>
+                  <th>Tanggal</th>
+                  <th>Kategori</th>
+                  <th>Deskripsi</th>
+                  <th class="text-end">Nominal</th>
+                  <th style="width:140px;">Aksi</th>
+                </tr>
+                </thead>
+                <tbody id="table-biaya-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Laporan -->
+      <section id="section-laporan" class="section">
+        <div class="card mb-3">
+          <div class="card-header fw-semibold">
+            Laporan Laba / Rugi
+          </div>
+          <div class="card-body">
+            <form id="form-laporan" class="row g-2">
+              <div class="col-md-3">
+                <label class="form-label text-small">Periode (Bulan)</label>
+                <input type="month" id="laporan-bulan" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <button type="button" id="btn-hitung-laporan" class="btn btn-primary btn-sm">
+                  <i class="bi bi-calculator me-1"></i>Hitung Laporan
+                </button>
+              </div>
+              <div class="col-md-6 d-flex align-items-end">
+                <div class="text-small text-muted">
+                  Jika periode kosong, laporan akan menghitung semua data yang ada.
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="text-muted text-small">Pemasukan (Penjualan)</div>
+                <div id="lap-total-pemasukan" class="fs-5 fw-bold">Rp 0</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="text-muted text-small">Biaya Operasional</div>
+                <div id="lap-total-biaya" class="fs-5 fw-bold">Rp 0</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="text-muted text-small">Laba / Rugi</div>
+                <div id="lap-laba-rugi" class="fs-5 fw-bold">Rp 0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Backup & Restore -->
+      <section id="section-backup" class="section">
+        <div class="card mb-3">
+          <div class="card-header fw-semibold">
+            Backup & Restore (JSON)
+          </div>
+          <div class="card-body">
+            <div class="mb-2">
+              <button id="btn-export-json" class="btn btn-sm btn-outline-primary me-2">
+                <i class="bi bi-file-earmark-arrow-down me-1"></i>Export JSON
+              </button>
+            </div>
+            <div class="mb-2">
+              <label class="form-label text-small mb-1">Import JSON (akan menimpa data lama)</label>
+              <input type="file" id="input-import-json" class="form-control form-control-sm" accept="application/json">
+            </div>
+            <div class="text-small text-muted">
+              File JSON berisi semua master dan transaksi (petani, pengepul, pembagian hasil, penjualan, biaya).
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header fw-semibold">
+            Export & Import Excel
+          </div>
+          <div class="card-body">
+            <div class="mb-2">
+              <button id="btn-export-excel" class="btn btn-sm btn-success me-2">
+                <i class="bi bi-file-earmark-excel me-1"></i>Export Excel (.xlsx)
+              </button>
+            </div>
+            <div class="mb-2">
+              <label class="form-label text-small mb-1">Import Excel (.xlsx) dari aplikasi ini</label>
+              <input type="file" id="input-import-excel" class="form-control form-control-sm"
+                     accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+            </div>
+            <div class="text-small text-muted">
+              Format sheet:
+              <code>petani</code>, <code>pengepul</code>, <code>transaksi_petani</code>,
+              <code>penjualan_pengepul</code>, <code>biaya</code>.
+              Import akan menimpa seluruh data jika berhasil dibaca.
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Petani -->
+<div class="modal fade" id="modalEditPetani" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" id="form-edit-petani">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Petani</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-petani-id">
+        <div class="mb-2">
+          <label class="form-label text-small">Nama Petani</label>
+          <input type="text" id="edit-petani-nama" class="form-control form-control-sm" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label text-small">Catatan</label>
+          <input type="text" id="edit-petani-catatan" class="form-control form-control-sm">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-sm btn-primary">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edit Pengepul -->
+<div class="modal fade" id="modalEditPengepul" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" id="form-edit-pengepul">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Pengepul</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-pengepul-id">
+        <div class="mb-2">
+          <label class="form-label text-small">Nama Pengepul</label>
+          <input type="text" id="edit-pengepul-nama" class="form-control form-control-sm" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label text-small">Catatan</label>
+          <input type="text" id="edit-pengepul-catatan" class="form-control form-control-sm">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-sm btn-primary">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edit Transaksi Pembagian Hasil -->
+<div class="modal fade" id="modalEditTransaksiPetani" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <form class="modal-content" id="form-edit-transaksi-petani">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Transaksi Pembagian Hasil</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body row g-2">
+        <input type="hidden" id="edit-tp-id">
+        <div class="col-md-3">
+          <label class="form-label text-small">Tanggal</label>
+          <input type="date" id="edit-tp-tanggal" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label text-small">Petani</label>
+          <select id="edit-tp-petani-id" class="form-select form-select-sm" required></select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label text-small">Karung Panen</label>
+          <input type="number" id="edit-tp-karung" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-small">Jumlah Pupuk</label>
+          <input type="number" id="edit-tp-pupuk" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-small">Hasil Pompa (Karung)</label>
+          <input type="number" id="edit-tp-hasil-pompa" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-small">Hasil Petani (Karung)</label>
+          <input type="number" id="edit-tp-hasil-petani" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-9">
+          <label class="form-label text-small">Keterangan</label>
+          <textarea id="edit-tp-keterangan" class="form-control form-control-sm" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-sm btn-primary">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edit Penjualan ke Pengepul -->
+<div class="modal fade" id="modalEditPenjualanPengepul" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <form class="modal-content" id="form-edit-penjualan-pengepul">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Penjualan ke Pengepul</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body row g-2">
+        <input type="hidden" id="edit-tpen-id">
+        <div class="col-md-3">
+          <label class="form-label text-small">Tanggal</label>
+          <input type="date" id="edit-tpen-tanggal" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label text-small">Pengepul</label>
+          <select id="edit-tpen-pengepul-id" class="form-select form-select-sm" required></select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label text-small">Karung</label>
+          <input type="number" id="edit-tpen-karung" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-small">Total Kg</label>
+          <input type="number" id="edit-tpen-totalkg" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-small">Harga/Kg (Rp)</label>
+          <input type="number" id="edit-tpen-harga-kg" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-small">Total Harga (Rp)</label>
+          <input type="number" id="edit-tpen-total-harga" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-small">Status Pembayaran</label>
+          <select id="edit-tpen-status" class="form-select form-select-sm">
+            <option value="Lunas">Lunas</option>
+            <option value="Belum Lunas">Belum Lunas</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-small">Metode</label>
+          <select id="edit-tpen-metode" class="form-select form-select-sm">
+            <option value="Tunai">Tunai</option>
+            <option value="Transfer">Transfer</option>
+          </select>
+        </div>
+        <div class="col-md-9">
+          <label class="form-label text-small">Keterangan</label>
+          <textarea id="edit-tpen-keterangan" class="form-control form-control-sm" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-sm btn-primary">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edit Biaya -->
+<div class="modal fade" id="modalEditBiaya" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <form class="modal-content" id="form-edit-biaya">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Biaya Operasional</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body row g-2">
+        <input type="hidden" id="edit-biaya-id">
+        <div class="col-md-3">
+          <label class="form-label text-small">Tanggal</label>
+          <input type="date" id="edit-biaya-tanggal" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-small">Kategori</label>
+          <select id="edit-biaya-kategori" class="form-select form-select-sm">
+            <option>Solar</option>
+            <option>Listrik Pompa</option>
+            <option>Service</option>
+            <option>Gaji Karyawan</option>
+            <option>Gaji Pelaksana</option>
+            <option>Lain-lain</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label text-small">Deskripsi</label>
+          <input type="text" id="edit-biaya-deskripsi" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label text-small">Nominal (Rp)</label>
+          <input type="number" id="edit-biaya-nominal" class="form-control form-control-sm" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-sm btn-primary">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  const STORAGE_KEY = 'pembukuan_pompanisasi_data';
+  const STORAGE_KEY = 'pembukuan_pompanisasi_data_v3';
+  const DARK_MODE_KEY = 'pembukuan_pompanisasi_dark_mode';
 
   function getDefaultData() {
     return {
@@ -463,32 +906,49 @@
     return parts[2] + '/' + parts[1] + '/' + parts[0];
   }
 
-  function switchMenu(menuName) {
-    document.querySelectorAll('nav button').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.menu === menuName);
-    });
-    document.querySelectorAll('main section').forEach(sec => {
-      sec.classList.toggle('active', sec.id === 'menu-' + menuName);
-    });
-  }
-
-  document.querySelectorAll('nav button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      switchMenu(btn.dataset.menu);
+  // Navigation
+  document.querySelectorAll('#side-nav .nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = link.dataset.section;
+      document.querySelectorAll('#side-nav .nav-link').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      const sec = document.getElementById('section-' + target);
+      if (sec) sec.classList.add('active');
     });
   });
 
-  // ====== Master Petani ======
+  // Dark mode
+  function applyDarkModeFromStorage() {
+    const val = localStorage.getItem(DARK_MODE_KEY);
+    const isDark = val === '1';
+    document.body.classList.toggle('dark-mode', isDark);
+    const btn = document.getElementById('btn-dark-mode');
+    if (btn) {
+      const span = btn.querySelector('span');
+      if (span) span.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+      btn.classList.toggle('btn-outline-light', isDark);
+      btn.classList.toggle('btn-outline-secondary', !isDark);
+    }
+  }
+
+  document.getElementById('btn-dark-mode').addEventListener('click', () => {
+    const isDark = !document.body.classList.contains('dark-mode');
+    document.body.classList.toggle('dark-mode', isDark);
+    localStorage.setItem(DARK_MODE_KEY, isDark ? '1' : '0');
+    applyDarkModeFromStorage();
+  });
+
+  applyDarkModeFromStorage();
+
+  // Master Petani
   document.getElementById('form-petani').addEventListener('submit', (e) => {
     e.preventDefault();
     const nama = document.getElementById('petani-nama').value.trim();
     const catatan = document.getElementById('petani-catatan').value.trim();
     if (!nama) return;
-    data.petani.push({
-      id: Date.now(),
-      nama,
-      catatan
-    });
+    data.petani.push({ id: Date.now(), nama, catatan });
     document.getElementById('petani-nama').value = '';
     document.getElementById('petani-catatan').value = '';
     saveData();
@@ -503,43 +963,79 @@
         <td>${idx + 1}</td>
         <td>${p.nama}</td>
         <td>${p.catatan || ''}</td>
-        <td><button class="btn-danger" data-id="${p.id}">Hapus</button></td>
+        <td>
+          <button class="btn btn-sm btn-outline-secondary btn-edit-petani me-1" data-id="${p.id}">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger btn-del-petani" data-id="${p.id}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
-    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+
+    tbody.querySelectorAll('.btn-del-petani').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = Number(btn.dataset.id);
-        if (!confirm('Hapus petani ini?')) return;
+        if (!confirm('Hapus petani ini? Transaksi yang terkait juga akan dihapus.')) return;
         data.petani = data.petani.filter(p => p.id !== id);
-        // juga hapus referensi di transaksi
         data.transaksiPetani = data.transaksiPetani.filter(t => t.petaniId !== id);
         saveData();
       });
     });
 
-    // isi dropdown petani di transaksi
-    const sel = document.getElementById('tp-petani-id');
-    sel.innerHTML = '<option value="">-- Pilih Petani --</option>';
+    tbody.querySelectorAll('.btn-edit-petani').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        const p = data.petani.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('edit-petani-id').value = p.id;
+        document.getElementById('edit-petani-nama').value = p.nama;
+        document.getElementById('edit-petani-catatan').value = p.catatan || '';
+        const modal = new bootstrap.Modal(document.getElementById('modalEditPetani'));
+        modal.show();
+      });
+    });
+
+    // Dropdown petani (add & edit transaksi)
+    const selAdd = document.getElementById('tp-petani-id');
+    const selEdit = document.getElementById('edit-tp-petani-id');
+    selAdd.innerHTML = '<option value="">-- Pilih Petani --</option>';
+    selEdit.innerHTML = '<option value="">-- Pilih Petani --</option>';
     data.petani.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.textContent = p.nama;
-      sel.appendChild(opt);
+      const opt1 = document.createElement('option');
+      opt1.value = p.id;
+      opt1.textContent = p.nama;
+      selAdd.appendChild(opt1);
+      const opt2 = document.createElement('option');
+      opt2.value = p.id;
+      opt2.textContent = p.nama;
+      selEdit.appendChild(opt2);
     });
   }
 
-  // ====== Master Pengepul ======
+  document.getElementById('form-edit-petani').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = Number(document.getElementById('edit-petani-id').value);
+    const nama = document.getElementById('edit-petani-nama').value.trim();
+    const catatan = document.getElementById('edit-petani-catatan').value.trim();
+    const idx = data.petani.findIndex(p => p.id === id);
+    if (idx >= 0) {
+      data.petani[idx].nama = nama;
+      data.petani[idx].catatan = catatan;
+      saveData();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditPetani')).hide();
+    }
+  });
+
+  // Master Pengepul
   document.getElementById('form-pengepul').addEventListener('submit', (e) => {
     e.preventDefault();
     const nama = document.getElementById('pengepul-nama').value.trim();
     const catatan = document.getElementById('pengepul-catatan').value.trim();
     if (!nama) return;
-    data.pengepul.push({
-      id: Date.now(),
-      nama,
-      catatan
-    });
+    data.pengepul.push({ id: Date.now(), nama, catatan });
     document.getElementById('pengepul-nama').value = '';
     document.getElementById('pengepul-catatan').value = '';
     saveData();
@@ -554,55 +1050,99 @@
         <td>${idx + 1}</td>
         <td>${p.nama}</td>
         <td>${p.catatan || ''}</td>
-        <td><button class="btn-danger" data-id="${p.id}">Hapus</button></td>
+        <td>
+          <button class="btn btn-sm btn-outline-secondary btn-edit-pengepul me-1" data-id="${p.id}">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger btn-del-pengepul" data-id="${p.id}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
-    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+
+    tbody.querySelectorAll('.btn-del-pengepul').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = Number(btn.dataset.id);
-        if (!confirm('Hapus pengepul ini?')) return;
+        if (!confirm('Hapus pengepul ini? Penjualan yang terkait juga akan dihapus.')) return;
         data.pengepul = data.pengepul.filter(p => p.id !== id);
         data.penjualanPengepul = data.penjualanPengepul.filter(t => t.pengepulId !== id);
         saveData();
       });
     });
 
-    // isi dropdown pengepul
-    const sel = document.getElementById('tpen-pengepul-id');
-    sel.innerHTML = '<option value="">-- Pilih Pengepul --</option>';
+    tbody.querySelectorAll('.btn-edit-pengepul').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        const p = data.pengepul.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('edit-pengepul-id').value = p.id;
+        document.getElementById('edit-pengepul-nama').value = p.nama;
+        document.getElementById('edit-pengepul-catatan').value = p.catatan || '';
+        const modal = new bootstrap.Modal(document.getElementById('modalEditPengepul'));
+        modal.show();
+      });
+    });
+
+    // Dropdown pengepul (add & edit penjualan)
+    const selAdd = document.getElementById('tpen-pengepul-id');
+    const selEdit = document.getElementById('edit-tpen-pengepul-id');
+    selAdd.innerHTML = '<option value="">-- Pilih Pengepul --</option>';
+    selEdit.innerHTML = '<option value="">-- Pilih Pengepul --</option>';
     data.pengepul.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.textContent = p.nama;
-      sel.appendChild(opt);
+      const opt1 = document.createElement('option');
+      opt1.value = p.id;
+      opt1.textContent = p.nama;
+      selAdd.appendChild(opt1);
+      const opt2 = document.createElement('option');
+      opt2.value = p.id;
+      opt2.textContent = p.nama;
+      selEdit.appendChild(opt2);
     });
   }
 
-  // ====== Transaksi Pembagian Hasil (Petani) ======
+  document.getElementById('form-edit-pengepul').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = Number(document.getElementById('edit-pengepul-id').value);
+    const nama = document.getElementById('edit-pengepul-nama').value.trim();
+    const catatan = document.getElementById('edit-pengepul-catatan').value.trim();
+    const idx = data.pengepul.findIndex(p => p.id === id);
+    if (idx >= 0) {
+      data.pengepul[idx].nama = nama;
+      data.pengepul[idx].catatan = catatan;
+      saveData();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditPengepul')).hide();
+    }
+  });
+
+  // Transaksi Pembagian Hasil
   document.getElementById('form-transaksi-petani').addEventListener('submit', (e) => {
     e.preventDefault();
     const tanggal = document.getElementById('tp-tanggal').value;
     const petaniId = Number(document.getElementById('tp-petani-id').value);
-    const volume = Number(document.getElementById('tp-volume').value || 0);
-    const bagiPetani = Number(document.getElementById('tp-bagi-petani').value || 0);
-    const bagiUsaha = Number(document.getElementById('tp-bagi-usaha').value || 0);
+    const jumlahKarungPanen = Number(document.getElementById('tp-karung').value || 0);
+    const jumlahPupuk = Number(document.getElementById('tp-pupuk').value || 0);
+    const hasilPompaKarung = Number(document.getElementById('tp-hasil-pompa').value || 0);
+    const hasilPetaniKarung = Number(document.getElementById('tp-hasil-petani').value || 0);
     const ket = document.getElementById('tp-keterangan').value.trim();
     if (!tanggal || !petaniId) return;
     data.transaksiPetani.push({
       id: Date.now(),
       tanggal,
       petaniId,
-      volume,
-      bagiPetani,
-      bagiUsaha,
+      jumlahKarungPanen,
+      jumlahPupuk,
+      hasilPompaKarung,
+      hasilPetaniKarung,
       keterangan: ket
     });
     document.getElementById('tp-tanggal').value = '';
     document.getElementById('tp-petani-id').value = '';
-    document.getElementById('tp-volume').value = '';
-    document.getElementById('tp-bagi-petani').value = '';
-    document.getElementById('tp-bagi-usaha').value = '';
+    document.getElementById('tp-karung').value = '';
+    document.getElementById('tp-pupuk').value = '';
+    document.getElementById('tp-hasil-pompa').value = '';
+    document.getElementById('tp-hasil-petani').value = '';
     document.getElementById('tp-keterangan').value = '';
     saveData();
   });
@@ -611,6 +1151,7 @@
     const tbody = document.getElementById('table-transaksi-petani-body');
     tbody.innerHTML = '';
     data.transaksiPetani
+      .slice()
       .sort((a,b) => a.tanggal.localeCompare(b.tanggal))
       .forEach((t, idx) => {
         const petani = data.petani.find(p => p.id === t.petaniId);
@@ -619,57 +1160,119 @@
           <td>${idx + 1}</td>
           <td>${formatDateID(t.tanggal)}</td>
           <td>${petani ? petani.nama : '-'}</td>
-          <td class="text-right">${t.volume}</td>
-          <td class="text-right">${formatRupiah(t.bagiPetani)}</td>
-          <td class="text-right">${formatRupiah(t.bagiUsaha)}</td>
+          <td class="text-end">${t.jumlahKarungPanen}</td>
+          <td class="text-end">${t.jumlahPupuk}</td>
+          <td class="text-end">${t.hasilPompaKarung}</td>
+          <td class="text-end">${t.hasilPetaniKarung}</td>
           <td>${t.keterangan || ''}</td>
-          <td><button class="btn-danger" data-id="${t.id}">Hapus</button></td>
+          <td>
+            <button class="btn btn-sm btn-outline-secondary btn-edit-tp me-1" data-id="${t.id}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger btn-del-tp" data-id="${t.id}">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
-    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+
+    tbody.querySelectorAll('.btn-del-tp').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = Number(btn.dataset.id);
-        if (!confirm('Hapus transaksi ini?')) return;
+        if (!confirm('Hapus transaksi pembagian hasil ini?')) return;
         data.transaksiPetani = data.transaksiPetani.filter(t => t.id !== id);
         saveData();
       });
     });
+
+    tbody.querySelectorAll('.btn-edit-tp').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        const t = data.transaksiPetani.find(x => x.id === id);
+        if (!t) return;
+        document.getElementById('edit-tp-id').value = t.id;
+        document.getElementById('edit-tp-tanggal').value = t.tanggal;
+        document.getElementById('edit-tp-petani-id').value = t.petaniId;
+        document.getElementById('edit-tp-karung').value = t.jumlahKarungPanen;
+        document.getElementById('edit-tp-pupuk').value = t.jumlahPupuk;
+        document.getElementById('edit-tp-hasil-pompa').value = t.hasilPompaKarung;
+        document.getElementById('edit-tp-hasil-petani').value = t.hasilPetaniKarung;
+        document.getElementById('edit-tp-keterangan').value = t.keterangan || '';
+        const modal = new bootstrap.Modal(document.getElementById('modalEditTransaksiPetani'));
+        modal.show();
+      });
+    });
   }
 
-  // ====== Transaksi Penjualan ke Pengepul ======
-  // Hitung total otomatis
-  function updatePenjualanTotal() {
-    const volume = Number(document.getElementById('tpen-volume').value || 0);
-    const harga = Number(document.getElementById('tpen-harga').value || 0);
-    document.getElementById('tpen-total').value = volume * harga;
+  document.getElementById('form-edit-transaksi-petani').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = Number(document.getElementById('edit-tp-id').value);
+    const tanggal = document.getElementById('edit-tp-tanggal').value;
+    const petaniId = Number(document.getElementById('edit-tp-petani-id').value);
+    const jumlahKarungPanen = Number(document.getElementById('edit-tp-karung').value || 0);
+    const jumlahPupuk = Number(document.getElementById('edit-tp-pupuk').value || 0);
+    const hasilPompaKarung = Number(document.getElementById('edit-tp-hasil-pompa').value || 0);
+    const hasilPetaniKarung = Number(document.getElementById('edit-tp-hasil-petani').value || 0);
+    const ket = document.getElementById('edit-tp-keterangan').value.trim();
+    const idx = data.transaksiPetani.findIndex(t => t.id === id);
+    if (idx >= 0) {
+      data.transaksiPetani[idx] = {
+        id,
+        tanggal,
+        petaniId,
+        jumlahKarungPanen,
+        jumlahPupuk,
+        hasilPompaKarung,
+        hasilPetaniKarung,
+        keterangan: ket
+      };
+      saveData();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditTransaksiPetani')).hide();
+    }
+  });
+
+  // Penjualan ke Pengepul
+  function updatePenjualanTotalInput() {
+    const totalKg = Number(document.getElementById('tpen-totalkg').value || 0);
+    const hargaPerKg = Number(document.getElementById('tpen-harga-kg').value || 0);
+    document.getElementById('tpen-total-harga').value = totalKg * hargaPerKg;
   }
-  document.getElementById('tpen-volume').addEventListener('input', updatePenjualanTotal);
-  document.getElementById('tpen-harga').addEventListener('input', updatePenjualanTotal);
+  document.getElementById('tpen-totalkg').addEventListener('input', updatePenjualanTotalInput);
+  document.getElementById('tpen-harga-kg').addEventListener('input', updatePenjualanTotalInput);
 
   document.getElementById('form-transaksi-pengepul').addEventListener('submit', (e) => {
     e.preventDefault();
     const tanggal = document.getElementById('tpen-tanggal').value;
     const pengepulId = Number(document.getElementById('tpen-pengepul-id').value);
-    const volume = Number(document.getElementById('tpen-volume').value || 0);
-    const harga = Number(document.getElementById('tpen-harga').value || 0);
-    const total = Number(document.getElementById('tpen-total').value || (volume * harga));
-    const ket = document.getElementById('tpen-keterangan').value.trim();
+    const jumlahKarung = Number(document.getElementById('tpen-karung').value || 0);
+    const totalKg = Number(document.getElementById('tpen-totalkg').value || 0);
+    const hargaPerKg = Number(document.getElementById('tpen-harga-kg').value || 0);
+    const totalHarga = Number(document.getElementById('tpen-total-harga').value || (totalKg * hargaPerKg));
+    const statusPembayaran = document.getElementById('tpen-status').value || 'Lunas';
+    const metodePembayaran = document.getElementById('tpen-metode').value || 'Tunai';
+    const keterangan = document.getElementById('tpen-keterangan').value.trim();
     if (!tanggal || !pengepulId) return;
     data.penjualanPengepul.push({
       id: Date.now(),
       tanggal,
       pengepulId,
-      volume,
-      harga,
-      total,
-      keterangan: ket
+      jumlahKarung,
+      totalKg,
+      hargaPerKg,
+      totalHarga,
+      statusPembayaran,
+      metodePembayaran,
+      keterangan
     });
     document.getElementById('tpen-tanggal').value = '';
     document.getElementById('tpen-pengepul-id').value = '';
-    document.getElementById('tpen-volume').value = '';
-    document.getElementById('tpen-harga').value = '';
-    document.getElementById('tpen-total').value = '';
+    document.getElementById('tpen-karung').value = '';
+    document.getElementById('tpen-totalkg').value = '';
+    document.getElementById('tpen-harga-kg').value = '';
+    document.getElementById('tpen-total-harga').value = '';
+    document.getElementById('tpen-status').value = 'Lunas';
+    document.getElementById('tpen-metode').value = 'Tunai';
     document.getElementById('tpen-keterangan').value = '';
     saveData();
   });
@@ -678,6 +1281,7 @@
     const tbody = document.getElementById('table-transaksi-pengepul-body');
     tbody.innerHTML = '';
     data.penjualanPengepul
+      .slice()
       .sort((a,b) => a.tanggal.localeCompare(b.tanggal))
       .forEach((t, idx) => {
         const pengepul = data.pengepul.find(p => p.id === t.pengepulId);
@@ -686,25 +1290,87 @@
           <td>${idx + 1}</td>
           <td>${formatDateID(t.tanggal)}</td>
           <td>${pengepul ? pengepul.nama : '-'}</td>
-          <td class="text-right">${t.volume}</td>
-          <td class="text-right">${formatRupiah(t.harga)}</td>
-          <td class="text-right">${formatRupiah(t.total)}</td>
+          <td class="text-end">${t.jumlahKarung}</td>
+          <td class="text-end">${t.totalKg}</td>
+          <td class="text-end">${formatRupiah(t.hargaPerKg)}</td>
+          <td class="text-end">${formatRupiah(t.totalHarga)}</td>
+          <td>${t.statusPembayaran}</td>
+          <td>${t.metodePembayaran}</td>
           <td>${t.keterangan || ''}</td>
-          <td><button class="btn-danger" data-id="${t.id}">Hapus</button></td>
+          <td>
+            <button class="btn btn-sm btn-outline-secondary btn-edit-tpen me-1" data-id="${t.id}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger btn-del-tpen" data-id="${t.id}">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
-    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+
+    tbody.querySelectorAll('.btn-del-tpen').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = Number(btn.dataset.id);
-        if (!confirm('Hapus penjualan ini?')) return;
+        if (!confirm('Hapus penjualan ke pengepul ini?')) return;
         data.penjualanPengepul = data.penjualanPengepul.filter(t => t.id !== id);
         saveData();
       });
     });
+
+    tbody.querySelectorAll('.btn-edit-tpen').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        const t = data.penjualanPengepul.find(x => x.id === id);
+        if (!t) return;
+        document.getElementById('edit-tpen-id').value = t.id;
+        document.getElementById('edit-tpen-tanggal').value = t.tanggal;
+        document.getElementById('edit-tpen-pengepul-id').value = t.pengepulId;
+        document.getElementById('edit-tpen-karung').value = t.jumlahKarung;
+        document.getElementById('edit-tpen-totalkg').value = t.totalKg;
+        document.getElementById('edit-tpen-harga-kg').value = t.hargaPerKg;
+        document.getElementById('edit-tpen-total-harga').value = t.totalHarga;
+        document.getElementById('edit-tpen-status').value = t.statusPembayaran || 'Lunas';
+        document.getElementById('edit-tpen-metode').value = t.metodePembayaran || 'Tunai';
+        document.getElementById('edit-tpen-keterangan').value = t.keterangan || '';
+        const modal = new bootstrap.Modal(document.getElementById('modalEditPenjualanPengepul'));
+        modal.show();
+      });
+    });
   }
 
-  // ====== Biaya Operasional ======
+  document.getElementById('form-edit-penjualan-pengepul').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = Number(document.getElementById('edit-tpen-id').value);
+    const tanggal = document.getElementById('edit-tpen-tanggal').value;
+    const pengepulId = Number(document.getElementById('edit-tpen-pengepul-id').value);
+    const jumlahKarung = Number(document.getElementById('edit-tpen-karung').value || 0);
+    const totalKg = Number(document.getElementById('edit-tpen-totalkg').value || 0);
+    const hargaPerKg = Number(document.getElementById('edit-tpen-harga-kg').value || 0);
+    const totalHarga = Number(document.getElementById('edit-tpen-total-harga').value || (totalKg * hargaPerKg));
+    const statusPembayaran = document.getElementById('edit-tpen-status').value || 'Lunas';
+    const metodePembayaran = document.getElementById('edit-tpen-metode').value || 'Tunai';
+    const keterangan = document.getElementById('edit-tpen-keterangan').value.trim();
+    const idx = data.penjualanPengepul.findIndex(t => t.id === id);
+    if (idx >= 0) {
+      data.penjualanPengepul[idx] = {
+        id,
+        tanggal,
+        pengepulId,
+        jumlahKarung,
+        totalKg,
+        hargaPerKg,
+        totalHarga,
+        statusPembayaran,
+        metodePembayaran,
+        keterangan
+      };
+      saveData();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditPenjualanPengepul')).hide();
+    }
+  });
+
+  // Biaya
   document.getElementById('form-biaya').addEventListener('submit', (e) => {
     e.preventDefault();
     const tanggal = document.getElementById('biaya-tanggal').value;
@@ -729,20 +1395,29 @@
     const tbody = document.getElementById('table-biaya-body');
     tbody.innerHTML = '';
     data.biaya
+      .slice()
       .sort((a,b) => a.tanggal.localeCompare(b.tanggal))
       .forEach((b, idx) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${idx + 1}</td>
           <td>${formatDateID(b.tanggal)}</td>
-          <td><span class="badge">${b.kategori}</span></td>
+          <td>${b.kategori}</td>
           <td>${b.deskripsi || ''}</td>
-          <td class="text-right">${formatRupiah(b.nominal)}</td>
-          <td><button class="btn-danger" data-id="${b.id}">Hapus</button></td>
+          <td class="text-end">${formatRupiah(b.nominal)}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-secondary btn-edit-biaya me-1" data-id="${b.id}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger btn-del-biaya" data-id="${b.id}">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
-    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+
+    tbody.querySelectorAll('.btn-del-biaya').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = Number(btn.dataset.id);
         if (!confirm('Hapus biaya ini?')) return;
@@ -750,26 +1425,56 @@
         saveData();
       });
     });
+
+    tbody.querySelectorAll('.btn-edit-biaya').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        const b = data.biaya.find(x => x.id === id);
+        if (!b) return;
+        document.getElementById('edit-biaya-id').value = b.id;
+        document.getElementById('edit-biaya-tanggal').value = b.tanggal;
+        document.getElementById('edit-biaya-kategori').value = b.kategori;
+        document.getElementById('edit-biaya-deskripsi').value = b.deskripsi || '';
+        document.getElementById('edit-biaya-nominal').value = b.nominal;
+        const modal = new bootstrap.Modal(document.getElementById('modalEditBiaya'));
+        modal.show();
+      });
+    });
   }
 
-  // ====== Dashboard ======
+  document.getElementById('form-edit-biaya').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = Number(document.getElementById('edit-biaya-id').value);
+    const tanggal = document.getElementById('edit-biaya-tanggal').value;
+    const kategori = document.getElementById('edit-biaya-kategori').value;
+    const deskripsi = document.getElementById('edit-biaya-deskripsi').value.trim();
+    const nominal = Number(document.getElementById('edit-biaya-nominal').value || 0);
+    const idx = data.biaya.findIndex(b => b.id === id);
+    if (idx >= 0) {
+      data.biaya[idx] = { id, tanggal, kategori, deskripsi, nominal };
+      saveData();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditBiaya')).hide();
+    }
+  });
+
+  // Dashboard
   function updateDashboard() {
-    const totalPenjualan = data.penjualanPengepul.reduce((sum, t) => sum + (t.total || 0), 0);
+    const totalPenjualan = data.penjualanPengepul.reduce((sum, t) => sum + (t.totalHarga || 0), 0);
     const totalBiaya = data.biaya.reduce((sum, b) => sum + (b.nominal || 0), 0);
     const labaRugi = totalPenjualan - totalBiaya;
-    const totalBagiPetani = data.transaksiPetani.reduce((sum, t) => sum + (t.bagiPetani || 0), 0);
-    const totalBagiUsaha = data.transaksiPetani.reduce((sum, t) => sum + (t.bagiUsaha || 0), 0);
+    const totalPompaKarung = data.transaksiPetani.reduce((sum, t) => sum + (t.hasilPompaKarung || 0), 0);
+    const totalPetaniKarung = data.transaksiPetani.reduce((sum, t) => sum + (t.hasilPetaniKarung || 0), 0);
 
     document.getElementById('dash-total-pemasukan').textContent = formatRupiah(totalPenjualan);
     document.getElementById('dash-total-biaya').textContent = formatRupiah(totalBiaya);
     document.getElementById('dash-laba-rugi').textContent = formatRupiah(labaRugi);
-    document.getElementById('dash-bagi-petani').textContent = formatRupiah(totalBagiPetani);
-    document.getElementById('dash-bagi-usaha').textContent = formatRupiah(totalBagiUsaha);
+    document.getElementById('dash-bagi-pompa').textContent = totalPompaKarung + ' Karung';
+    document.getElementById('dash-bagi-petani').textContent = totalPetaniKarung + ' Karung';
   }
 
-  // ====== Laporan ======
+  // Laporan
   function hitungLaporan() {
-    const bulanVal = document.getElementById('laporan-bulan').value; // format yyyy-mm
+    const bulanVal = document.getElementById('laporan-bulan').value;
     let filterYear = null, filterMonth = null;
     if (bulanVal) {
       const parts = bulanVal.split('-');
@@ -779,14 +1484,14 @@
       }
     }
     function matchPeriode(isoDate) {
-      if (!filterYear || !filterMonth) return true; // tanpa filter
+      if (!filterYear || !filterMonth) return true;
       const [y, m] = isoDate.split('-');
       return y === filterYear && m === filterMonth;
     }
 
     const totalPenjualan = data.penjualanPengepul
       .filter(t => matchPeriode(t.tanggal))
-      .reduce((sum, t) => sum + (t.total || 0), 0);
+      .reduce((sum, t) => sum + (t.totalHarga || 0), 0);
 
     const totalBiaya = data.biaya
       .filter(b => matchPeriode(b.tanggal))
@@ -801,8 +1506,8 @@
 
   document.getElementById('btn-hitung-laporan').addEventListener('click', hitungLaporan);
 
-  // ====== Backup & Restore ======
-  document.getElementById('btn-export').addEventListener('click', () => {
+  // Backup JSON
+  document.getElementById('btn-export-json').addEventListener('click', () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -814,10 +1519,10 @@
     URL.revokeObjectURL(url);
   });
 
-  document.getElementById('input-import').addEventListener('change', (e) => {
+  document.getElementById('input-import-json').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!confirm('Import akan menimpa data yang ada. Lanjutkan?')) {
+    if (!confirm('Import JSON akan menimpa semua data. Lanjutkan?')) {
       e.target.value = '';
       return;
     }
@@ -828,7 +1533,7 @@
         if (!imported || typeof imported !== 'object') throw new Error('Format tidak sesuai');
         data = Object.assign(getDefaultData(), imported);
         saveData();
-        alert('Import berhasil.');
+        alert('Import JSON berhasil.');
       } catch (err) {
         console.error(err);
         alert('File JSON tidak valid.');
@@ -839,7 +1544,166 @@
     reader.readAsText(file);
   });
 
-  // ====== Render All ======
+  // Export Excel
+  document.getElementById('btn-export-excel').addEventListener('click', () => {
+    try {
+      const wb = XLSX.utils.book_new();
+
+      const petaniSheet = XLSX.utils.json_to_sheet(
+        data.petani.map(p => ({
+          id: p.id,
+          nama: p.nama,
+          catatan: p.catatan || ''
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, petaniSheet, 'petani');
+
+      const pengepulSheet = XLSX.utils.json_to_sheet(
+        data.pengepul.map(p => ({
+          id: p.id,
+          nama: p.nama,
+          catatan: p.catatan || ''
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, pengepulSheet, 'pengepul');
+
+      const tpSheet = XLSX.utils.json_to_sheet(
+        data.transaksiPetani.map(t => ({
+          id: t.id,
+          tanggal: t.tanggal,
+          petaniId: t.petaniId,
+          jumlahKarungPanen: t.jumlahKarungPanen,
+          jumlahPupuk: t.jumlahPupuk,
+          hasilPompaKarung: t.hasilPompaKarung,
+          hasilPetaniKarung: t.hasilPetaniKarung,
+          keterangan: t.keterangan || ''
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, tpSheet, 'transaksi_petani');
+
+      const tpenSheet = XLSX.utils.json_to_sheet(
+        data.penjualanPengepul.map(t => ({
+          id: t.id,
+          tanggal: t.tanggal,
+          pengepulId: t.pengepulId,
+          jumlahKarung: t.jumlahKarung,
+          totalKg: t.totalKg,
+          hargaPerKg: t.hargaPerKg,
+          totalHarga: t.totalHarga,
+          statusPembayaran: t.statusPembayaran,
+          metodePembayaran: t.metodePembayaran,
+          keterangan: t.keterangan || ''
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, tpenSheet, 'penjualan_pengepul');
+
+      const biayaSheet = XLSX.utils.json_to_sheet(
+        data.biaya.map(b => ({
+          id: b.id,
+          tanggal: b.tanggal,
+          kategori: b.kategori,
+          deskripsi: b.deskripsi || '',
+          nominal: b.nominal
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, biayaSheet, 'biaya');
+
+      XLSX.writeFile(wb, 'data-pembukuan-pompa.xlsx');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal export Excel.');
+    }
+  });
+
+  // Import Excel
+  document.getElementById('input-import-excel').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!confirm('Import Excel akan menimpa semua data. Pastikan file berasal dari export aplikasi ini. Lanjutkan?')) {
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const wb = XLSX.read(evt.target.result, { type: 'binary' });
+        const imported = getDefaultData();
+
+        function readSheet(name, handler) {
+          const sheet = wb.Sheets[name];
+          if (!sheet) return;
+          const rows = XLSX.utils.sheet_to_json(sheet);
+          handler(rows);
+        }
+
+        readSheet('petani', rows => {
+          imported.petani = rows.map((r, idx) => ({
+            id: Number(r.id) || Date.now() + idx,
+            nama: r.nama || '',
+            catatan: r.catatan || ''
+          }));
+        });
+
+        readSheet('pengepul', rows => {
+          imported.pengepul = rows.map((r, idx) => ({
+            id: Number(r.id) || Date.now() + idx,
+            nama: r.nama || '',
+            catatan: r.catatan || ''
+          }));
+        });
+
+        readSheet('transaksi_petani', rows => {
+          imported.transaksiPetani = rows.map((r, idx) => ({
+            id: Number(r.id) || Date.now() + idx,
+            tanggal: r.tanggal || '',
+            petaniId: Number(r.petaniId) || 0,
+            jumlahKarungPanen: Number(r.jumlahKarungPanen) || 0,
+            jumlahPupuk: Number(r.jumlahPupuk) || 0,
+            hasilPompaKarung: Number(r.hasilPompaKarung) || 0,
+            hasilPetaniKarung: Number(r.hasilPetaniKarung) || 0,
+            keterangan: r.keterangan || ''
+          }));
+        });
+
+        readSheet('penjualan_pengepul', rows => {
+          imported.penjualanPengepul = rows.map((r, idx) => ({
+            id: Number(r.id) || Date.now() + idx,
+            tanggal: r.tanggal || '',
+            pengepulId: Number(r.pengepulId) || 0,
+            jumlahKarung: Number(r.jumlahKarung) || 0,
+            totalKg: Number(r.totalKg) || 0,
+            hargaPerKg: Number(r.hargaPerKg) || 0,
+            totalHarga: Number(r.totalHarga) || ((Number(r.totalKg) || 0) * (Number(r.hargaPerKg) || 0)),
+            statusPembayaran: r.statusPembayaran || 'Lunas',
+            metodePembayaran: r.metodePembayaran || 'Tunai',
+            keterangan: r.keterangan || ''
+          }));
+        });
+
+        readSheet('biaya', rows => {
+          imported.biaya = rows.map((r, idx) => ({
+            id: Number(r.id) || Date.now() + idx,
+            tanggal: r.tanggal || '',
+            kategori: r.kategori || 'Lain-lain',
+            deskripsi: r.deskripsi || '',
+            nominal: Number(r.nominal) || 0
+          }));
+        });
+
+        data = imported;
+        saveData();
+        alert('Import Excel berhasil.');
+      } catch (err) {
+        console.error(err);
+        alert('File Excel tidak valid atau format sheet tidak sesuai.');
+      } finally {
+        e.target.value = '';
+      }
+    };
+    reader.readAsBinaryString(file);
+  });
+
+  // Render All
   function updateAllUI() {
     renderPetani();
     renderPengepul();
@@ -847,10 +1711,8 @@
     renderPenjualanPengepul();
     renderBiaya();
     updateDashboard();
-    // laporan tidak otomatis, user klik "Hitung"
   }
 
-  // Inisialisasi saat halaman load
   updateAllUI();
 </script>
 </body>
