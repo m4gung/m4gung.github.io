@@ -667,6 +667,8 @@ document.getElementById("btnResetFilter").onclick = function () {
   filter_mulai.value = "";
   filter_akhir.value = "";
   filter_produk.value = "";
+	filter_status.value = "";
+	filter_metode.value = "";
 
   var trx = load("transaksi");
   updateReportSummary(trx);
