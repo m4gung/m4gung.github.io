@@ -55,6 +55,8 @@ function renderProduk() {
   var tbody = document.getElementById("tabelProduk");
   tbody.innerHTML = "";
 
+	
+	
   data.forEach(function (p, i) {
     var tr = document.createElement("tr");
     tr.innerHTML = `
@@ -73,6 +75,30 @@ function renderProduk() {
   });
 
   renderDropdowns();
+	
+}
+
+function renderProdukDT() {
+  var data = load("produk");
+
+  var formatted = data.map((p,i) => [
+    p.id,
+    p.nama,
+    formatRupiah(p.modal_total),
+    formatRupiah(p.modal_per_pcs),
+    p.stok,
+    formatRupiah(p.harga_jual),
+    `
+      <button class="btn btn-sm btn-warning" onclick="editProduk('${i}')">Edit</button>
+      <button class="btn btn-sm btn-danger" onclick="hapusProduk('${i}')">Hapus</button>
+    `
+  ]);
+
+	renderDropdowns();  
+	
+	dtProduk.clear();
+  dtProduk.rows.add(formatted);
+  dtProduk.draw();
 }
 
 function editProduk(i) {
@@ -85,13 +111,18 @@ function editProduk(i) {
 }
 
 function hapusProduk(i) {
-  if (!confirm("Hapus produk ini?")) return;
+	var p = load("produk")[i];
+	
+  if (!confirm("Hapus produk \""+p.nama+"\"?")) return;
 
   var produk = load("produk");
   produk.splice(i, 1);
   save("produk", produk);
 
-  renderProduk();
+  //renderProduk();
+	
+	
+	renderProdukDT();
 }
 
 function simpanProduk() {
@@ -125,7 +156,7 @@ function simpanProduk() {
 
   save("produk", produk);
   clearProdukForm();
-  renderProduk();
+  renderProdukDT();
 }
 
 function clearProdukForm() {
@@ -370,8 +401,8 @@ function simpanTransaksi() {
   renderCart();
   pembeli_cart.value = "";
 
-  renderProduk();
-  renderTransaksi();
+  renderProdukDT();
+  renderTransaksiDT();
 }
 /* ===========================================================
    RENDER TRANSAKSI
@@ -405,17 +436,46 @@ function renderTransaksi() {
   });
 }
 
+function renderTransaksiDT() {
+  var trx = load("transaksi");
+
+  var formatted = trx.map((t, i) => [
+    i+1,
+		t.pembeli,
+    t.nama,
+    formatRupiah(t.harga_modal_per_pcs),
+    formatRupiah(t.harga_jual_per_pcs),
+    t.qty,
+    formatRupiah(t.total_modal),
+    formatRupiah(t.total_jual),
+    formatRupiah(t.laba),
+    t.status_pembayaran,
+    t.metode_pembayaran,
+    formatTanggal(t.tanggal),
+    `
+      <button class="btn btn-sm btn-warning" onclick="openEdit(${i})">Edit</button>
+      <button class="btn btn-sm btn-danger" onclick="hapusTransaksi(${i})">Hapus</button>
+    `
+  ]);
+
+  dtTransaksi.clear();
+  dtTransaksi.rows.add(formatted);
+  dtTransaksi.draw();
+
+}
 
 /* ===========================================================
    HAPUS TRANSAKSI + ROLLBACK STOK
 =========================================================== */
 function hapusTransaksi(i) {
-  if (!confirm("Hapus transaksi ini? Stok produk akan kembali.")) return;
-
-  var trx = load("transaksi");
+	var trx = load("transaksi");
   var t = trx[i];
 
-  var produk = load("produk");
+	
+	  
+	if (!confirm("Hapus transaksi \""+t.pembeli+"\" ? Stok produk \""+t.nama+"\" akan kembali.")) return;
+  
+	var produk = load("produk");
   var p = produk.find(x => x.id === t.id_produk);
 
   var stok_awal = p.stok;
@@ -427,8 +487,8 @@ function hapusTransaksi(i) {
   trx.splice(i, 1);
   save("transaksi", trx);
 
-  renderProduk();
-  renderTransaksi();
+  renderProdukDT();
+  renderTransaksiDT();
 }
 
 
@@ -515,8 +575,8 @@ document.getElementById("modalSave").onclick = function () {
 
   logStok("edit_transaksi", p.id, p.nama, qty, stok_awal, stok_akhir, "Simpan edit transaksi");
 
-  renderProduk();
-  renderTransaksi();
+  renderProdukDT();
+  renderTransaksiDT();
 
   editModalEl.hide();
 };
@@ -524,62 +584,32 @@ document.getElementById("modalSave").onclick = function () {
 
 
 /* ===========================================================
-   IMPORT PRODUK (EXCEL) — FINAL
+   IMPORT TRANSAKSI (EXCEL)
 =========================================================== */
-document.getElementById("importProduk").addEventListener("change", function () {
-  var file = this.files[0];
-  if (!file) return alert("Pilih file Excel produk dulu!");
+document.getElementById("btnImportTransaksi").onclick = function () {
+  var file = importTransaksi.files[0];
+  if (!file) return alert("Pilih file transaksi dulu!");
 
   var reader = new FileReader();
 
   reader.onload = function (e) {
-    var wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
+    var data = new Uint8Array(e.target.result);
+    var wb = XLSX.read(data, { type: "array" });
     var sheet = wb.Sheets[wb.SheetNames[0]];
     var rows = XLSX.utils.sheet_to_json(sheet);
 
-    if (!rows.length) {
-      alert("File Excel tidak berisi data atau format salah.");
-      return;
-    }
+    var trx = load("transaksi");
 
-    var produk = load("produk");
+    rows.forEach(r => trx.push(r));
 
-    rows.forEach(r => {
-      var id = (r.id || "").toString().trim();
-      var nama = (r.nama || "").toString().trim();
-      var modal_total = parseFloat(r.modal_total) || 0;
-      var stok = parseInt(r.stok) || 0;
-      var harga_jual = parseFloat(r.harga_jual) || 0;
+    save("transaksi", trx);
+    renderTransaksi();
 
-      if (!id || !nama) return; // skip baris rusak
-
-      var modal_per = stok > 0 ? (modal_total / stok) : 0;
-
-      var idx = produk.findIndex(p => p.id === id);
-
-      var obj = {
-        id: id,
-        nama: nama,
-        modal_total: modal_total,
-        modal_per_pcs: modal_per,
-        stok: stok,
-        harga_jual: harga_jual
-      };
-
-      if (idx >= 0) produk[idx] = obj;
-      else produk.push(obj);
-    });
-
-    save("produk", produk);
-    renderProduk();
-    renderDropdowns();
-
-    alert("Import Produk selesai!");
+    alert("Import transaksi selesai!");
   };
 
   reader.readAsArrayBuffer(file);
-});
-
+}
 
 /* ===========================================================
    EXPORT TRANSAKSI (EXCEL)
@@ -608,6 +638,8 @@ function applyFilter() {
   var mulai = filter_mulai.value;
   var akhir = filter_akhir.value;
   var pid = filter_produk.value;
+  var status = filter_status.value;
+	var metode = filter_metode.value;
 
   var trx = load("transaksi");
   var result = [];
@@ -618,9 +650,11 @@ function applyFilter() {
   trx.forEach(t => {
     var time = new Date(t.tanggal).getTime();
     if (time >= tsMulai && time <= tsAkhir) {
-      if (pid && t.id_produk !== pid) return;
-      result.push(t);
-    }
+    		if (pid && t.id_produk !== pid) return;
+			if (status && t.status_pembayaran !== status) return;
+			if (metode && t.metode_pembayaran !== metode) return;
+    result.push(t);
+		}
   });
 
   updateReportSummary(result);

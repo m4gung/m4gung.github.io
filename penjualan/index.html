@@ -299,7 +299,7 @@
   <div class="card-header">Report Penjualan</div>
   <div class="card-body">
 
-    <div class="row g-2 mb-3">
+    <div class="row g-2 mb-2">
       <div class="col-md-3">
         <input id="filter_mulai" type="date" class="form-control">
       </div>
@@ -311,6 +311,22 @@
       <div class="col-md-3">
         <select id="filter_produk" class="form-select"></select>
       </div>
+			
+			<div class="col-md-3">
+  				<select id="filter_status" class="form-select">
+    				<option value="">Semua Status</option>
+    				<option value="Lunas">Lunas</option>
+    				<option value="Belum Lunas">Belum Lunas</option>
+  				</select>
+			</div>
+			
+			<div class="col-md-3">
+  				<select id="filter_metode" class="form-select">
+    				<option value="">Semua Metode</option>
+    				<option value="Tunai">Tunai</option>
+    				<option value="Transfer">Transfer</option>
+  				</select>
+			</div>	
 
       <div class="col-md-3 d-grid">
         <button id="btnFilter" class="btn btn-primary">Terapkan Filter</button>
@@ -345,11 +361,11 @@
 
 
 	$(document).ready(function () {
-    $('#tableProdukDT').DataTable({
+    window.dtProduk = $('#tableProdukDT').DataTable({
         pageLength: 10
     });
 
-    $('#tableTransaksiDT').DataTable({
+    window.dtTransaksi = $('#tableTransaksiDT').DataTable({
         pageLength: 10
     });
 	});
