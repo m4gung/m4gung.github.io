@@ -194,6 +194,9 @@
           <input id="stok_produk" class="form-control" type="number" placeholder="Stok (boleh 0)">
         </div>
         <div class="col-md-2">
+          <input id="modal_per_pcs" class="form-control" type="number" placeholder="Modal / pcs">
+        </div>
+        <div class="col-md-2">
           <input id="harga_jual_satuan" class="form-control" type="number" placeholder="Harga Jual / pcs">
         </div>
         <div class="col-md-1 d-grid">
@@ -254,16 +257,18 @@
       <div class="modal-body">
 
         <label>Pembeli</label>
-        <input id="modal_pembeli" class="form-control mb-2">
+        <input id="modal_pembeli" class="form-control mb-2" readonly>
 
         <label>Produk</label>
         <input id="modal_produk" class="form-control mb-2" readonly>
 
         <label>Harga Jual</label>
-        <input id="modal_harga" class="form-control mb-2" type="number">
-
+        <input id="modal_harga" class="form-control mb-2" type="number" readonly>
+        
+        <input type="hidden" id="modal_hidden_modal_pcs">
+        
         <label>Qty</label>
-        <input id="modal_qty" class="form-control mb-2" type="number">
+        <input id="modal_qty" class="form-control mb-2" type="number" readonly>
 
         <label>Status Pembayaran</label>
         <select id="modal_status" class="form-select mb-2">

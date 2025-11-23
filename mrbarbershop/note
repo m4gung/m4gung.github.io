@@ -1,0 +1,137 @@
+⸻
+
+A. Operasional
+
+1. Dashboard
+
+Halaman ringkasan untuk melihat kondisi usaha secara cepat: jumlah transaksi hari ini, pendapatan, pelanggan yang datang, dan layanan terlaris.
+
+2. POS / Transaksi
+
+Tempat kasir melakukan transaksi.
+Pelanggan memilih layanan atau produk, kemudian melakukan pembayaran, termasuk upload bukti bayar.
+
+3. Booking / Appointment
+
+Pelanggan bisa memesan jadwal cukur atau layanan lainnya, memilih barber, serta menentukan jam datang.
+
+4. Pelanggan
+
+Daftar data semua pelanggan.
+Bisa menambah, mengedit, dan melihat riwayat kunjungan.
+
+5. Service (Layanan)
+
+Daftar layanan barbershop seperti potong rambut, cuci rambut, hair spa, dll.
+Bisa menambah harga atau mengatur durasi layanan.
+
+6. Produk
+
+Daftar barang yang dijual, seperti pomade, shampoo, dan lainnya.
+Bisa menambah stok, memberi harga, dan mengelola informasi produk.
+
+7. Promo & Diskon
+
+Tempat membuat promosi.
+Misalnya diskon khusus, paket layanan, atau voucher.
+
+⸻
+
+B. Manajemen
+
+8. Cabang
+
+Digunakan jika barbershop memiliki lebih dari satu lokasi.
+Bisa mengatur informasi tiap cabang seperti alamat, jam buka, dan managernya.
+
+9. Karyawan
+
+Mengelola data karyawan: barber, kasir, manager, dll.
+Bisa menambah, mengedit, dan menghapus data karyawan.
+
+10. Role & Permission
+
+Mengatur hak akses.
+Misalnya kasir hanya boleh buat transaksi, sedangkan manager boleh melihat laporan.
+
+11. Shift & Absensi
+
+Mencatat jam masuk/jam pulang karyawan.
+Juga dapat digunakan untuk mengatur jadwal shift kerja.
+
+12. Penggajian
+
+Menghitung gaji karyawan berdasarkan aturan barbershop.
+Bisa diambil dari absensi, komisi barber, dan bonus.
+
+13. Inventori
+
+Mengelola stok barang tiap cabang.
+Termasuk barang habis pakai, barang jual, dan pencatatan stok masuk/keluar.
+
+⸻
+
+C. Keuangan
+
+14. Arus Kas
+
+Pencatatan uang masuk dan uang keluar setiap hari.
+Digunakan untuk memantau keuangan real-time.
+
+15. Pengeluaran
+
+Tempat mencatat biaya operasional seperti listrik, sewa, beli perlengkapan, dan lainnya.
+
+16. Laporan Keuangan
+
+Ringkasan keuangan selama periode tertentu.
+Misalnya laporan bulanan: pendapatan, pengeluaran, dan keuntungan.
+
+17. Rekonsiliasi Kasir
+
+Pencocokan uang di kasir dengan laporan sistem.
+Untuk memastikan tidak ada selisih atau kesalahan hitung.
+
+⸻
+
+D. Analitik
+
+18. Analytic & Insights
+
+Analisis perkembangan bisnis.
+Misalnya jam paling ramai, layanan paling populer, atau tren pendapatan.
+
+19. Barber Performance
+
+Penilaian performa tiap barber.
+Contohnya jumlah pelanggan, rating, komisi, dan pendapatan per barber.
+
+20. Customer Insight
+
+Analisa perilaku pelanggan:
+Seberapa sering mereka datang, layanan favorit, dan total pengeluaran mereka.
+
+⸻
+
+E. Sistem & Utility
+
+21. Backup & Restore
+
+Fitur untuk mencadangkan data ke penyimpanan lain, dan mengembalikannya jika diperlukan.
+
+22. Audit Log
+
+Catatan aktivitas pengguna di sistem.
+Untuk melihat siapa mengubah apa, kapan, dan di menu mana.
+
+23. Notifikasi
+
+Pengaturan pengiriman pesan otomatis:
+Misalnya SMS/WA pengingat booking, laporan harian, atau status transaksi.
+
+24. Pengaturan Sistem
+
+Menu utama pengaturan:
+Logo, nama bisnis, metode pembayaran, konfigurasi aplikasi, dan sebagainya.
+
+⸻

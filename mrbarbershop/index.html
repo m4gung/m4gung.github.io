@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Barbershop Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- SheetJS untuk Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            font-size: 0.9rem;
+        }
+        .sidebar {
+            min-height: 100vh;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .pointer {
+            cursor: pointer;
+        }
+        .table-sm td, .table-sm th {
+            padding: .25rem .5rem;
+        }
+        @media (max-width: 767.98px) {
+            .sidebar {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<!-- LOGIN VIEW -->
+<div id="loginView" class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header text-center">
+                    <h5 class="mb-0">Login Barbershop</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        User awal:<br>
+                        <strong>Username:</strong> admin<br>
+                        <strong>Password:</strong> admin123
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input id="loginUsername" type="text" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input id="loginPassword" type="password" class="form-control">
+                    </div>
+                    <button id="btnLogin" class="btn btn-primary w-100 mb-2">Login</button>
+                    <div id="loginError" class="text-danger small d-none">Username atau password salah.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- APP VIEW -->
+<div id="appView" class="d-none">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <button class="btn btn-outline-light me-2 d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                ☰
+            </button>
+            <a class="navbar-brand" href="#">Barbershop App</a>
+            <div class="d-flex ms-auto align-items-center">
+                <span id="currentUserInfo" class="text-light me-3 small"></span>
+                <button id="btnLogout" class="btn btn-outline-light btn-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-white border-end sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="px-3 mb-2 text-muted text-uppercase small">Operasional</div>
+                    <ul class="nav flex-column mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link pointer active" data-page="dashboard" data-roles="admin,kasir">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="pos" data-roles="admin,kasir">
+                                POS / Transaksi
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="booking" data-roles="admin,kasir">
+                                Booking / Appointment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="pelanggan" data-roles="admin,kasir">
+                                Pelanggan
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="service" data-roles="admin,kasir">
+                                Service
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="produk" data-roles="admin,kasir">
+                                Produk
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="promo" data-roles="admin">
+                                Promo & Diskon
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-3 mb-2 text-muted text-uppercase small">Manajemen</div>
+                    <ul class="nav flex-column mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="cabang" data-roles="admin">
+                                Cabang
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="karyawan" data-roles="admin">
+                                Karyawan
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="roles" data-roles="admin">
+                                Role & Permission
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="absensi" data-roles="admin">
+                                Shift & Absensi
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="penggajian" data-roles="admin">
+                                Penggajian
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="inventori" data-roles="admin,kasir">
+                                Inventori
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-3 mb-2 text-muted text-uppercase small">Keuangan</div>
+                    <ul class="nav flex-column mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="aruskas" data-roles="admin">
+                                Arus Kas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="pengeluaran" data-roles="admin">
+                                Pengeluaran
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="lapkeu" data-roles="admin">
+                                Laporan Keuangan
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="rekonsiliasi" data-roles="admin">
+                                Rekonsiliasi Kasir
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-3 mb-2 text-muted text-uppercase small">Analitik</div>
+                    <ul class="nav flex-column mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="analytics" data-roles="admin">
+                                Analytic & Insights
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="barberperf" data-roles="admin">
+                                Barber Performance
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="custinsight" data-roles="admin">
+                                Customer Insight
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-3 mb-2 text-muted text-uppercase small">Sistem & Utility</div>
+                    <ul class="nav flex-column mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="backup" data-roles="admin">
+                                Backup & Restore
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="auditlog" data-roles="admin">
+                                Audit Log
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="notif" data-roles="admin">
+                                Notifikasi
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pointer" data-page="pengaturan" data-roles="admin">
+                                Pengaturan Sistem
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- MAIN CONTENT -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-3 py-3">
+                <!-- DASHBOARD -->
+                <div id="page-dashboard" class="page active">
+                    <h5>Dashboard</h5>
+                    <div class="row g-2">
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <div class="text-muted small">Transaksi Hari Ini</div>
+                                    <div id="dashTrxToday" class="h4 mb-0">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <div class="text-muted small">Pendapatan Hari Ini</div>
+                                    <div id="dashIncomeToday" class="h4 mb-0">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <div class="text-muted small">Total Pelanggan</div>
+                                    <div id="dashCustomerCount" class="h4 mb-0">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <div class="text-muted small">Total Booking Hari Ini</div>
+                                    <div id="dashBookingToday" class="h4 mb-0">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- POS / TRANSAKSI -->
+                <div id="page-pos" class="page">
+                    <h5>POS / Transaksi</h5>
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">Input Transaksi</div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label">Tanggal</label>
+                                        <input id="trxDate" type="date" class="form-control">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Pelanggan</label>
+                                        <select id="trxCustomer" class="form-select"></select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Jenis</label>
+                                        <select id="trxType" class="form-select">
+                                            <option value="service">Service</option>
+                                            <option value="product">Produk</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Service / Produk</label>
+                                        <select id="trxItem" class="form-select"></select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Qty</label>
+                                        <input id="trxQty" type="number" min="1" class="form-control" value="1">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Diskon (Rp)</label>
+                                        <input id="trxDiscount" type="number" min="0" class="form-control" value="0">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Upload Bukti Pembayaran (opsional)</label>
+                                        <input id="trxProof" type="file" accept="image/*" class="form-control">
+                                    </div>
+                                    <button id="btnSaveTrx" class="btn btn-primary w-100">Simpan Transaksi</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">Daftar Transaksi</div>
+                                <div class="card-body table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Pelanggan</th>
+                                            <th>Jenis</th>
+                                            <th>Item</th>
+                                            <th>Qty</th>
+                                            <th>Total</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="trxTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOOKING -->
+                <div id="page-booking" class="page">
+                    <h5>Booking / Appointment</h5>
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">Input Booking</div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label">Tanggal & Jam</label>
+                                        <input id="bookingDateTime" type="datetime-local" class="form-control">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Pelanggan</label>
+                                        <select id="bookingCustomer" class="form-select"></select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Service</label>
+                                        <select id="bookingService" class="form-select"></select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Barber (opsional)</label>
+                                        <input id="bookingBarber" type="text" class="form-control">
+                                    </div>
+                                    <button id="btnSaveBooking" class="btn btn-primary w-100">Simpan Booking</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">Daftar Booking</div>
+                                <div class="card-body table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead>
+                                        <tr>
+                                            <th>Tanggal & Jam</th>
+                                            <th>Pelanggan</th>
+                                            <th>Service</th>
+                                            <th>Barber</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="bookingTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PELANGGAN -->
+                <div id="page-pelanggan" class="page">
+                    <h5>Pelanggan</h5>
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">Input Pelanggan</div>
+                                <div class="card-body">
+                                    <input type="hidden" id="custId">
+                                    <div class="mb-2">
+                                        <label class="form-label">Nama</label>
+                                        <input id="custName" type="text" class="form-control">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">No HP</label>
+                                        <input id="custPhone" type="text" class="form-control">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Catatan</label>
+                                        <textarea id="custNote" class="form-control" rows="2"></textarea>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Foto (opsional)</label>
+                                        <input id="custPhoto" type="file" accept="image/*" class="form-control">
+                                    </div>
+                                    <button id="btnSaveCust" class="btn btn-primary w-100 mb-2">Simpan</button>
+                                    <button id="btnResetCust" class="btn btn-secondary w-100">Reset Form</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">Daftar Pelanggan</div>
+                                <div class="card-body table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead>
+                                        <tr>
+                                            <th>Nama</th>
+                                            <th>No HP</th>
+                                            <th>Catatan</th>
+                                            <th>Foto</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="custTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SERVICE -->
+                <div id="page-service" class="page">
+                    <h5>Service</h5>
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">Input Service</div>
+                                <div class="card-body">
+                                    <input type="hidden" id="svcId">
+                                    <div class="mb-2">
+                                        <label class="form-label">Nama Service</label>
+                                        <input id="svcName" type="text" class="form-control">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Harga (Rp)</label>
+                                        <input id="svcPrice" type="number" min="0" class="form-control">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Durasi (menit)</label>
+                                        <input id="svcDuration" type="number" min="0" class="form-control">
+                                    </div>
+                                    <button id="btnSaveSvc" class="btn btn-primary w-100 mb-2">Simpan</button>
+                                    <button id="btnResetSvc" class="btn btn-secondary w-100">Reset Form</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">Daftar Service</div>
+                                <div class="card-body table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead>
+                                        <tr>
+                                            <th>Nama</th>
+                                            <th>Harga</th>
+                                            <th>Durasi</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="svcTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRODUK -->
+                <div id="page-produk" class="page">
+                    <h5>Produk</h5>
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">Input Produk</div>
+                                <div class="card-body">
+                                    <input type="hidden" id="prodId">
+                                    <div class="mb-2">
+                                        <label class="form-label">Nama Produk</label>
+                                        <input id="prodName" type="text" class="form-control">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Harga Jual (Rp)</label>
+                                        <input id="prodPrice" type="number" min="0" class="form-control">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Stok</label>
+                                        <input id="prodStock" type="number" min="0" class="form-control">
+                                    </div>
+                                    <button id="btnSaveProd" class="btn btn-primary w-100 mb-2">Simpan</button>
+                                    <button id="btnResetProd" class="btn btn-secondary w-100">Reset Form</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">Daftar Produk</div>
+                                <div class="card-body table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead>
+                                        <tr>
+                                            <th>Nama</th>
+                                            <th>Harga</th>
+                                            <th>Stok</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="prodTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROMO -->
+                <div id="page-promo" class="page">
+                    <h5>Promo & Diskon</h5>
+                    <p>Contoh placeholder. Bisa ditambahkan logika promo (persen/nominal, periode, dll).</p>
+                </div>
+
+                <!-- CABANG -->
+                <div id="page-cabang" class="page">
+                    <h5>Cabang</h5>
+                    <p>Placeholder manajemen cabang. Bisa dikembangkan (nama cabang, alamat, jam buka).</p>
+                </div>
+
+                <!-- KARYAWAN -->
+                <div id="page-karyawan" class="page">
+                    <h5>Karyawan</h5>
+                    <p>Placeholder manajemen karyawan. Bisa dihubungkan dengan data user login & absensi.</p>
+                </div>
+
+                <!-- ROLES -->
+                <div id="page-roles" class="page">
+                    <h5>Role & Permission</h5>
+                    <p>Role dasar: <strong>admin</strong> (akses semua). Role lain dapat ditambahkan kemudian.</p>
+                </div>
+
+                <!-- ABSENSI -->
+                <div id="page-absensi" class="page">
+                    <h5>Shift & Absensi</h5>
+                    <p>Placeholder absensi. Dapat dikembangkan untuk clock-in/clock-out karyawan.</p>
+                </div>
+
+                <!-- PENGGAJIAN -->
+                <div id="page-penggajian" class="page">
+                    <h5>Penggajian</h5>
+                    <p>Placeholder penggajian. Dapat dikembangkan berdasarkan absensi dan komisi.</p>
+                </div>
+
+                <!-- INVENTORI -->
+                <div id="page-inventori" class="page">
+                    <h5>Inventori</h5>
+                    <p>Saat ini stok produk sudah tersimpan di menu Produk. Modul detail inventori bisa dikembangkan lanjut.</p>
+                </div>
+
+                <!-- KEUANGAN -->
+                <div id="page-aruskas" class="page">
+                    <h5>Arus Kas</h5>
+                    <p>Placeholder arus kas. Nilai bisa dihitung dari transaksi + pengeluaran.</p>
+                </div>
+
+                <div id="page-pengeluaran" class="page">
+                    <h5>Pengeluaran</h5>
+                    <p>Placeholder pengeluaran. Dapat ditambah form input pengeluaran rutin.</p>
+                </div>
+
+                <div id="page-lapkeu" class="page">
+                    <h5>Laporan Keuangan</h5>
+                    <p>Placeholder laporan keuangan. Bisa dibuat filter periode & ringkasan.</p>
+                </div>
+
+                <div id="page-rekonsiliasi" class="page">
+                    <h5>Rekonsiliasi Kasir</h5>
+                    <p>Placeholder rekonsiliasi kasir. Cocokkan uang fisik dengan laporan sistem.</p>
+                </div>
+
+                <!-- ANALITIK -->
+                <div id="page-analytics" class="page">
+                    <h5>Analytic & Insights</h5>
+                    <p>Placeholder untuk grafik dan analitik lanjutan.</p>
+                </div>
+
+                <div id="page-barberperf" class="page">
+                    <h5>Barber Performance</h5>
+                    <p>Placeholder performa barber. Dapat dihitung dari jumlah transaksi per barber (belum dihubungkan).</p>
+                </div>
+
+                <div id="page-custinsight" class="page">
+                    <h5>Customer Insight</h5>
+                    <p>Placeholder insight pelanggan. Bisa dianalisa dari riwayat transaksi.</p>
+                </div>
+
+                <!-- BACKUP & RESTORE -->
+                <div id="page-backup" class="page">
+                    <h5>Backup & Restore</h5>
+                    <div class="card mb-3">
+                        <div class="card-header">JSON</div>
+                        <div class="card-body">
+                            <button id="btnExportJson" class="btn btn-sm btn-primary me-2">Export JSON</button>
+                            <label class="btn btn-sm btn-outline-secondary mb-0">
+                                Import JSON
+                                <input id="importJsonInput" type="file" accept=".json,application/json" hidden>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Excel (.xlsx)</div>
+                        <div class="card-body">
+                            <button id="btnExportExcel" class="btn btn-sm btn-success me-2">Export Excel</button>
+                            <label class="btn btn-sm btn-outline-secondary mb-0">
+                                Import Excel
+                                <input id="importExcelInput" type="file" accept=".xlsx" hidden>
+                            </label>
+                            <p class="small text-muted mt-2">
+                                Setiap jenis data (users, customers, products, services, transactions, bookings) akan ada di sheet terpisah.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AUDIT LOG -->
+                <div id="page-auditlog" class="page">
+                    <h5>Audit Log</h5>
+                    <p>Placeholder audit log. Bisa diisi daftar aktivitas user (simpan, hapus, login).</p>
+                </div>
+
+                <!-- NOTIFIKASI -->
+                <div id="page-notif" class="page">
+                    <h5>Notifikasi</h5>
+                    <p>Placeholder pengaturan notifikasi. Misal pengingat booking ke WhatsApp (manual / gateway eksternal).</p>
+                </div>
+
+                <!-- PENGATURAN SISTEM -->
+                <div id="page-pengaturan" class="page">
+                    <h5>Pengaturan Sistem</h5>
+                    <p>Placeholder pengaturan umum: nama barbershop, alamat, dll.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ====== DATA & UTILITAS LOCALSTORAGE ======
+    const STORAGE_KEY = 'bbshop_data_v1';
+    let currentUser = null;
+
+    function loadData() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+            const initial = {
+                users: [
+                    {id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator'}
+                ],
+                customers: [],
+                products: [],
+                services: [],
+                transactions: [],
+                bookings: []
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+            return initial;
+        }
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            alert('Data rusak, akan di-reset.');
+            localStorage.removeItem(STORAGE_KEY);
+            return loadData();
+        }
+    }
+
+    function saveData(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function formatRupiah(num) {
+        num = Number(num || 0);
+        return num.toLocaleString('id-ID');
+    }
+
+    function todayStr() {
+        const d = new Date();
+        return d.toISOString().slice(0,10);
+    }
+
+    // ====== LOGIN / LOGOUT ======
+    document.getElementById('btnLogin').addEventListener('click', () => {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const data = loadData();
+        const user = data.users.find(u => u.username === username && u.password === password);
+        const err = document.getElementById('loginError');
+        if (!user) {
+            err.classList.remove('d-none');
+            return;
+        }
+        err.classList.add('d-none');
+        currentUser = user;
+        document.getElementById('loginView').classList.add('d-none');
+        document.getElementById('appView').classList.remove('d-none');
+        document.getElementById('currentUserInfo').innerText =
+            user.name + ' (' + user.role + ')';
+        applyRoleToMenu(user.role);
+        initAllForms();
+        refreshAllTables();
+        refreshDashboard();
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+        currentUser = null;
+        document.getElementById('appView').classList.add('d-none');
+        document.getElementById('loginView').classList.remove('d-none');
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+    });
+
+    function applyRoleToMenu(role) {
+        const links = document.querySelectorAll('#sidebarMenu a.nav-link');
+        links.forEach(link => {
+            const roles = (link.getAttribute('data-roles') || '').split(',');
+            if (!roles.includes(role)) {
+                link.classList.add('d-none');
+            } else {
+                link.classList.remove('d-none');
+            }
+        });
+        // default ke dashboard
+        showPage('dashboard');
+        links.forEach(l => l.classList.remove('active'));
+        const dashLink = Array.from(links).find(l => l.getAttribute('data-page') === 'dashboard');
+        if (dashLink) dashLink.classList.add('active');
+    }
+
+    // ====== NAVIGASI HALAMAN ======
+    function showPage(name) {
+        const pages = document.querySelectorAll('.page');
+        pages.forEach(p => p.classList.remove('active'));
+        const target = document.getElementById('page-' + name);
+        if (target) target.classList.add('active');
+    }
+
+    document.querySelectorAll('#sidebarMenu a.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            const page = link.getAttribute('data-page');
+            document.querySelectorAll('#sidebarMenu a.nav-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            showPage(page);
+        });
+    });
+
+    // ====== INIT FORM & DROPDOWN ======
+    function initAllForms() {
+        document.getElementById('trxDate').value = todayStr();
+        populateDropdowns();
+    }
+
+    function populateDropdowns() {
+        const data = loadData();
+
+        // Pelanggan dropdowns
+        const custSelects = [document.getElementById('trxCustomer'),
+            document.getElementById('bookingCustomer')];
+        custSelects.forEach(sel => {
+            if (!sel) return;
+            sel.innerHTML = '';
+            data.customers.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.name;
+                sel.appendChild(opt);
+            });
+        });
+
+        // Service dropdowns
+        const svcSelects = [document.getElementById('bookingService')];
+        svcSelects.forEach(sel => {
+            if (!sel) return;
+            sel.innerHTML = '';
+            data.services.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.name + ' (Rp ' + formatRupiah(s.price) + ')';
+                sel.appendChild(opt);
+            });
+        });
+
+        // POS item dropdown (tergantung jenis)
+        fillPosItemDropdown();
+    }
+
+    function fillPosItemDropdown() {
+        const data = loadData();
+        const type = document.getElementById('trxType').value;
+        const itemSelect = document.getElementById('trxItem');
+        itemSelect.innerHTML = '';
+        if (type === 'service') {
+            data.services.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = 'svc-' + s.id;
+                opt.textContent = s.name + ' (Rp ' + formatRupiah(s.price) + ')';
+                itemSelect.appendChild(opt);
+            });
+        } else {
+            data.products.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = 'prod-' + p.id;
+                opt.textContent = p.name + ' (Rp ' + formatRupiah(p.price) + ')';
+                itemSelect.appendChild(opt);
+            });
+        }
+    }
+
+    document.getElementById('trxType').addEventListener('change', fillPosItemDropdown);
+
+    // ====== PELANGGAN CRUD ======
+    function refreshCustomerTable() {
+        const data = loadData();
+        const tbody = document.getElementById('custTableBody');
+        tbody.innerHTML = '';
+        data.customers.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${c.name}</td>
+                <td>${c.phone || ''}</td>
+                <td>${c.note || ''}</td>
+                <td>${c.photo ? '<img src="' + c.photo + '" style="max-width:60px;max-height:60px;">' : ''}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editCustomer(${c.id})">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${c.id})">Hapus</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        populateDropdowns();
+    }
+
+    function editCustomer(id) {
+        const data = loadData();
+        const c = data.customers.find(x => x.id === id);
+        if (!c) return;
+        document.getElementById('custId').value = c.id;
+        document.getElementById('custName').value = c.name;
+        document.getElementById('custPhone').value = c.phone || '';
+        document.getElementById('custNote').value = c.note || '';
+    }
+
+    function deleteCustomer(id) {
+        if (!confirm('Hapus pelanggan ini?')) return;
+        const data = loadData();
+        data.customers = data.customers.filter(x => x.id !== id);
+        saveData(data);
+        refreshCustomerTable();
+        populateDropdowns();
+    }
+
+    document.getElementById('btnSaveCust').addEventListener('click', () => {
+        const id = document.getElementById('custId').value;
+        const name = document.getElementById('custName').value.trim();
+        const phone = document.getElementById('custPhone').value.trim();
+        const note = document.getElementById('custNote').value.trim();
+        const photoInput = document.getElementById('custPhoto');
+
+        if (!name) {
+            alert('Nama pelanggan wajib diisi');
+            return;
+        }
+
+        const data = loadData();
+
+        function finishSave(photoDataUrl) {
+            if (id) {
+                const c = data.customers.find(x => x.id === Number(id));
+                if (c) {
+                    c.name = name;
+                    c.phone = phone;
+                    c.note = note;
+                    if (photoDataUrl !== undefined) c.photo = photoDataUrl;
+                }
+            } else {
+                const newId = Date.now();
+                data.customers.push({
+                    id: newId,
+                    name,
+                    phone,
+                    note,
+                    photo: photoDataUrl || null
+                });
+            }
+            saveData(data);
+            document.getElementById('custId').value = '';
+            document.getElementById('custName').value = '';
+            document.getElementById('custPhone').value = '';
+            document.getElementById('custNote').value = '';
+            photoInput.value = '';
+            refreshCustomerTable();
+            populateDropdowns();
+        }
+
+        if (photoInput.files && photoInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => finishSave(e.target.result);
+            reader.readAsDataURL(photoInput.files[0]);
+        } else {
+            finishSave(undefined);
+        }
+    });
+
+    document.getElementById('btnResetCust').addEventListener('click', () => {
+        document.getElementById('custId').value = '';
+        document.getElementById('custName').value = '';
+        document.getElementById('custPhone').value = '';
+        document.getElementById('custNote').value = '';
+        document.getElementById('custPhoto').value = '';
+    });
+
+    // ====== SERVICE CRUD ======
+    function refreshServiceTable() {
+        const data = loadData();
+        const tbody = document.getElementById('svcTableBody');
+        tbody.innerHTML = '';
+        data.services.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${s.name}</td>
+                <td>Rp ${formatRupiah(s.price)}</td>
+                <td>${s.duration || 0} menit</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editService(${s.id})">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteService(${s.id})">Hapus</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        populateDropdowns();
+    }
+
+    function editService(id) {
+        const data = loadData();
+        const s = data.services.find(x => x.id === id);
+        if (!s) return;
+        document.getElementById('svcId').value = s.id;
+        document.getElementById('svcName').value = s.name;
+        document.getElementById('svcPrice').value = s.price;
+        document.getElementById('svcDuration').value = s.duration || 0;
+    }
+
+    function deleteService(id) {
+        if (!confirm('Hapus service ini?')) return;
+        const data = loadData();
+        data.services = data.services.filter(x => x.id !== id);
+        saveData(data);
+        refreshServiceTable();
+        populateDropdowns();
+    }
+
+    document.getElementById('btnSaveSvc').addEventListener('click', () => {
+        const id = document.getElementById('svcId').value;
+        const name = document.getElementById('svcName').value.trim();
+        const price = Number(document.getElementById('svcPrice').value || 0);
+        const duration = Number(document.getElementById('svcDuration').value || 0);
+
+        if (!name) {
+            alert('Nama service wajib diisi');
+            return;
+        }
+        const data = loadData();
+        if (id) {
+            const s = data.services.find(x => x.id === Number(id));
+            if (s) {
+                s.name = name;
+                s.price = price;
+                s.duration = duration;
+            }
+        } else {
+            const newId = Date.now();
+            data.services.push({id: newId, name, price, duration});
+        }
+        saveData(data);
+        document.getElementById('svcId').value = '';
+        document.getElementById('svcName').value = '';
+        document.getElementById('svcPrice').value = '';
+        document.getElementById('svcDuration').value = '';
+        refreshServiceTable();
+        populateDropdowns();
+    });
+
+    document.getElementById('btnResetSvc').addEventListener('click', () => {
+        document.getElementById('svcId').value = '';
+        document.getElementById('svcName').value = '';
+        document.getElementById('svcPrice').value = '';
+        document.getElementById('svcDuration').value = '';
+    });
+
+    // ====== PRODUK CRUD ======
+    function refreshProductTable() {
+        const data = loadData();
+        const tbody = document.getElementById('prodTableBody');
+        tbody.innerHTML = '';
+        data.products.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${p.name}</td>
+                <td>Rp ${formatRupiah(p.price)}</td>
+                <td>${p.stock}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editProduct(${p.id})">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${p.id})">Hapus</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        populateDropdowns();
+    }
+
+    function editProduct(id) {
+        const data = loadData();
+        const p = data.products.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('prodId').value = p.id;
+        document.getElementById('prodName').value = p.name;
+        document.getElementById('prodPrice').value = p.price;
+        document.getElementById('prodStock').value = p.stock;
+    }
+
+    function deleteProduct(id) {
+        if (!confirm('Hapus produk ini?')) return;
+        const data = loadData();
+        data.products = data.products.filter(x => x.id !== id);
+        saveData(data);
+        refreshProductTable();
+        populateDropdowns();
+    }
+
+    document.getElementById('btnSaveProd').addEventListener('click', () => {
+        const id = document.getElementById('prodId').value;
+        const name = document.getElementById('prodName').value.trim();
+        const price = Number(document.getElementById('prodPrice').value || 0);
+        const stock = Number(document.getElementById('prodStock').value || 0);
+
+        if (!name) {
+            alert('Nama produk wajib diisi');
+            return;
+        }
+
+        const data = loadData();
+        if (id) {
+            const p = data.products.find(x => x.id === Number(id));
+            if (p) {
+                p.name = name;
+                p.price = price;
+                p.stock = stock;
+            }
+        } else {
+            const newId = Date.now();
+            data.products.push({id: newId, name, price, stock});
+        }
+        saveData(data);
+        document.getElementById('prodId').value = '';
+        document.getElementById('prodName').value = '';
+        document.getElementById('prodPrice').value = '';
+        document.getElementById('prodStock').value = '';
+        refreshProductTable();
+        populateDropdowns();
+    });
+
+    document.getElementById('btnResetProd').addEventListener('click', () => {
+        document.getElementById('prodId').value = '';
+        document.getElementById('prodName').value = '';
+        document.getElementById('prodPrice').value = '';
+        document.getElementById('prodStock').value = '';
+    });
+
+    // ====== TRANSAKSI / POS ======
+    function refreshTransactionTable() {
+        const data = loadData();
+        const tbody = document.getElementById('trxTableBody');
+        tbody.innerHTML = '';
+        data.transactions.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${t.date}</td>
+                <td>${t.customerName || ''}</td>
+                <td>${t.type}</td>
+                <td>${t.itemName}</td>
+                <td>${t.qty}</td>
+                <td>Rp ${formatRupiah(t.total)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="printStruk(${t.id})">Print</button>
+                    <button class="btn btn-sm btn-outline-success me-1" onclick="copyStrukWA(${t.id})">Copy WA</button>
+                    ${t.proofImage ? '<button class="btn btn-sm btn-outline-info" onclick="viewProofImage('+t.id+')">Bukti</button>' : ''}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        refreshDashboard();
+    }
+
+    function viewProofImage(id) {
+        const data = loadData();
+        const t = data.transactions.find(x => x.id === id);
+        if (!t || !t.proofImage) {
+            alert('Tidak ada bukti.');
+            return;
+        }
+        const w = window.open('');
+        w.document.write('<img src="'+t.proofImage+'" style="max-width:100%;">');
+        w.document.close();
+    }
+
+    document.getElementById('btnSaveTrx').addEventListener('click', () => {
+        const date = document.getElementById('trxDate').value || todayStr();
+        const customerId = Number(document.getElementById('trxCustomer').value || 0);
+        const type = document.getElementById('trxType').value;
+        const itemVal = document.getElementById('trxItem').value;
+        const qty = Number(document.getElementById('trxQty').value || 1);
+        const discount = Number(document.getElementById('trxDiscount').value || 0);
+        const proofInput = document.getElementById('trxProof');
+
+        const data = loadData();
+        const cust = data.customers.find(c => c.id === customerId);
+        if (!cust) {
+            alert('Pelanggan wajib dipilih.');
+            return;
+        }
+        let itemId, itemName, price;
+        if (itemVal.startsWith('svc-')) {
+            itemId = Number(itemVal.replace('svc-',''));
+            const svc = data.services.find(s => s.id === itemId);
+            if (!svc) {
+                alert('Service tidak valid.');
+                return;
+            }
+            itemName = svc.name;
+            price = svc.price;
+        } else if (itemVal.startsWith('prod-')) {
+            itemId = Number(itemVal.replace('prod-',''));
+            const prod = data.products.find(p => p.id === itemId);
+            if (!prod) {
+                alert('Produk tidak valid.');
+                return;
+            }
+            itemName = prod.name;
+            price = prod.price;
+            // Kurangi stok
+            prod.stock = Number(prod.stock || 0) - qty;
+            if (prod.stock < 0) prod.stock = 0;
+        } else {
+            alert('Item tidak valid.');
+            return;
+        }
+        const subtotal = price * qty;
+        const total = Math.max(0, subtotal - discount);
+
+        const trxObj = {
+            id: Date.now(),
+            date,
+            customerId,
+            customerName: cust.name,
+            type,
+            itemId,
+            itemName,
+            qty,
+            price,
+            discount,
+            total,
+            proofImage: null
+        };
+
+        function finishSaveWithProof() {
+            saveData(data);
+            refreshProductTable();
+            refreshTransactionTable();
+            document.getElementById('trxQty').value = 1;
+            document.getElementById('trxDiscount').value = 0;
+            document.getElementById('trxProof').value = '';
+            alert('Transaksi tersimpan.');
+        }
+
+        if (!data.transactions) data.transactions = [];
+        data.transactions.push(trxObj);
+
+        if (proofInput.files && proofInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                trxObj.proofImage = e.target.result;
+                finishSaveWithProof();
+            };
+            reader.readAsDataURL(proofInput.files[0]);
+        } else {
+            finishSaveWithProof();
+        }
+    });
+
+    // ====== BOOKING ======
+    function refreshBookingTable() {
+        const data = loadData();
+        const tbody = document.getElementById('bookingTableBody');
+        tbody.innerHTML = '';
+        data.bookings.forEach(b => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${b.datetime}</td>
+                <td>${b.customerName}</td>
+                <td>${b.serviceName}</td>
+                <td>${b.barber || ''}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        refreshDashboard();
+    }
+
+    document.getElementById('btnSaveBooking').addEventListener('click', () => {
+        const dt = document.getElementById('bookingDateTime').value;
+        const customerId = Number(document.getElementById('bookingCustomer').value || 0);
+        const serviceId = Number(document.getElementById('bookingService').value || 0);
+        const barber = document.getElementById('bookingBarber').value.trim();
+
+        if (!dt) {
+            alert('Tanggal & jam wajib diisi.');
+            return;
+        }
+        const data = loadData();
+        const cust = data.customers.find(c => c.id === customerId);
+        const svc = data.services.find(s => s.id === serviceId);
+        if (!cust || !svc) {
+            alert('Pelanggan dan service wajib dipilih.');
+            return;
+        }
+        if (!data.bookings) data.bookings = [];
+        data.bookings.push({
+            id: Date.now(),
+            datetime: dt,
+            customerId,
+            customerName: cust.name,
+            serviceId,
+            serviceName: svc.name,
+            barber
+        });
+        saveData(data);
+        document.getElementById('bookingDateTime').value = '';
+        document.getElementById('bookingBarber').value = '';
+        refreshBookingTable();
+        alert('Booking tersimpan.');
+    });
+
+    // ====== DASHBOARD ======
+    function refreshDashboard() {
+        const data = loadData();
+        const today = todayStr();
+        const todayTrx = data.transactions.filter(t => t.date === today);
+        const todayIncome = todayTrx.reduce((sum, t) => sum + Number(t.total || 0), 0);
+        const todayBooking = data.bookings.filter(b => (b.datetime||'').slice(0,10) === today);
+
+        document.getElementById('dashTrxToday').innerText = todayTrx.length;
+        document.getElementById('dashIncomeToday').innerText = 'Rp ' + formatRupiah(todayIncome);
+        document.getElementById('dashCustomerCount').innerText = data.customers.length;
+        document.getElementById('dashBookingToday').innerText = todayBooking.length;
+    }
+
+    // ====== STRUK PRINT & COPY WA ======
+    function getTransactionById(id) {
+        const data = loadData();
+        return data.transactions.find(t => t.id === id);
+    }
+
+    function buildStrukText(t) {
+        return [
+            '=== MR BARBERSHOP ===',
+            'Tanggal   : ' + t.date,
+            'Pelanggan : ' + (t.customerName || ''),
+            'Jenis     : ' + t.type,
+            'Item      : ' + t.itemName,
+            'Qty       : ' + t.qty,
+            'Harga     : Rp ' + formatRupiah(t.price),
+            'Diskon    : Rp ' + formatRupiah(t.discount),
+            'Total     : Rp ' + formatRupiah(t.total),
+            '',
+            'Terima kasih sudah cukur di tempat kami.'
+        ].join('\n');
+    }
+
+    function printStruk(id) {
+        const t = getTransactionById(id);
+        if (!t) {
+            alert('Transaksi tidak ditemukan.');
+            return;
+        }
+        const w = window.open('', '_blank');
+        const html = `
+            <html>
+            <head>
+                <title>Struk</title>
+                <style>
+                    body { font-family: monospace; font-size: 12px; }
+                    .center { text-align:center; }
+                    hr { border:0;border-top:1px dashed #000; }
+                </style>
+            </head>
+            <body onload="window.print();window.close();">
+            <div class="center"><strong>BARBERSHOP</strong></div>
+            <div class="center">-----------------------</div>
+            <div>Tanggal   : ${t.date}</div>
+            <div>Pelanggan : ${t.customerName || ''}</div>
+            <div>Jenis     : ${t.type}</div>
+            <div>Item      : ${t.itemName}</div>
+            <div>Qty       : ${t.qty}</div>
+            <div>Harga     : Rp ${formatRupiah(t.price)}</div>
+            <div>Diskon    : Rp ${formatRupiah(t.discount)}</div>
+            <div>Total     : Rp ${formatRupiah(t.total)}</div>
+            <hr>
+            <div class="center">Terima kasih</div>
+            </body>
+            </html>
+        `;
+        w.document.write(html);
+        w.document.close();
+    }
+
+    function copyStrukWA(id) {
+        const t = getTransactionById(id);
+        if (!t) {
+            alert('Transaksi tidak ditemukan.');
+            return;
+        }
+        const text = buildStrukText(t);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text)
+                .then(() => alert('Teks struk sudah disalin. Silakan paste di WhatsApp.'))
+                .catch(() => {
+                    fallbackCopyText(text);
+                });
+        } else {
+            fallbackCopyText(text);
+        }
+    }
+
+    function fallbackCopyText(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            alert('Teks struk sudah disalin. Silakan paste di WhatsApp.');
+        } catch (e) {
+            alert('Gagal menyalin teks. Silakan pilih dan copy manual:\n\n' + text);
+        }
+        document.body.removeChild(ta);
+    }
+
+    window.printStruk = printStruk;
+    window.copyStrukWA = copyStrukWA;
+    window.viewProofImage = viewProofImage;
+    window.editCustomer = editCustomer;
+    window.deleteCustomer = deleteCustomer;
+    window.editService = editService;
+    window.deleteService = deleteService;
+    window.editProduct = editProduct;
+    window.deleteProduct = deleteProduct;
+
+    // ====== BACKUP / RESTORE JSON ======
+    document.getElementById('btnExportJson').addEventListener('click', () => {
+        const data = loadData();
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'barbershop_data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('importJsonInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            try {
+                const obj = JSON.parse(ev.target.result);
+                saveData(obj);
+                alert('Import JSON berhasil.');
+                initAllForms();
+                refreshAllTables();
+                refreshDashboard();
+            } catch (e) {
+                alert('File JSON tidak valid.');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    });
+
+    // ====== BACKUP / RESTORE EXCEL ======
+    document.getElementById('btnExportExcel').addEventListener('click', () => {
+        const data = loadData();
+        const wb = XLSX.utils.book_new();
+        Object.keys(data).forEach(key => {
+            const arr = data[key];
+            if (!Array.isArray(arr) || arr.length === 0) return;
+            const headers = Array.from(new Set(arr.flatMap(obj => Object.keys(obj))));
+            const rows = [headers];
+            arr.forEach(obj => {
+                rows.push(headers.map(h => obj[h] !== undefined ? obj[h] : ''));
+            });
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            XLSX.utils.book_append_sheet(wb, ws, key.substring(0, 31));
+        });
+        XLSX.writeFile(wb, 'barbershop_data.xlsx');
+    });
+
+    document.getElementById('importExcelInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            const data = new Uint8Array(ev.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const result = loadData(); // mulai dari yang ada
+            workbook.SheetNames.forEach(sheetName => {
+                const ws = workbook.Sheets[sheetName];
+                const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
+                if (rows.length < 2) return;
+                const headers = rows[0];
+                const items = [];
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (row.every(cell => cell === null || cell === '')) continue;
+                    const obj = {};
+                    headers.forEach((h, idx) => {
+                        obj[h] = row[idx];
+                    });
+                    items.push(obj);
+                }
+                // Nama sheet dipakai langsung sebagai key jika cocok
+                if (result[sheetName]) {
+                    result[sheetName] = items;
+                } else {
+                    // kalau key belum ada, tambahkan baru
+                    result[sheetName] = items;
+                }
+            });
+            saveData(result);
+            alert('Import Excel selesai. Harap pastikan struktur kolom sudah sesuai.');
+            initAllForms();
+            refreshAllTables();
+            refreshDashboard();
+        };
+        reader.readAsArrayBuffer(file);
+        e.target.value = '';
+    });
+
+    // ====== REFRESH SEMUA TABEL ======
+    function refreshAllTables() {
+        refreshCustomerTable();
+        refreshServiceTable();
+        refreshProductTable();
+        refreshTransactionTable();
+        refreshBookingTable();
+    }
+
+    // ====== AUTO INIT (untuk set data awal saja) ======
+    // Tidak login otomatis, user tetap harus login
+    loadData(); // memicu inisialisasi admin bila belum ada
+</script>
+</body>
+</html>

@@ -108,6 +108,7 @@ function editProduk(i) {
   modal_total.value = p.modal_total;
   stok_produk.value = p.stok;
   harga_jual_satuan.value = p.harga_jual;
+  modal_per_pcs.value = p.modal_per_pcs;
 }
 
 function hapusProduk(i) {
@@ -151,6 +152,11 @@ function simpanProduk() {
     harga_jual: harga
   };
 
+  if (idx >= 0) {
+    var p = produk[idx];
+    if(stok == 0) obj.modal_per_pcs = p.modal_per_pcs;
+  }
+
   if (idx >= 0) produk[idx] = obj;
   else produk.push(obj);
 
@@ -165,6 +171,7 @@ function clearProdukForm() {
   modal_total.value = "";
   stok_produk.value = "";
   harga_jual_satuan.value = "";
+  modal_per_pcs.value = "";
 }
 
 /* ===========================================================
@@ -529,53 +536,53 @@ function openEdit(i) {
 // =============== Simpan Edit dari Modal ============
 document.getElementById("modalSave").onclick = function () {
 
-  var pembeli = modal_pembeli.value.trim();
-  var harga = parseFloat(modal_harga.value) || 0;
-  var qty = parseInt(modal_qty.value) || 0;
+  // var pembeli = modal_pembeli.value.trim();
+  // var harga = parseFloat(modal_harga.value) || 0;
+  // var qty = parseInt(modal_qty.value) || 0;
   var status = modal_status.value;
   var metode = modal_metode.value;
 
-  if (!pembeli || harga <= 0 || qty <= 0) {
-    alert("Lengkapi semua data edit!");
-    return;
-  }
+  // if (!pembeli || harga <= 0 || qty <= 0) {
+  //   alert("Lengkapi semua data edit!");
+  //   return;
+  // }
 
   var trx = load("transaksi");
   var row = trx[editIndex];
 
-  var produk = load("produk");
-  var p = produk.find(x => x.id === row.id_produk);
+  // var produk = load("produk");
+  // var p = produk.find(x => x.id === row.id_produk);
 
-  if (p.stok < qty) {
-    alert("Stok tidak cukup!\nStok sekarang: " + p.stok);
-    return;
-  }
+  // if (p.stok < qty) {
+  //   alert("Stok tidak cukup!\nStok sekarang: " + p.stok);
+  //   return;
+  // }
 
-  var stok_awal = p.stok;
-  p.stok -= qty;
-  var stok_akhir = p.stok;
+  // var stok_awal = p.stok;
+  // p.stok -= qty;
+  // var stok_akhir = p.stok;
 
   // hitung ulang total
-  var total_modal = p.modal_per_pcs * qty;
-  var total_jual = harga * qty;
-  var laba = total_jual - total_modal;
+  // var total_modal = p.modal_per_pcs * qty;
+  // var total_jual = harga * qty;
+  // var laba = total_jual - total_modal;
 
-  row.pembeli = pembeli;
-  row.harga_jual_per_pcs = harga;
-  row.qty = qty;
-  row.total_modal = total_modal;
-  row.total_jual = total_jual;
-  row.laba = laba;
-  row.tanggal = new Date().toString();
+  // row.pembeli = pembeli;
+  // row.harga_jual_per_pcs = harga;
+  // row.qty = qty;
+  // row.total_modal = total_modal;
+  // row.total_jual = total_jual;
+  // row.laba = laba;
+  // row.tanggal = new Date().toString();
   row.status_pembayaran = status;
   row.metode_pembayaran = metode;
 
-  save("produk", produk);
+  // save("produk", produk);
   save("transaksi", trx);
 
-  logStok("edit_transaksi", p.id, p.nama, qty, stok_awal, stok_akhir, "Simpan edit transaksi");
+  // logStok("edit_transaksi", p.id, p.nama, qty, stok_awal, stok_akhir, "Simpan edit transaksi");
 
-  renderProdukDT();
+  // renderProdukDT();
   renderTransaksiDT();
 
   editModalEl.hide();
@@ -742,6 +749,14 @@ function formatTanggal(tgl) {
   return hari + "/" + bulan + "/" + tahun;
 }
 
+function hitungModalPerPCS() {
+  var mt = parseFloat(modal_total.value) || 0;
+  var st = parseInt(stok_produk.value) || 0;
+
+  if (st > 0) {
+    modal_per_pcs.value = (mt / st).toFixed(2);
+  }
+}
 
 /* ===========================================================
    INITIALIZER
@@ -770,4 +785,7 @@ window.onload = function () {
   // REPORT
   updateReportSummary(load("transaksi"));
   updateChart(load("transaksi"));
+
+  modal_total.onkeyup = hitungModalPerPCS;
+  stok_produk.onkeyup = hitungModalPerPCS;
 };
