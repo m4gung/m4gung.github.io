@@ -1,0 +1,124 @@
+{
+    "users": [
+      {
+        "id": 1,
+        "username": "admin",
+        "password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+        "role": "admin",
+        "name": "Administrator"
+      }
+    ],
+    "customers": [
+      {
+        "id": 1763897973098,
+        "name": "Agung",
+        "phone": "",
+        "note": "",
+        "photo": null
+      }
+    ],
+    "products": [
+      {
+        "id": 1763898007995,
+        "name": "Powder",
+        "price": 50000,
+        "stock": 0
+      }
+    ],
+    "services": [
+      {
+        "id": 1763897995529,
+        "name": "Full Service",
+        "price": 60000,
+        "duration": 0
+      }
+    ],
+    "transactions": [
+      {
+        "id": 1763898030880,
+        "date": "2025-11-23",
+        "customerId": 1763897973098,
+        "customerName": "Agung",
+        "cashierName": "Sam",
+        "branchId": 1763897940152,
+        "branchName": "MR. Barber Bau Baharuddin",
+        "items": [
+          {
+            "type": "service",
+            "id": 1763897995529,
+            "name": "Full Service",
+            "price": 60000,
+            "qty": 1
+          },
+          {
+            "type": "product",
+            "id": 1763898007995,
+            "name": "Powder",
+            "price": 50000,
+            "qty": 1
+          }
+        ],
+        "subtotal": 110000,
+        "discount": 10000,
+        "total": 100000,
+        "paid": 100000,
+        "change": 0,
+        "payMethod": "Cash",
+        "payStatus": "Lunas",
+        "proofImage": null,
+        "createdBy": "admin"
+      }
+    ],
+    "bookings": [],
+    "cabang": [
+      {
+        "id": 1763897940152,
+        "name": "MR. Barber Bau Baharuddin"
+      },
+      {
+        "id": 1763897950901,
+        "name": "MR. Barber Cab. Callaccu"
+      },
+      {
+        "id": 1763897962912,
+        "name": "MR Barber Jalan Andi Panggaru"
+      }
+    ],
+    "audit": [
+      {
+        "id": 1763897925134,
+        "timestamp": "2025-11-23T11:38:45.134Z",
+        "user": "admin",
+        "action": "LOGIN",
+        "info": "User login"
+      },
+      {
+        "id": 1763897940152,
+        "timestamp": "2025-11-23T11:39:00.152Z",
+        "user": "admin",
+        "action": "BRANCH_SAVE",
+        "info": "Cabang: MR. Barber Bau Baharuddin"
+      },
+      {
+        "id": 1763897950901,
+        "timestamp": "2025-11-23T11:39:10.901Z",
+        "user": "admin",
+        "action": "BRANCH_SAVE",
+        "info": "Cabang: MR. Barber Cab. Callaccu"
+      },
+      {
+        "id": 1763897962913,
+        "timestamp": "2025-11-23T11:39:22.913Z",
+        "user": "admin",
+        "action": "BRANCH_SAVE",
+        "info": "Cabang: MR Barber Jalan Andi Panggaru"
+      },
+      {
+        "id": 1763898032145,
+        "timestamp": "2025-11-23T11:40:32.145Z",
+        "user": "admin",
+        "action": "TRANSACTION_ADD",
+        "info": "Transaksi ID 1763898030880, Total Rp 100000"
+      }
+    ]
+  }

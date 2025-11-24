@@ -783,6 +783,24 @@
                     <h5>Pengaturan Sistem</h5>
                     <p>Placeholder pengaturan umum: nama barbershop, alamat, dll.</p>
                     <div class="card mt-3">
+                        <div class="card-header">Ubah Password</div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <label>Password Lama</label>
+                                <input id="oldPass" type="password" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label>Password Baru</label>
+                                <input id="newPass1" type="password" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label>Ulangi Password Baru</label>
+                                <input id="newPass2" type="password" class="form-control">
+                            </div>
+                            <button class="btn btn-primary w-100" id="btnChangePass">Ubah Password</button>
+                        </div>
+                    </div>
+                    <div class="card mt-3">
                         <div class="card-header">Reset Data</div>
                         <div class="card-body">
                             <p>Fitur ini akan menghapus semua data aplikasi, termasuk transaksi, produk, pelanggan, cabang, dan audit log.</p>
@@ -847,6 +865,59 @@
     const STORAGE_KEY = 'bbshop_data_v1';
     let currentUser = null;
 
+    async function hashPassword(password) {
+        const enc = new TextEncoder().encode(password);
+        console.log(enc);
+        const buf = await crypto.subtle.digest("SHA-256", enc);
+        console.log(buf);
+        return Array.from(new Uint8Array(buf))
+            .map(b => b.toString(16).padStart(2, "0"))
+            .join("");
+    };
+
+    document.getElementById("btnChangePass").addEventListener("click", async () => {
+
+        const oldPass = document.getElementById("oldPass").value;
+        const newPass1 = document.getElementById("newPass1").value;
+        const newPass2 = document.getElementById("newPass2").value;
+
+        if (!oldPass || !newPass1 || !newPass2) {
+            alert("Semua field wajib diisi");
+            return;
+        }
+
+        if (newPass1 !== newPass2) {
+            alert("Password baru tidak sama");
+            return;
+        }
+
+        const data = loadData();
+        const user = currentUser;
+
+        if (!user) {
+            alert("Tidak ada user login");
+            return;
+        }
+
+        const oldHash = await hashPassword(oldPass);
+
+        if (oldHash !== user.password) {
+            alert("Password lama salah");
+            return;
+        }
+
+        const newHash = await hashPassword(newPass1);
+
+        user.password = newHash;
+        saveData(data);
+
+        saveLog("CHANGE_PASSWORD", `User ${user.username}`);
+
+        alert("Password berhasil diubah. Silakan login ulang.");
+
+        location.reload();
+    });
+
     //=== PENGATURAN ===
     function clearAllData() {
         let check = prompt("Ketik RESET untuk menghapus semua data:");
@@ -858,7 +929,7 @@
         // Reset ke data awal (hanya user admin)
         const fresh = {
             users: [
-            {id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator'}
+            {id: 1, username: 'admin', password: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', role: 'admin', name: 'Administrator'}
             ],
             customers: [],
             products: [],
@@ -1096,7 +1167,7 @@
         if (!raw) {
             const initial = {
                 users: [
-                    {id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator'}
+                    {id: 1, username: 'admin', password: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', role: 'admin', name: 'Administrator'}
                 ],
                 customers: [],
                 products: [],
@@ -1137,16 +1208,25 @@
     }
 
     // ====== LOGIN / LOGOUT ======
-    document.getElementById('btnLogin').addEventListener('click', () => {
+    document.getElementById('btnLogin').addEventListener('click', async () => {
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value;
         const data = loadData();
-        const user = data.users.find(u => u.username === username && u.password === password);
+        const user = data.users.find(u => u.username === username);
         const err = document.getElementById('loginError');
         if (!user) {
             err.classList.remove('d-none');
             return;
         }
+        const hash = await hashPassword(password);
+        console.log(hash);
+        console.log(user.password);
+        if (user.password !== hash) {
+            err.classList.remove('d-none');
+            return;
+        }
+
+
         err.classList.add('d-none');
         currentUser = user;
         document.getElementById('loginView').classList.add('d-none');
