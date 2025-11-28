@@ -662,6 +662,13 @@
             </div>
           </div>
         </div>
+        <hr class="my-3">
+        <button id="btn-clear-data" class="btn btn-danger btn-sm">
+          Hapus Semua Data
+        </button>
+        <p class="text-danger small mt-2">
+          Perhatian: Menghapus semua data akan memulai aplikasi dari awal dan tidak bisa dibatalkan.
+        </p>
       </section>
     </div>
   </div>
@@ -1900,6 +1907,15 @@ if (fileFoto) {
       }
     };
     reader.readAsBinaryString(file);
+  });
+
+  document.getElementById('btn-clear-data').addEventListener('click', () => {
+  if (confirm("Semua data akan dihapus permanen. Lanjutkan?")) {
+    localStorage.removeItem(STORAGE_KEY);
+    data = getDefaultData();
+    saveData();
+    alert("Semua data berhasil dihapus.");
+  }
   });
 
   // Render All
