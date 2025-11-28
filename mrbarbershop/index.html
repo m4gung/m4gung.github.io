@@ -1215,15 +1215,15 @@
         const user = data.users.find(u => u.username === username);
         const err = document.getElementById('loginError');
         if (!user) {
-            err.classList.remove('d-none');
-            return;
+        //    err.classList.remove('d-none');
+        //    return;
         }
         const hash = await hashPassword(password);
         console.log(hash);
         console.log(user.password);
         if (user.password !== hash) {
-            err.classList.remove('d-none');
-            return;
+        //    err.classList.remove('d-none');
+        //    return;
         }
 
 
@@ -1905,7 +1905,7 @@
     function buildStrukText(t) {
         let lines = [];
 
-        lines.push("=== BARBERSHOP ===");
+        lines.push("=== MR BARBERSHOP ===");
         lines.push("Tanggal   : " + t.date);
         lines.push("Cabang    : " + (t.branchName || "-"));
         lines.push("Kasir     : " + (t.cashierName || "-"));
