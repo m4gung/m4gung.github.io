@@ -452,7 +452,7 @@
                 </select>
               </div>
               <div class="col-md-4">
-                <label class="form-label text-small">Foto Bukti Pembayaran</label>
+                <label class="form-label text-small">Foto</label>
                 <input type="file" id="tpen-foto" accept="image/*" class="form-control form-control-sm">
               </div>
               <div class="col-md-12">
@@ -529,9 +529,9 @@
                 <input type="number" id="biaya-nominal" class="form-control form-control-sm" required>
               </div>
               <div class="col-md-3">
-                <label class="form-label text-small">Bukti Biaya</label>
-                <input type="file" id="biaya-foto" accept="image/*" class="form-control form-control-sm">
-              </div>
+  							<label class="form-label text-small">Bukti Biaya</label>
+  							<input type="file" id="biaya-foto" accept="image/*" class="form-control form-control-sm">
+							</div>
               <div class="col-md-1 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary btn-sm w-100">
                   <i class="bi bi-plus-circle"></i>
@@ -554,7 +554,7 @@
                   <th>Kategori</th>
                   <th>Deskripsi</th>
                   <th class="text-end">Nominal</th>
-                  <th class="text-center">Bukti</th>
+                  <th>Bukti</th>
                   <th style="width:140px;">Aksi</th>
                 </tr>
                 </thead>
@@ -636,7 +636,6 @@
             </div>
             <div class="text-small text-muted">
               File JSON berisi semua master dan transaksi (petani, pengepul, pembagian hasil, penjualan, biaya).
-              Foto tidak ikut (disimpan di IndexedDB lokal).
             </div>
           </div>
         </div>
@@ -659,7 +658,7 @@
               Format sheet:
               <code>petani</code>, <code>pengepul</code>, <code>transaksi_petani</code>,
               <code>penjualan_pengepul</code>, <code>biaya</code>.
-              Import akan menimpa seluruh data jika berhasil dibaca. Foto tidak ikut.
+              Import akan menimpa seluruh data jika berhasil dibaca.
             </div>
           </div>
         </div>
@@ -669,7 +668,6 @@
         </button>
         <p class="text-danger small mt-2">
           Perhatian: Menghapus semua data akan memulai aplikasi dari awal dan tidak bisa dibatalkan.
-          (Termasuk menghapus semua foto di IndexedDB).
         </p>
       </section>
     </div>
@@ -914,92 +912,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  const STORAGE_KEY = 'pembukuan_pompanisasi_data_v4';
+  const STORAGE_KEY = 'pembukuan_pompanisasi_data_v3';
   const DARK_MODE_KEY = 'pembukuan_pompanisasi_dark_mode';
-  const PHOTO_DB_NAME = 'pompanisasi_photos_db';
-  const PHOTO_DB_VERSION = 1;
-
-  let photoDBPromise = null;
-
-  function getPhotoDB() {
-    if (!('indexedDB' in window)) {
-      console.warn('IndexedDB tidak tersedia. Foto tidak akan disimpan.');
-      return Promise.reject('IndexedDB not supported');
-    }
-    if (!photoDBPromise) {
-      photoDBPromise = new Promise((resolve, reject) => {
-        const req = indexedDB.open(PHOTO_DB_NAME, PHOTO_DB_VERSION);
-        req.onupgradeneeded = (event) => {
-          const db = event.target.result;
-          if (!db.objectStoreNames.contains('petaniPhotos')) {
-            db.createObjectStore('petaniPhotos', { keyPath: 'id' });
-          }
-          if (!db.objectStoreNames.contains('penjualanPhotos')) {
-            db.createObjectStore('penjualanPhotos', { keyPath: 'id' });
-          }
-          if (!db.objectStoreNames.contains('biayaPhotos')) {
-            db.createObjectStore('biayaPhotos', { keyPath: 'id' });
-          }
-        };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      });
-    }
-    return photoDBPromise;
-  }
-
-  function savePhoto(storeName, id, file) {
-    if (!file) return Promise.resolve();
-    return getPhotoDB().then(db => new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, 'readwrite');
-      const store = tx.objectStore(storeName);
-      store.put({ id, blob: file, updatedAt: Date.now() });
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    })).catch(err => {
-      console.error('Gagal simpan foto ke IndexedDB', err);
-    });
-  }
-
-  function deletePhoto(storeName, id) {
-    return getPhotoDB().then(db => new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, 'readwrite');
-      const store = tx.objectStore(storeName);
-      store.delete(id);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    })).catch(err => {
-      console.error('Gagal hapus foto dari IndexedDB', err);
-    });
-  }
-
-  function getPhoto(storeName, id) {
-    return getPhotoDB().then(db => new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, 'readonly');
-      const store = tx.objectStore(storeName);
-      const req = store.get(id);
-      req.onsuccess = () => resolve(req.result || null);
-      req.onerror = () => reject(req.error);
-    })).catch(err => {
-      console.error('Gagal ambil foto dari IndexedDB', err);
-      return null;
-    });
-  }
-
-  function loadAllThumbnails() {
-    const imgs = document.querySelectorAll('img[data-photo-store][data-photo-id]');
-    imgs.forEach(img => {
-      const store = img.getAttribute('data-photo-store');
-      const id = Number(img.getAttribute('data-photo-id'));
-      getPhoto(store, id).then(rec => {
-        if (rec && rec.blob) {
-          const url = URL.createObjectURL(rec.blob);
-          img.src = url;
-          img.setAttribute('data-foto', url);
-        }
-      });
-    });
-  }
 
   function getDefaultData() {
     return {
@@ -1025,27 +939,7 @@
     }
   }
 
-  function cleanLegacyBase64() {
-    // Hapus base64 yang lama kalau masih ada di data
-    data.petani.forEach(p => {
-      if (p.fotoKTP && typeof p.fotoKTP === 'string' && p.fotoKTP.startsWith('data:')) {
-        p.fotoKTP = true; // tandai saja ada foto, data fisik diabaikan
-      }
-    });
-    data.penjualanPengepul.forEach(t => {
-      if (t.fotoBukti && typeof t.fotoBukti === 'string' && t.fotoBukti.startsWith('data:')) {
-        t.fotoBukti = true;
-      }
-    });
-    data.biaya.forEach(b => {
-      if (b.fotoBukti && typeof b.fotoBukti === 'string' && b.fotoBukti.startsWith('data:')) {
-        b.fotoBukti = true;
-      }
-    });
-  }
-
   function saveData() {
-    cleanLegacyBase64();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     updateAllUI();
   }
@@ -1125,12 +1019,12 @@
     if (!nama) return;
     const newId = Date.now();
 
-    function finalize(hasFoto) {
+    function pushAndSave(fotoBase64) {
       data.petani.push({
         id: newId,
         nama,
         catatan,
-        fotoKTP: !!hasFoto
+        fotoKTP: fotoBase64 || null
       });
       document.getElementById('petani-nama').value = '';
       document.getElementById('petani-catatan').value = '';
@@ -1139,9 +1033,11 @@
     }
 
     if (file) {
-      savePhoto('petaniPhotos', newId, file).then(() => finalize(true));
+      const reader = new FileReader();
+      reader.onload = () => pushAndSave(reader.result);
+      reader.readAsDataURL(file);
     } else {
-      finalize(false);
+      pushAndSave(null);
     }
   });
 
@@ -1155,7 +1051,7 @@
         <td>${p.nama}</td>
         <td>
           ${p.fotoKTP
-            ? `<img class="foto-thumb" data-photo-store="petaniPhotos" data-photo-id="${p.id}"
+            ? `<img src="${p.fotoKTP}" class="foto-thumb" data-foto="${p.fotoKTP}"
                      style="height:45px;cursor:pointer;border-radius:5px;">`
             : '-'}
         </td>
@@ -1176,10 +1072,6 @@
       btn.addEventListener('click', () => {
         const id = Number(btn.dataset.id);
         if (!confirm('Hapus petani ini? Transaksi yang terkait juga akan dihapus.')) return;
-        const petani = data.petani.find(p => p.id === id);
-        if (petani && petani.fotoKTP) {
-          deletePhoto('petaniPhotos', id);
-        }
         data.petani = data.petani.filter(p => p.id !== id);
         data.transaksiPetani = data.transaksiPetani.filter(t => t.petaniId !== id);
         saveData();
@@ -1195,16 +1087,9 @@
         document.getElementById('edit-petani-nama').value = p.nama;
         document.getElementById('edit-petani-catatan').value = p.catatan || '';
         document.getElementById('edit-petani-foto').value = '';
-        const imgPrev = document.getElementById('preview-edit-petani-foto');
-        imgPrev.src = '';
-        if (p.fotoKTP) {
-          getPhoto('petaniPhotos', p.id).then(rec => {
-            if (rec && rec.blob) {
-              imgPrev.src = URL.createObjectURL(rec.blob);
-            }
-          });
-        }
-        new bootstrap.Modal(document.getElementById('modalEditPetani')).show();
+        document.getElementById('preview-edit-petani-foto').src = p.fotoKTP || '';
+        const modal = new bootstrap.Modal(document.getElementById('modalEditPetani'));
+        modal.show();
       });
     });
 
@@ -1224,7 +1109,6 @@
       selEdit.appendChild(opt2);
     });
 
-    loadAllThumbnails();
     attachPreviewEvents();
   }
 
@@ -1239,17 +1123,20 @@
     data.petani[idx].nama = nama;
     data.petani[idx].catatan = catatan;
 
-    function doneSave(hasFoto) {
-      if (hasFoto !== null) data.petani[idx].fotoKTP = hasFoto;
+    function doneSave() {
       saveData();
       bootstrap.Modal.getInstance(document.getElementById('modalEditPetani')).hide();
     }
 
     if (file) {
-      savePhoto('petaniPhotos', id, file).then(() => doneSave(true));
+      const reader = new FileReader();
+      reader.onload = () => {
+        data.petani[idx].fotoKTP = reader.result;
+        doneSave();
+      };
+      reader.readAsDataURL(file);
     } else {
-      // tidak ubah foto
-      doneSave(null);
+      doneSave();
     }
   });
 
@@ -1291,12 +1178,6 @@
         const id = Number(btn.dataset.id);
         if (!confirm('Hapus pengepul ini? Penjualan yang terkait juga akan dihapus.')) return;
         data.pengepul = data.pengepul.filter(p => p.id !== id);
-        // hapus foto penjualan terkait
-        data.penjualanPengepul.forEach(t => {
-          if (t.pengepulId === id && t.fotoBukti) {
-            deletePhoto('penjualanPhotos', t.id);
-          }
-        });
         data.penjualanPengepul = data.penjualanPengepul.filter(t => t.pengepulId !== id);
         saveData();
       });
@@ -1310,7 +1191,8 @@
         document.getElementById('edit-pengepul-id').value = p.id;
         document.getElementById('edit-pengepul-nama').value = p.nama;
         document.getElementById('edit-pengepul-catatan').value = p.catatan || '';
-        new bootstrap.Modal(document.getElementById('modalEditPengepul')).show();
+        const modal = new bootstrap.Modal(document.getElementById('modalEditPengepul'));
+        modal.show();
       });
     });
 
@@ -1428,7 +1310,8 @@
         document.getElementById('edit-tp-hasil-pompa').value = t.hasilPompaKarung;
         document.getElementById('edit-tp-hasil-petani').value = t.hasilPetaniKarung;
         document.getElementById('edit-tp-keterangan').value = t.keterangan || '';
-        new bootstrap.Modal(document.getElementById('modalEditTransaksiPetani')).show();
+        const modal = new bootstrap.Modal(document.getElementById('modalEditTransaksiPetani'));
+        modal.show();
       });
     });
   }
@@ -1484,11 +1367,9 @@
 
     if (!tanggal || !pengepulId) return;
 
-    const newId = Date.now();
-
-    function pushAndSave(hasFoto) {
+    function pushAndSave(fotoBase64) {
       data.penjualanPengepul.push({
-        id: newId,
+        id: Date.now(),
         tanggal,
         pengepulId,
         jumlahKarung,
@@ -1498,7 +1379,7 @@
         statusPembayaran,
         metodePembayaran,
         keterangan,
-        fotoBukti: !!hasFoto
+        fotoBukti: fotoBase64 || null
       });
       document.getElementById('tpen-tanggal').value = '';
       document.getElementById('tpen-pengepul-id').value = '';
@@ -1514,9 +1395,11 @@
     }
 
     if (fileFoto) {
-      savePhoto('penjualanPhotos', newId, fileFoto).then(() => pushAndSave(true));
+      const reader = new FileReader();
+      reader.onload = () => pushAndSave(reader.result);
+      reader.readAsDataURL(fileFoto);
     } else {
-      pushAndSave(false);
+      pushAndSave(null);
     }
   });
 
@@ -1541,7 +1424,7 @@
           <td>${t.metodePembayaran}</td>
           <td>
             ${t.fotoBukti
-              ? `<img class="foto-thumb" data-photo-store="penjualanPhotos" data-photo-id="${t.id}"
+              ? `<img src="${t.fotoBukti}" class="foto-thumb" data-foto="${t.fotoBukti}"
                        style="height:45px;cursor:pointer;border-radius:5px;">`
               : '-'}
           </td>
@@ -1562,10 +1445,6 @@
       btn.addEventListener('click', () => {
         const id = Number(btn.dataset.id);
         if (!confirm('Hapus penjualan ke pengepul ini?')) return;
-        const t = data.penjualanPengepul.find(x => x.id === id);
-        if (t && t.fotoBukti) {
-          deletePhoto('penjualanPhotos', id);
-        }
         data.penjualanPengepul = data.penjualanPengepul.filter(t => t.id !== id);
         saveData();
       });
@@ -1587,20 +1466,12 @@
         document.getElementById('edit-tpen-metode').value = t.metodePembayaran || 'Tunai';
         document.getElementById('edit-tpen-keterangan').value = t.keterangan || '';
         document.getElementById('edit-tpen-foto').value = '';
-        const imgPrev = document.getElementById('preview-edit-tpen-foto');
-        imgPrev.src = '';
-        if (t.fotoBukti) {
-          getPhoto('penjualanPhotos', t.id).then(rec => {
-            if (rec && rec.blob) {
-              imgPrev.src = URL.createObjectURL(rec.blob);
-            }
-          });
-        }
-        new bootstrap.Modal(document.getElementById('modalEditPenjualanPengepul')).show();
+        document.getElementById('preview-edit-tpen-foto').src = t.fotoBukti || '';
+        const modal = new bootstrap.Modal(document.getElementById('modalEditPenjualanPengepul'));
+        modal.show();
       });
     });
 
-    loadAllThumbnails();
     attachPreviewEvents();
   }
 
@@ -1631,16 +1502,20 @@
     data.penjualanPengepul[idx].metodePembayaran = metodePembayaran;
     data.penjualanPengepul[idx].keterangan = keterangan;
 
-    function doneSave(hasFoto) {
-      if (hasFoto !== null) data.penjualanPengepul[idx].fotoBukti = hasFoto;
+    function doneSave() {
       saveData();
       bootstrap.Modal.getInstance(document.getElementById('modalEditPenjualanPengepul')).hide();
     }
 
     if (fileFoto) {
-      savePhoto('penjualanPhotos', id, fileFoto).then(() => doneSave(true));
+      const reader = new FileReader();
+      reader.onload = () => {
+        data.penjualanPengepul[idx].fotoBukti = reader.result;
+        doneSave();
+      };
+      reader.readAsDataURL(fileFoto);
     } else {
-      doneSave(null);
+      doneSave();
     }
   });
 
@@ -1652,30 +1527,47 @@
     const deskripsi = document.getElementById('biaya-deskripsi').value.trim();
     const nominal = toNumber(document.getElementById('biaya-nominal').value);
     if (!tanggal || !nominal) return;
-    const fileFoto = document.getElementById('biaya-foto').files[0];
-    const newId = Date.now();
+    //data.biaya.push({
+     // id: Date.now(),
+     // tanggal,
+     // kategori,
+     // deskripsi,
+     // nominal
+   // });
 
-    function pushAndSave(hasFoto) {
-      data.biaya.push({
-        id: newId,
-        tanggal,
-        kategori,
-        deskripsi,
-        nominal,
-        fotoBukti: !!hasFoto
-      });
-      document.getElementById('biaya-foto').value = '';
-      document.getElementById('biaya-tanggal').value = '';
-      document.getElementById('biaya-deskripsi').value = '';
-      document.getElementById('biaya-nominal').value = '';
-      saveData();
-    }
+   const fileFoto = document.getElementById('biaya-foto').files[0];
 
-    if (fileFoto) {
-      savePhoto('biayaPhotos', newId, fileFoto).then(() => pushAndSave(true));
-    } else {
-      pushAndSave(false);
-    }
+if (fileFoto) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    data.biaya.push({
+      id: Date.now(),
+      tanggal,
+      kategori,
+      deskripsi,
+      nominal,
+      fotoBukti: reader.result  // Base64
+    });
+    saveData();
+  };
+  reader.readAsDataURL(fileFoto);
+} else {
+  data.biaya.push({
+    id: Date.now(),
+    tanggal,
+    kategori,
+    deskripsi,
+    nominal,
+    fotoBukti: null
+  });
+  saveData();
+}
+
+    document.getElementById('biaya-foto').value = '';
+    document.getElementById('biaya-tanggal').value = '';
+    document.getElementById('biaya-deskripsi').value = '';
+    document.getElementById('biaya-nominal').value = '';
+    saveData();
   });
 
   function renderBiaya() {
@@ -1691,12 +1583,12 @@
           <td>${formatDateID(b.tanggal)}</td>
           <td>${b.kategori}</td>
           <td>${b.deskripsi || ''}</td>
-          <td class="text-end">${formatRupiah(b.nominal)}</td>
+          <td class="text-end">${formatRupiah(b.nominal)}</td>    
           <td class="text-center">
-            ${b.fotoBukti
-              ? `<img class="foto-thumb" data-photo-store="biayaPhotos" data-photo-id="${b.id}"
-                       style="height:45px;cursor:pointer;border-radius:5px;">`
-              : '-'}
+            ${b.fotoBukti 
+            ? `<img src="${b.fotoBukti}" class="foto-thumb" data-foto="${b.fotoBukti}" style="height:45px;cursor:pointer;border-radius:5px;">`
+            : '-'
+            }
           </td>
           <td>
             <button class="btn btn-sm btn-outline-secondary btn-edit-biaya me-1" data-id="${b.id}">
@@ -1714,10 +1606,6 @@
       btn.addEventListener('click', () => {
         const id = Number(btn.dataset.id);
         if (!confirm('Hapus biaya ini?')) return;
-        const b = data.biaya.find(x => x.id === id);
-        if (b && b.fotoBukti) {
-          deletePhoto('biayaPhotos', id);
-        }
         data.biaya = data.biaya.filter(b => b.id !== id);
         saveData();
       });
@@ -1733,22 +1621,13 @@
         document.getElementById('edit-biaya-kategori').value = b.kategori;
         document.getElementById('edit-biaya-deskripsi').value = b.deskripsi || '';
         document.getElementById('edit-biaya-nominal').value = b.nominal;
-        document.getElementById('edit-biaya-foto').value = '';
-        const imgPrev = document.getElementById('preview-edit-biaya-foto');
-        imgPrev.src = '';
-        if (b.fotoBukti) {
-          getPhoto('biayaPhotos', b.id).then(rec => {
-            if (rec && rec.blob) {
-              imgPrev.src = URL.createObjectURL(rec.blob);
-            }
-          });
-        }
-        new bootstrap.Modal(document.getElementById('modalEditBiaya')).show();
+        document.getElementById('preview-edit-biaya-foto').src = b.fotoBukti || '';
+        const modal = new bootstrap.Modal(document.getElementById('modalEditBiaya'));
+        modal.show();
       });
     });
 
-    loadAllThumbnails();
-    attachPreviewEvents();
+    setTimeout(attachPreviewEvents, 50);
   }
 
   document.getElementById('form-edit-biaya').addEventListener('submit', (e) => {
@@ -1762,23 +1641,23 @@
 
     const idx = data.biaya.findIndex(b => b.id === id);
     if (idx >= 0) {
-      data.biaya[idx].tanggal = tanggal;
-      data.biaya[idx].kategori = kategori;
-      data.biaya[idx].deskripsi = deskripsi;
-      data.biaya[idx].nominal = nominal;
-
-      function doneSave(hasFoto) {
-        if (hasFoto !== null) data.biaya[idx].fotoBukti = hasFoto;
-        saveData();
-        bootstrap.Modal.getInstance(document.getElementById('modalEditBiaya')).hide();
-      }
-
+      const fotoBukti = data.biaya[idx].fotoBukti;
+      data.biaya[idx] = { id, tanggal, kategori, deskripsi, nominal , fotoBukti};
       if (fileFoto) {
-        savePhoto('biayaPhotos', id, fileFoto).then(() => doneSave(true));
+        const reader = new FileReader();
+        reader.onload = () => {
+          data.biaya[idx].fotoBukti = reader.result;
+          saveData();
+					bootstrap.Modal.getInstance(document.getElementById('modalEditBiaya')).hide();
+        };
+        reader.readAsDataURL(fileFoto);
       } else {
-        doneSave(null);
+        saveData();
+				bootstrap.Modal.getInstance(document.getElementById('modalEditBiaya')).hide();
       }
+      
     }
+  
   });
 
   // Dashboard
@@ -1857,7 +1736,7 @@
         if (!imported || typeof imported !== 'object') throw new Error('Format tidak sesuai');
         data = Object.assign(getDefaultData(), imported);
         saveData();
-        alert('Import JSON berhasil.\nCatatan: Foto tidak ikut, karena tersimpan lokal di IndexedDB.');
+        alert('Import JSON berhasil.');
       } catch (err) {
         console.error(err);
         alert('File JSON tidak valid.');
@@ -1868,7 +1747,7 @@
     reader.readAsText(file);
   });
 
-  // Export Excel (tanpa foto)
+  // Export Excel
   document.getElementById('btn-export-excel').addEventListener('click', () => {
     try {
       const wb = XLSX.utils.book_new();
@@ -2004,8 +1883,7 @@
               totalHarga,
               statusPembayaran: r.statusPembayaran || 'Lunas',
               metodePembayaran: r.metodePembayaran || 'Tunai',
-              keterangan: r.keterangan || '',
-              fotoBukti: false
+              keterangan: r.keterangan || ''
             };
           });
         });
@@ -2016,14 +1894,13 @@
             tanggal: r.tanggal || '',
             kategori: r.kategori || 'Lain-lain',
             deskripsi: r.deskripsi || '',
-            nominal: toNumber(r.nominal),
-            fotoBukti: false
+            nominal: toNumber(r.nominal)
           }));
         });
 
         data = imported;
         saveData();
-        alert('Import Excel berhasil.\nCatatan: Foto tidak ikut import.');
+        alert('Import Excel berhasil.');
       } catch (err) {
         console.error(err);
         alert('File Excel tidak valid atau format sheet tidak sesuai.');
@@ -2034,19 +1911,13 @@
     reader.readAsBinaryString(file);
   });
 
-  // Clear all data + IndexedDB
   document.getElementById('btn-clear-data').addEventListener('click', () => {
-    if (confirm("Semua data akan dihapus permanen (termasuk foto di IndexedDB). Lanjutkan?")) {
-      localStorage.removeItem(STORAGE_KEY);
-      data = getDefaultData();
-      // hapus database foto
-      if ('indexedDB' in window) {
-        indexedDB.deleteDatabase(PHOTO_DB_NAME);
-        photoDBPromise = null;
-      }
-      saveData();
-      alert("Semua data berhasil dihapus.");
-    }
+  if (confirm("Semua data akan dihapus permanen. Lanjutkan?")) {
+    localStorage.removeItem(STORAGE_KEY);
+    data = getDefaultData();
+    saveData();
+    alert("Semua data berhasil dihapus.");
+  }
   });
 
   // Render All
