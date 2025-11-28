@@ -528,6 +528,10 @@
                 <label class="form-label text-small">Nominal (Rp)</label>
                 <input type="number" id="biaya-nominal" class="form-control form-control-sm" required>
               </div>
+              <div class="col-md-3">
+  							<label class="form-label text-small">Bukti Biaya</label>
+  							<input type="file" id="biaya-foto" accept="image/*" class="form-control form-control-sm">
+							</div>
               <div class="col-md-1 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary btn-sm w-100">
                   <i class="bi bi-plus-circle"></i>
@@ -550,6 +554,7 @@
                   <th>Kategori</th>
                   <th>Deskripsi</th>
                   <th class="text-end">Nominal</th>
+                  <th>Bukti</th>
                   <th style="width:140px;">Aksi</th>
                 </tr>
                 </thead>
@@ -866,6 +871,11 @@
         <div class="col-md-2">
           <label class="form-label text-small">Nominal (Rp)</label>
           <input type="number" id="edit-biaya-nominal" class="form-control form-control-sm" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label text-small">Bukti Biaya</label>
+          <input type="file" id="edit-biaya-foto" accept="image/*" class="form-control form-control-sm">
+          <img id="preview-edit-biaya-foto" src="" style="height:70px;margin-top:5px;border-radius:4px;">
         </div>
       </div>
       <div class="modal-footer">
@@ -1510,13 +1520,43 @@
     const deskripsi = document.getElementById('biaya-deskripsi').value.trim();
     const nominal = toNumber(document.getElementById('biaya-nominal').value);
     if (!tanggal || !nominal) return;
+    //data.biaya.push({
+     // id: Date.now(),
+     // tanggal,
+     // kategori,
+     // deskripsi,
+     // nominal
+   // });
+
+   const fileFoto = document.getElementById('biaya-foto').files[0];
+
+if (fileFoto) {
+  const reader = new FileReader();
+  reader.onload = () => {
     data.biaya.push({
       id: Date.now(),
       tanggal,
       kategori,
       deskripsi,
-      nominal
+      nominal,
+      fotoBukti: reader.result  // Base64
     });
+    saveData();
+  };
+  reader.readAsDataURL(fileFoto);
+} else {
+  data.biaya.push({
+    id: Date.now(),
+    tanggal,
+    kategori,
+    deskripsi,
+    nominal,
+    fotoBukti: null
+  });
+  saveData();
+}
+
+    document.getElementById('biaya-foto').value = '';
     document.getElementById('biaya-tanggal').value = '';
     document.getElementById('biaya-deskripsi').value = '';
     document.getElementById('biaya-nominal').value = '';
@@ -1536,7 +1576,13 @@
           <td>${formatDateID(b.tanggal)}</td>
           <td>${b.kategori}</td>
           <td>${b.deskripsi || ''}</td>
-          <td class="text-end">${formatRupiah(b.nominal)}</td>
+          <td class="text-end">${formatRupiah(b.nominal)}</td>    
+          <td class="text-center">
+            ${b.fotoBukti 
+            ? `<img src="${b.fotoBukti}" class="foto-thumb" data-foto="${b.fotoBukti}" style="height:45px;cursor:pointer;border-radius:5px;">`
+            : '-'
+            }
+          </td>
           <td>
             <button class="btn btn-sm btn-outline-secondary btn-edit-biaya me-1" data-id="${b.id}">
               <i class="bi bi-pencil"></i>
@@ -1568,10 +1614,13 @@
         document.getElementById('edit-biaya-kategori').value = b.kategori;
         document.getElementById('edit-biaya-deskripsi').value = b.deskripsi || '';
         document.getElementById('edit-biaya-nominal').value = b.nominal;
+        document.getElementById('preview-edit-biaya-foto').src = b.fotoBukti || '';
         const modal = new bootstrap.Modal(document.getElementById('modalEditBiaya'));
         modal.show();
       });
     });
+
+    setTimeout(attachPreviewEvents, 50);
   }
 
   document.getElementById('form-edit-biaya').addEventListener('submit', (e) => {
@@ -1581,12 +1630,25 @@
     const kategori = document.getElementById('edit-biaya-kategori').value;
     const deskripsi = document.getElementById('edit-biaya-deskripsi').value.trim();
     const nominal = toNumber(document.getElementById('edit-biaya-nominal').value);
+    const fileFoto = document.getElementById('edit-biaya-foto').files[0];
+    var fotoBukti = null;
+
     const idx = data.biaya.findIndex(b => b.id === id);
     if (idx >= 0) {
-      data.biaya[idx] = { id, tanggal, kategori, deskripsi, nominal };
-      saveData();
+      data.biaya[idx] = { id, tanggal, kategori, deskripsi, nominal , fotoBukti};
+      if (fileFoto) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          data.biaya[idx].fotoBukti = reader.result;
+          saveData();
+        };
+        reader.readAsDataURL(fileFoto);
+      } else {
+        saveData();
+      }
       bootstrap.Modal.getInstance(document.getElementById('modalEditBiaya')).hide();
     }
+  
   });
 
   // Dashboard
