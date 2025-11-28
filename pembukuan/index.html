@@ -171,6 +171,26 @@
     <div class="content-area">
       <!-- Dashboard -->
       <section id="section-dashboard" class="section active">
+        <div class="row g-2 mb-3">
+          <div class="col-md-3">
+            <label class="form-label text-small">Tanggal Mulai</label>
+            <input type="date" id="dash-start" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-small">Tanggal Akhir</label>
+            <input type="date" id="dash-end" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button class="btn btn-primary btn-sm w-100" id="btn-filter-dashboard">
+              <i class="bi bi-search me-1"></i>Filter
+            </button>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button class="btn btn-secondary btn-sm w-100" id="btn-reset-dashboard">
+              Reset
+            </button>
+          </div>
+        </div>
         <div class="row g-3">
           <div class="col-md-4">
             <div class="card">
@@ -573,9 +593,17 @@
           </div>
           <div class="card-body">
             <form id="form-laporan" class="row g-2">
-              <div class="col-md-3">
+              <!-- <div class="col-md-3">
                 <label class="form-label text-small">Periode (Bulan)</label>
                 <input type="month" id="laporan-bulan" class="form-control form-control-sm">
+              </div> -->
+              <div class="col-md-3">
+                <label class="form-label text-small">Tanggal Mulai</label>
+                <input type="date" id="laporan-start" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label text-small">Tanggal Akhir</label>
+                <input type="date" id="laporan-end" class="form-control form-control-sm">
               </div>
               <div class="col-md-3 d-flex align-items-end">
                 <button type="button" id="btn-hitung-laporan" class="btn btn-primary btn-sm">
@@ -1783,11 +1811,26 @@
 
   // Dashboard
   function updateDashboard() {
-    const totalPenjualan = data.penjualanPengepul.reduce((sum, t) => sum + (t.totalHarga || 0), 0);
-    const totalBiaya = data.biaya.reduce((sum, b) => sum + (b.nominal || 0), 0);
+    const start = document.getElementById('dash-start').value;
+    const end = document.getElementById('dash-end').value;
+
+    function inRange(dateStr) {
+      if (!dateStr) return false;
+      if (start && dateStr < start) return false;
+      if (end && dateStr > end) return false;
+      return true;
+    }
+
+    const filteredPenjualan = data.penjualanPengepul.filter(t => inRange(t.tanggal));
+    const filteredBiaya = data.biaya.filter(b => inRange(b.tanggal));
+    const filteredTP = data.transaksiPetani.filter(tp => inRange(tp.tanggal));
+
+    const totalPenjualan = filteredPenjualan.reduce((sum, t) => sum + (t.totalHarga || 0), 0);
+    const totalBiaya = filteredBiaya.reduce((sum, b) => sum + (b.nominal || 0), 0);
     const labaRugi = totalPenjualan - totalBiaya;
-    const totalPompaKarung = data.transaksiPetani.reduce((sum, t) => sum + (t.hasilPompaKarung || 0), 0);
-    const totalPetaniKarung = data.transaksiPetani.reduce((sum, t) => sum + (t.hasilPetaniKarung || 0), 0);
+
+    const totalPompaKarung = filteredTP.reduce((sum, t) => sum + (t.hasilPompaKarung || 0), 0);
+    const totalPetaniKarung = filteredTP.reduce((sum, t) => sum + (t.hasilPetaniKarung || 0), 0);
 
     document.getElementById('dash-total-pemasukan').textContent = formatRupiah(totalPenjualan);
     document.getElementById('dash-total-biaya').textContent = formatRupiah(totalBiaya);
@@ -1795,30 +1838,74 @@
     document.getElementById('dash-bagi-pompa').textContent = totalPompaKarung + ' Karung';
     document.getElementById('dash-bagi-petani').textContent = totalPetaniKarung + ' Karung';
   }
+  document.getElementById('btn-filter-dashboard').addEventListener('click', updateDashboard);
+  document.getElementById('btn-reset-dashboard').addEventListener('click', () => {
+    document.getElementById('dash-start').value = '';
+    document.getElementById('dash-end').value = '';
+    updateDashboard();
+  });
+  // function updateDashboard() {
+  //   const totalPenjualan = data.penjualanPengepul.reduce((sum, t) => sum + (t.totalHarga || 0), 0);
+  //   const totalBiaya = data.biaya.reduce((sum, b) => sum + (b.nominal || 0), 0);
+  //   const labaRugi = totalPenjualan - totalBiaya;
+  //   const totalPompaKarung = data.transaksiPetani.reduce((sum, t) => sum + (t.hasilPompaKarung || 0), 0);
+  //   const totalPetaniKarung = data.transaksiPetani.reduce((sum, t) => sum + (t.hasilPetaniKarung || 0), 0);
+
+  //   document.getElementById('dash-total-pemasukan').textContent = formatRupiah(totalPenjualan);
+  //   document.getElementById('dash-total-biaya').textContent = formatRupiah(totalBiaya);
+  //   document.getElementById('dash-laba-rugi').textContent = formatRupiah(labaRugi);
+  //   document.getElementById('dash-bagi-pompa').textContent = totalPompaKarung + ' Karung';
+  //   document.getElementById('dash-bagi-petani').textContent = totalPetaniKarung + ' Karung';
+  // }
 
   // Laporan
+  // function hitungLaporan() {
+  //   const bulanVal = document.getElementById('laporan-bulan').value;
+  //   let filterYear = null, filterMonth = null;
+  //   if (bulanVal) {
+  //     const parts = bulanVal.split('-');
+  //     if (parts.length === 2) {
+  //       filterYear = parts[0];
+  //       filterMonth = parts[1];
+  //     }
+  //   }
+  //   function matchPeriode(isoDate) {
+  //     if (!filterYear || !filterMonth) return true;
+  //     const [y, m] = isoDate.split('-');
+  //     return y === filterYear && m === filterMonth;
+  //   }
+
+  //   const totalPenjualan = data.penjualanPengepul
+  //     .filter(t => matchPeriode(t.tanggal))
+  //     .reduce((sum, t) => sum + (t.totalHarga || 0), 0);
+
+  //   const totalBiaya = data.biaya
+  //     .filter(b => matchPeriode(b.tanggal))
+  //     .reduce((sum, b) => sum + (b.nominal || 0), 0);
+
+  //   const labaRugi = totalPenjualan - totalBiaya;
+
+  //   document.getElementById('lap-total-pemasukan').textContent = formatRupiah(totalPenjualan);
+  //   document.getElementById('lap-total-biaya').textContent = formatRupiah(totalBiaya);
+  //   document.getElementById('lap-laba-rugi').textContent = formatRupiah(labaRugi);
+  // }
   function hitungLaporan() {
-    const bulanVal = document.getElementById('laporan-bulan').value;
-    let filterYear = null, filterMonth = null;
-    if (bulanVal) {
-      const parts = bulanVal.split('-');
-      if (parts.length === 2) {
-        filterYear = parts[0];
-        filterMonth = parts[1];
-      }
-    }
-    function matchPeriode(isoDate) {
-      if (!filterYear || !filterMonth) return true;
-      const [y, m] = isoDate.split('-');
-      return y === filterYear && m === filterMonth;
+    const start = document.getElementById('laporan-start').value;
+    const end = document.getElementById('laporan-end').value;
+
+    function inRange(dateStr) {
+      if (!dateStr) return false;
+      if (start && dateStr < start) return false;
+      if (end && dateStr > end) return false;
+      return true;
     }
 
     const totalPenjualan = data.penjualanPengepul
-      .filter(t => matchPeriode(t.tanggal))
+      .filter(t => inRange(t.tanggal))
       .reduce((sum, t) => sum + (t.totalHarga || 0), 0);
 
     const totalBiaya = data.biaya
-      .filter(b => matchPeriode(b.tanggal))
+      .filter(b => inRange(b.tanggal))
       .reduce((sum, b) => sum + (b.nominal || 0), 0);
 
     const labaRugi = totalPenjualan - totalBiaya;

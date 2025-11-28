@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>MR Barbershop</title>
+    <title>Barbershop Management</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap 5 -->
@@ -51,6 +51,11 @@
                     <h5 class="mb-0">Login Barbershop</h5>
                 </div>
                 <div class="card-body">
+                    <div class="alert alert-info">
+                        User awal:<br>
+                        <strong>Username:</strong> admin<br>
+                        <strong>Password:</strong> admin123
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Username</label>
                         <input id="loginUsername" type="text" class="form-control" autocomplete="off">
@@ -74,7 +79,7 @@
             <button class="btn btn-outline-light me-2 d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
                 ☰
             </button>
-            <a class="navbar-brand" href="#">MR Barbershop</a>
+            <a class="navbar-brand" href="#">Barbershop App</a>
             <div class="d-flex ms-auto align-items-center">
                 <span id="currentUserInfo" class="text-light me-3 small"></span>
                 <button id="btnLogout" class="btn btn-outline-light btn-sm">Logout</button>
@@ -234,8 +239,6 @@
                 <!-- DASHBOARD -->
                 <div id="page-dashboard" class="page active">
                     <h5>Dashboard</h5>
-                    <h6 class="mt-3">Statistik Per Cabang</h6>
-                    <div id="dashCabangContainer" class="row g-2"></div>
                     <div class="row g-2">
                         <div class="col-sm-6 col-lg-3">
                             <div class="card border-primary">
@@ -249,7 +252,7 @@
                             <div class="card border-success">
                                 <div class="card-body">
                                     <div class="text-muted small">Pendapatan Hari Ini</div>
-                                    <div id="dashIncomeToday" class="h4 mb-0">0</div>
+                                    <div id="dashIncomeToday" class="h4 mb-0">Rp 0</div>
                                 </div>
                             </div>
                         </div>
@@ -270,6 +273,9 @@
                             </div>
                         </div>
                     </div>
+
+                    <h6 class="mt-3">Statistik Per Cabang</h6>
+                    <div id="dashCabangContainer" class="row g-2"></div>
                 </div>
 
                 <!-- POS / TRANSAKSI -->
@@ -280,31 +286,30 @@
                             <div class="card">
                                 <div class="card-header">Input Transaksi</div>
                                 <div class="card-body">
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Tanggal</label>
                                         <input id="trxDate" type="date" class="form-control">
                                     </div>
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Cabang</label>
                                         <select id="trxBranch" class="form-select"></select>
                                     </div>
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Pelanggan</label>
                                         <select id="trxCustomer" class="form-select"></select>
                                     </div>
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Nama Kasir / Barber</label>
-                                        <input id="trxCashier" type="text" class="form-control" value="">
+                                        <input id="trxCashier" type="text" class="form-control">
                                     </div>
-                            
+
                                     <hr>
-                            
                                     <h6>Tambah Item</h6>
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Jenis Item</label>
                                         <select id="trxType" class="form-select">
@@ -312,37 +317,37 @@
                                             <option value="product">Produk</option>
                                         </select>
                                     </div>
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Service / Produk</label>
                                         <select id="trxItem" class="form-select"></select>
                                     </div>
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Qty</label>
                                         <input id="trxQty" type="number" class="form-control" min="1" value="1">
                                     </div>
-                            
+
                                     <button id="btnAddItem" class="btn btn-secondary w-100 mb-3">Tambah ke Keranjang</button>
-                            
+
                                     <table class="table table-sm table-bordered">
                                         <thead>
-                                            <tr>
-                                                <th>Jenis</th>
-                                                <th>Nama</th>
-                                                <th>Qty</th>
-                                                <th>Harga</th>
-                                                <th>Total</th>
-                                                <th></th>
-                                            </tr>
+                                        <tr>
+                                            <th>Jenis</th>
+                                            <th>Nama</th>
+                                            <th>Qty</th>
+                                            <th>Harga</th>
+                                            <th>Total</th>
+                                            <th></th>
+                                        </tr>
                                         </thead>
                                         <tbody id="trxCartBody"></tbody>
                                     </table>
-                            
+
                                     <hr>
-                            
+
                                     <div class="mb-2">
-                                        <label class="form-label">Diskon (Rp)</label>
+                                        <label class="form-label">Diskon Manual (Rp)</label>
                                         <input id="trxDiscount" type="number" min="0" class="form-control" value="0">
                                     </div>
 
@@ -350,17 +355,17 @@
                                         <label class="form-label">Total Harga</label>
                                         <input id="trxTotal" type="text" class="form-control" readonly value="0">
                                     </div>
-                                    
+
                                     <div class="mb-2">
                                         <label class="form-label">Uang Dibayarkan</label>
                                         <input id="trxPaid" type="number" class="form-control" value="0">
                                     </div>
-                                    
+
                                     <div class="mb-2">
                                         <label class="form-label">Kembalian</label>
                                         <input id="trxChange" type="text" class="form-control" readonly value="0">
                                     </div>
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Metode Pembayaran</label>
                                         <select id="trxPayMethod" class="form-select">
@@ -369,7 +374,7 @@
                                             <option value="Transfer">Transfer Bank</option>
                                         </select>
                                     </div>
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Status Pembayaran</label>
                                         <select id="trxPayStatus" class="form-select">
@@ -378,14 +383,14 @@
                                             <option value="Pending">Pending</option>
                                         </select>
                                     </div>
-                            
+
                                     <div class="mb-2">
                                         <label class="form-label">Upload Bukti Bayar</label>
                                         <input id="trxProof" type="file" accept="image/*" class="form-control">
                                     </div>
-                            
+
                                     <button id="btnSaveTrx" class="btn btn-primary w-100">Simpan Transaksi</button>
-                            
+
                                 </div>
                             </div>
                         </div>
@@ -395,17 +400,17 @@
                                 <div class="card-body table-responsive">
                                     <table class="table table-sm table-bordered mb-0">
                                         <thead>
-                                            <tr>
-                                                <th>Tanggal</th>
-                                                <th>Pelanggan</th>
-                                                <th>Cabang</th>
-                                                <th>Kasir</th>
-                                                <th>Item</th>
-                                                <th>Status</th>
-                                                <th>Metode</th>
-                                                <th>Total</th>
-                                                <th>Aksi</th>
-                                            </tr>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Pelanggan</th>
+                                            <th>Cabang</th>
+                                            <th>Kasir</th>
+                                            <th>Item</th>
+                                            <th>Status</th>
+                                            <th>Metode</th>
+                                            <th>Total</th>
+                                            <th>Aksi</th>
+                                        </tr>
                                         </thead>
                                         <tbody id="trxTableBody"></tbody>
                                     </table>
@@ -504,7 +509,6 @@
                                             <th>Nama</th>
                                             <th>No HP</th>
                                             <th>Catatan</th>
-                                            <th>Foto</th>
                                             <th>Aksi</th>
                                         </tr>
                                         </thead>
@@ -613,41 +617,81 @@
                 <!-- PROMO -->
                 <div id="page-promo" class="page">
                     <h5>Promo & Diskon</h5>
-                    <p>Contoh placeholder. Bisa ditambahkan logika promo (persen/nominal, periode, dll).</p>
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">Input Promo</div>
+                                <div class="card-body">
+                                    <input type="hidden" id="promoId">
+                                    <div class="mb-2">
+                                        <label class="form-label">Nama Promo</label>
+                                        <input id="promoName" type="text" class="form-control">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Jenis Promo</label>
+                                        <select id="promoType" class="form-select">
+                                            <option value="percent">Diskon Persen (%)</option>
+                                            <option value="amount">Potongan Nominal</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Nilai Diskon</label>
+                                        <input id="promoValue" type="number" class="form-control" value="0">
+                                    </div>
+                                    <button id="btnSavePromo" class="btn btn-primary w-100 mb-2">Simpan</button>
+                                    <button id="btnResetPromo" class="btn btn-secondary w-100">Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">Daftar Promo</div>
+                                <div class="card-body table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead>
+                                        <tr>
+                                            <th>Nama</th>
+                                            <th>Jenis</th>
+                                            <th>Nilai</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="promoTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- CABANG -->
                 <div id="page-cabang" class="page">
                     <h5>Cabang</h5>
-                
                     <div class="row g-3">
                         <div class="col-lg-4">
                             <div class="card">
                                 <div class="card-header">Input Cabang</div>
                                 <div class="card-body">
                                     <input type="hidden" id="branchId">
-                
                                     <div class="mb-2">
                                         <label class="form-label">Nama Cabang</label>
                                         <input id="branchName" type="text" class="form-control">
                                     </div>
-                
                                     <button id="btnSaveBranch" class="btn btn-primary w-100 mb-2">Simpan</button>
                                     <button id="btnResetBranch" class="btn btn-secondary w-100">Reset</button>
                                 </div>
                             </div>
                         </div>
-                
                         <div class="col-lg-8">
                             <div class="card">
                                 <div class="card-header">Daftar Cabang</div>
                                 <div class="card-body table-responsive">
                                     <table class="table table-sm table-bordered">
                                         <thead>
-                                            <tr>
-                                                <th>Nama Cabang</th>
-                                                <th>Aksi</th>
-                                            </tr>
+                                        <tr>
+                                            <th>Nama Cabang</th>
+                                            <th>Aksi</th>
+                                        </tr>
                                         </thead>
                                         <tbody id="branchTableBody"></tbody>
                                     </table>
@@ -657,71 +701,56 @@
                     </div>
                 </div>
 
-                <!-- KARYAWAN -->
+                <!-- PLACEHOLDER PAGES -->
                 <div id="page-karyawan" class="page">
                     <h5>Karyawan</h5>
-                    <p>Placeholder manajemen karyawan. Bisa dihubungkan dengan data user login & absensi.</p>
+                    <p>Placeholder manajemen karyawan.</p>
                 </div>
-
-                <!-- ROLES -->
                 <div id="page-roles" class="page">
                     <h5>Role & Permission</h5>
-                    <p>Role dasar: <strong>admin</strong> (akses semua). Role lain dapat ditambahkan kemudian.</p>
+                    <p>Role dasar: admin. Bisa ditambah kemudian.</p>
                 </div>
-
-                <!-- ABSENSI -->
                 <div id="page-absensi" class="page">
                     <h5>Shift & Absensi</h5>
-                    <p>Placeholder absensi. Dapat dikembangkan untuk clock-in/clock-out karyawan.</p>
+                    <p>Placeholder absensi.</p>
                 </div>
-
-                <!-- PENGGAJIAN -->
                 <div id="page-penggajian" class="page">
                     <h5>Penggajian</h5>
-                    <p>Placeholder penggajian. Dapat dikembangkan berdasarkan absensi dan komisi.</p>
+                    <p>Placeholder penggajian.</p>
                 </div>
-
-                <!-- INVENTORI -->
                 <div id="page-inventori" class="page">
                     <h5>Inventori</h5>
-                    <p>Saat ini stok produk sudah tersimpan di menu Produk. Modul detail inventori bisa dikembangkan lanjut.</p>
+                    <p>Stok produk di menu Produk. Modul inventori detail bisa dikembangkan.</p>
                 </div>
 
-                <!-- KEUANGAN -->
                 <div id="page-aruskas" class="page">
                     <h5>Arus Kas</h5>
-                    <p>Placeholder arus kas. Nilai bisa dihitung dari transaksi + pengeluaran.</p>
+                    <p>Placeholder arus kas.</p>
                 </div>
-
                 <div id="page-pengeluaran" class="page">
                     <h5>Pengeluaran</h5>
-                    <p>Placeholder pengeluaran. Dapat ditambah form input pengeluaran rutin.</p>
+                    <p>Placeholder pengeluaran.</p>
                 </div>
-
                 <div id="page-lapkeu" class="page">
                     <h5>Laporan Keuangan</h5>
-                    <p>Placeholder laporan keuangan. Bisa dibuat filter periode & ringkasan.</p>
+                    <p>Placeholder laporan keuangan.</p>
                 </div>
-
                 <div id="page-rekonsiliasi" class="page">
                     <h5>Rekonsiliasi Kasir</h5>
-                    <p>Placeholder rekonsiliasi kasir. Cocokkan uang fisik dengan laporan sistem.</p>
+                    <p>Placeholder rekonsiliasi kasir.</p>
                 </div>
 
-                <!-- ANALITIK -->
                 <div id="page-analytics" class="page">
                     <h5>Analytic & Insights</h5>
-                    <p>Placeholder untuk grafik dan analitik lanjutan.</p>
+                    <p>Placeholder analitik.</p>
                 </div>
-
                 <div id="page-barberperf" class="page">
                     <h5>Barber Performance</h5>
-                    <p>Placeholder performa barber. Dapat dihitung dari jumlah transaksi per barber (belum dihubungkan).</p>
+                    <p>Placeholder performa barber.</p>
                 </div>
-
                 <div id="page-custinsight" class="page">
                     <h5>Customer Insight</h5>
-                    <p>Placeholder insight pelanggan. Bisa dianalisa dari riwayat transaksi.</p>
+                    <p>Placeholder insight pelanggan.</p>
                 </div>
 
                 <!-- BACKUP & RESTORE -->
@@ -746,7 +775,7 @@
                                 <input id="importExcelInput" type="file" accept=".xlsx" hidden>
                             </label>
                             <p class="small text-muted mt-2">
-                                Setiap jenis data (users, customers, products, services, transactions, bookings) akan ada di sheet terpisah.
+                                Setiap jenis data akan ada di sheet terpisah, transaksi diflatten agar terbaca Excel.
                             </p>
                         </div>
                     </div>
@@ -759,12 +788,12 @@
                         <div class="card-body table-responsive">
                             <table class="table table-sm table-bordered">
                                 <thead>
-                                    <tr>
-                                        <th>Waktu</th>
-                                        <th>User</th>
-                                        <th>Aksi</th>
-                                        <th>Detail</th>
-                                    </tr>
+                                <tr>
+                                    <th>Waktu</th>
+                                    <th>User</th>
+                                    <th>Aksi</th>
+                                    <th>Detail</th>
+                                </tr>
                                 </thead>
                                 <tbody id="auditTableBody"></tbody>
                             </table>
@@ -775,14 +804,13 @@
                 <!-- NOTIFIKASI -->
                 <div id="page-notif" class="page">
                     <h5>Notifikasi</h5>
-                    <p>Placeholder pengaturan notifikasi. Misal pengingat booking ke WhatsApp (manual / gateway eksternal).</p>
+                    <p>Placeholder pengaturan notifikasi.</p>
                 </div>
 
                 <!-- PENGATURAN SISTEM -->
                 <div id="page-pengaturan" class="page">
                     <h5>Pengaturan Sistem</h5>
-                    <p>Placeholder pengaturan umum: nama barbershop, alamat, dll.</p>
-                    <div class="card mt-3">
+                    <div class="card">
                         <div class="card-header">Ubah Password</div>
                         <div class="card-body">
                             <div class="mb-2">
@@ -800,10 +828,11 @@
                             <button class="btn btn-primary w-100" id="btnChangePass">Ubah Password</button>
                         </div>
                     </div>
+
                     <div class="card mt-3">
                         <div class="card-header">Reset Data</div>
                         <div class="card-body">
-                            <p>Fitur ini akan menghapus semua data aplikasi, termasuk transaksi, produk, pelanggan, cabang, dan audit log.</p>
+                            <p>Fitur ini akan menghapus semua data (pelanggan, produk, transaksi, cabang, audit, dsb). User admin akan dibuat ulang dengan password <strong>admin123</strong>.</p>
                             <button class="btn btn-danger w-100" id="btnClearAllData">CLEAR SEMUA DATA</button>
                         </div>
                     </div>
@@ -813,361 +842,138 @@
     </div>
 </div>
 
+<!-- Modal Edit Transaksi -->
 <div class="modal fade" id="editTrxModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-  
-        <div class="modal-header">
-          <h5 class="modal-title">Edit Transaksi</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-  
-        <div class="modal-body">
-          <input type="hidden" id="editTrxId">
-  
-          <div class="mb-2">
-              <label>Status Pembayaran</label>
-              <select id="editPayStatus" class="form-select">
-                  <option value="Lunas">Lunas</option>
-                  <option value="Belum Lunas">Belum Lunas</option>
-                  <option value="Pending">Pending</option>
-              </select>
-          </div>
-  
-          <div class="mb-2">
-              <label>Metode Pembayaran</label>
-              <select id="editPayMethod" class="form-select">
-                  <option value="Cash">Cash</option>
-                  <option value="QRIS">QRIS</option>
-                  <option value="Transfer">Transfer</option>
-              </select>
-          </div>
-  
-          <div class="mb-2">
-              <label>Upload Bukti Bayar (Opsional)</label>
-              <input type="file" id="editProof" accept="image/*" class="form-control">
-          </div>
-  
-        </div>
-  
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button class="btn btn-primary" onclick="saveEditTransaction()">Simpan</button>
-        </div>
-  
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Transaksi</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="editTrxId">
+
+        <div class="mb-2">
+            <label>Status Pembayaran</label>
+            <select id="editPayStatus" class="form-select">
+                <option value="Lunas">Lunas</option>
+                <option value="Belum Lunas">Belum Lunas</option>
+                <option value="Pending">Pending</option>
+            </select>
+        </div>
+
+        <div class="mb-2">
+            <label>Metode Pembayaran</label>
+            <select id="editPayMethod" class="form-select">
+                <option value="Cash">Cash</option>
+                <option value="QRIS">QRIS</option>
+                <option value="Transfer">Transfer</option>
+            </select>
+        </div>
+
+        <div class="mb-2">
+            <label>Upload Bukti Bayar (Opsional)</label>
+            <input type="file" id="editProof" accept="image/*" class="form-control">
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button class="btn btn-primary" id="btnSaveEditTrx">Simpan</button>
+      </div>
+
     </div>
   </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ====== DATA & UTILITAS LOCALSTORAGE ======
-    const STORAGE_KEY = 'bbshop_data_v1';
+    // ====== KONST & GLOBAL ======
+    const STORAGE_KEY = 'bbshop_data_v2';
     let currentUser = null;
 
+    // ====== HASH PASSWORD (SHA-256) ======
     async function hashPassword(password) {
         const enc = new TextEncoder().encode(password);
-        console.log(enc);
         const buf = await crypto.subtle.digest("SHA-256", enc);
-        console.log(buf);
         return Array.from(new Uint8Array(buf))
             .map(b => b.toString(16).padStart(2, "0"))
             .join("");
-    };
+    }
 
-    document.getElementById("btnChangePass").addEventListener("click", async () => {
+    // ====== IndexedDB for Images (bukti bayar, foto pelanggan, dll) ======
+    let imgDB;
+    const DB_NAME = "bbshop_image_db";
+    const DB_VERSION = 1;
+    const STORE_NAME = "images";
 
-        const oldPass = document.getElementById("oldPass").value;
-        const newPass1 = document.getElementById("newPass1").value;
-        const newPass2 = document.getElementById("newPass2").value;
+    function initImageDB() {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
 
-        if (!oldPass || !newPass1 || !newPass2) {
-            alert("Semua field wajib diisi");
-            return;
-        }
-
-        if (newPass1 !== newPass2) {
-            alert("Password baru tidak sama");
-            return;
-        }
-
-        const data = loadData();
-        const user = currentUser;
-
-        if (!user) {
-            alert("Tidak ada user login");
-            return;
-        }
-
-        const oldHash = await hashPassword(oldPass);
-
-        if (oldHash !== user.password) {
-            alert("Password lama salah");
-            return;
-        }
-
-        const newHash = await hashPassword(newPass1);
-
-        user.password = newHash;
-        saveData(data);
-
-        saveLog("CHANGE_PASSWORD", `User ${user.username}`);
-
-        alert("Password berhasil diubah. Silakan login ulang.");
-
-        location.reload();
-    });
-
-    //=== PENGATURAN ===
-    function clearAllData() {
-        let check = prompt("Ketik RESET untuk menghapus semua data:");
-        if (check !== "RESET") {
-            alert("Input salah. Data tidak dihapus.");
-            return;
-        }
-
-        // Reset ke data awal (hanya user admin)
-        const fresh = {
-            users: [
-            {id: 1, username: 'admin', password: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', role: 'admin', name: 'Administrator'}
-            ],
-            customers: [],
-            products: [],
-            services: [],
-            transactions: [],
-            bookings: [],
-            cabang: [],
-            audit: []
+        req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: "id" });
+            }
         };
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-
-        alert("Semua data sudah dihapus.\nAplikasi akan dimuat ulang.");
-        location.reload();
-    }
-    document.getElementById("btnClearAllData").addEventListener("click", () => {
-        clearAllData();
-    });
-    //=== END PENGATURAN ===
-
-    function saveLog(action, info = "") {
-        const data = loadData();
-        if (!data.audit) data.audit = [];
-
-        data.audit.push({
-            id: Date.now(),
-            timestamp: new Date().toISOString(),
-            user: currentUser ? currentUser.username : "SYSTEM",
-            action: action,
-            info: info
-        });
-
-        saveData(data);
+        req.onsuccess = () => {
+            imgDB = req.result;
+        };
     }
 
-    function refreshAuditLog() {
-        const data = loadData();
-        const tbody = document.getElementById("auditTableBody");
-        tbody.innerHTML = "";
-
-        (data.audit || []).slice().reverse().forEach(log => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${log.timestamp}</td>
-                <td>${log.user}</td>
-                <td>${log.action}</td>
-                <td>${log.info}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-    
-    // ====== MULTI ITEM TRANSAKSI ======
-    let trxCart = [];
-
-    function resetCart() {
-        trxCart = [];
-        renderCart();
-    }
-
-    function renderCart() {
-        const tbody = document.getElementById('trxCartBody');
-        tbody.innerHTML = "";
-        trxCart.forEach((item, idx) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.type}</td>
-                <td>${item.name}</td>
-                <td>${item.qty}</td>
-                <td>Rp ${formatRupiah(item.price)}</td>
-                <td>Rp ${formatRupiah(item.price * item.qty)}</td>
-                <td><button class="btn btn-sm btn-danger" onclick="removeCartItem(${idx})">Hapus</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-        updatePaymentSummary();
-    }
-
-    function updatePaymentSummary() {
-        const discount = Number(document.getElementById("trxDiscount").value || 0);
-        const paid = Number(document.getElementById("trxPaid").value || 0);
-
-        // Hitung subtotal keranjang
-        const subtotal = trxCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-
-        const total = Math.max(0, subtotal - discount);
-
-        document.getElementById("trxTotal").value = total;
-
-        const change = paid - total;
-        document.getElementById("trxChange").value = change >= 0 ? change : 0;
-    }
-
-    window.removeCartItem = (idx) => {
-        trxCart.splice(idx,1);
-        renderCart();
-        updatePaymentSummary();
-    };
-
-    document.getElementById('btnAddItem').addEventListener('click', () => {
-        const data = loadData();
-        const type = document.getElementById('trxType').value;
-        const val = document.getElementById('trxItem').value;
-        const qty = Number(document.getElementById('trxQty').value || 1);
-
-        let obj = null;
-        let name = "", price = 0;
-
-        if (type === "service") {
-            const id = Number(val.replace("svc-", ""));
-            obj = data.services.find(s => s.id === id);
-            if (!obj) return;
-            name = obj.name;
-            price = obj.price;
-        } else {
-            const id = Number(val.replace("prod-", ""));
-            obj = data.products.find(p => p.id === id);
-            if (!obj) return;
-            name = obj.name;
-            price = obj.price;
-        }
-
-        trxCart.push({
-            type,
-            id: obj.id,
-            name,
-            price,
-            qty
-        });
-
-        renderCart();
-        updatePaymentSummary();
-    });
-
-    document.getElementById("trxPaid").addEventListener("input", updatePaymentSummary);
-    document.getElementById("trxDiscount").addEventListener("input", updatePaymentSummary);
-
-    // === CABANG ===
-    function refreshBranchTable() {
-        const data = loadData();
-        const tbody = document.getElementById("branchTableBody");
-        tbody.innerHTML = "";
-
-        (data.cabang || []).forEach(b => {
-            const tr = document.createElement("tr");
-
-            tr.innerHTML = `
-                <td>${b.name}</td>
-                <td>
-                    <button class="btn btn-sm btn-warning me-1" onclick="editBranch(${b.id})">Edit</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteBranch(${b.id})">Hapus</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        populateBranchDropdown();
-    }
-
-    window.editBranch = function(id) {
-        const data = loadData();
-        const b = data.cabang.find(x => x.id === id);
-        if (!b) return;
-
-        document.getElementById("branchId").value = b.id;
-        document.getElementById("branchName").value = b.name;
-        saveLog("BRANCH_SAVE", `Cabang: ${name}`);
-    };
-
-    window.deleteBranch = function(id) {
-        if (!confirm("Hapus cabang ini?")) return;
-        const data = loadData();
-
-        data.cabang = data.cabang.filter(x => x.id !== id);
-
-        saveData(data);
-        refreshBranchTable();
-        populateBranchDropdown();
-        saveLog("BRANCH_DELETE", `Cabang ID ${id}`);
-    };
-
-    document.getElementById("btnSaveBranch").addEventListener("click", () => {
-        const id = document.getElementById("branchId").value;
-        const name = document.getElementById("branchName").value.trim();
-
-        if (!name) {
-            alert("Nama cabang wajib diisi.");
+    function saveImage(imageId, file, callback) {
+        if (!imgDB) {
+            setTimeout(() => saveImage(imageId, file, callback), 200);
             return;
         }
-
-        const data = loadData();
-
-        if (id) {
-            // UPDATE
-            const b = data.cabang.find(x => x.id === Number(id));
-            if (b) b.name = name;
-
-        } else {
-            // INSERT
-            const newId = Date.now();
-            data.cabang.push({ id: newId, name });
-        }
-
-        saveData(data);
-        refreshBranchTable();
-        populateBranchDropdown();
-
-        document.getElementById("branchId").value = "";
-        document.getElementById("branchName").value = "";
-        saveLog("BRANCH_SAVE", `Cabang: ${name}`);
-    });
-
-    document.getElementById("btnResetBranch").addEventListener("click", () => {
-        document.getElementById("branchId").value = "";
-        document.getElementById("branchName").value = "";
-    });
-
-    function populateBranchDropdown() {
-        const data = loadData();
-        const sel = document.getElementById("trxBranch");
-        if (!sel) return;
-
-        sel.innerHTML = "";
-        (data.cabang || []).forEach(c => {
-            const opt = document.createElement("option");
-            opt.value = c.id;
-            opt.textContent = c.name;
-            sel.appendChild(opt);
-        });
+        const tx = imgDB.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        const reader = new FileReader();
+        reader.onload = e => {
+            store.put({ id: imageId, blob: e.target.result });
+            tx.oncomplete = () => callback();
+        };
+        reader.readAsDataURL(file);
     }
-    // === END CABANG ===
 
+    function loadImage(imageId, callback) {
+        if (!imgDB) {
+            setTimeout(() => loadImage(imageId, callback), 200);
+            return;
+        }
+        const tx = imgDB.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(imageId);
+        req.onsuccess = () => {
+            callback(req.result ? req.result.blob : null);
+        };
+    }
+
+    function deleteImage(imageId) {
+        if (!imgDB) return;
+        const tx = imgDB.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        store.delete(imageId);
+    }
+
+    // ====== DATA & UTILITAS LOCALSTORAGE ======
     function loadData() {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) {
             const initial = {
                 users: [
-                    {id: 1, username: 'admin', password: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', role: 'admin', name: 'Administrator'}
+                    {
+                        id: 1,
+                        username: 'admin',
+                        // SHA-256 dari 'admin123'
+                        password: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+                        role: 'admin',
+                        name: 'Administrator'
+                    }
                 ],
                 customers: [],
                 products: [],
@@ -1175,22 +981,49 @@
                 transactions: [],
                 bookings: [],
                 cabang: [
-                    { id: 1, name: "MR Barber Bau Baharuddin" },
-                    { id: 2, name: "MR Barber Cab. Callaccu" },
-                    { id: 3, name: "MR Barber Cab. Jalan Andi Paggaru" },
+                    {id: 1, name: 'Cabang Utama'},
+                    {id: 2, name: 'Cabang Sleman'}
                 ],
+                promo: [],
                 audit: []
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
             return initial;
         }
+        let obj;
         try {
-            return JSON.parse(raw);
+            obj = JSON.parse(raw);
         } catch (e) {
             alert('Data rusak, akan di-reset.');
             localStorage.removeItem(STORAGE_KEY);
             return loadData();
         }
+
+        // Pastikan semua key ada
+        if (!obj.users) obj.users = [];
+        if (!obj.customers) obj.customers = [];
+        if (!obj.products) obj.products = [];
+        if (!obj.services) obj.services = [];
+        if (!obj.transactions) obj.transactions = [];
+        if (!obj.bookings) obj.bookings = [];
+        if (!obj.cabang) obj.cabang = [];
+        if (!obj.promo) obj.promo = [];
+        if (!obj.audit) obj.audit = [];
+
+        // Pastikan transaksi punya field baru
+        obj.transactions.forEach(t => {
+            if (!t.items) t.items = [];
+            if (!t.payStatus) t.payStatus = 'Belum Lunas';
+            if (!t.payMethod) t.payMethod = 'Cash';
+            if (typeof t.subtotal === 'undefined') {
+                // hitung dari items
+                t.subtotal = t.items.reduce((s,i)=>s+(Number(i.price||0)*Number(i.qty||0)),0);
+            }
+            if (typeof t.discount === 'undefined') t.discount = 0;
+            if (typeof t.total === 'undefined') t.total = Math.max(0, t.subtotal - t.discount);
+        });
+
+        return obj;
     }
 
     function saveData(data) {
@@ -1207,6 +1040,37 @@
         return d.toISOString().slice(0,10);
     }
 
+    // ====== AUDIT LOG ======
+    function saveLog(action, info = '') {
+        const data = loadData();
+        if (!data.audit) data.audit = [];
+        data.audit.push({
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            user: currentUser ? currentUser.username : 'SYSTEM',
+            action,
+            info
+        });
+        saveData(data);
+    }
+
+    function refreshAuditLog() {
+        const data = loadData();
+        const tbody = document.getElementById('auditTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        (data.audit || []).slice().reverse().forEach(log => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${log.timestamp}</td>
+                <td>${log.user}</td>
+                <td>${log.action}</td>
+                <td>${log.info}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
     // ====== LOGIN / LOGOUT ======
     document.getElementById('btnLogin').addEventListener('click', async () => {
         const username = document.getElementById('loginUsername').value.trim();
@@ -1214,18 +1078,16 @@
         const data = loadData();
         const user = data.users.find(u => u.username === username);
         const err = document.getElementById('loginError');
+
         if (!user) {
-        //    err.classList.remove('d-none');
-        //    return;
+            err.classList.remove('d-none');
+            return;
         }
         const hash = await hashPassword(password);
-        console.log(hash);
-        console.log(user.password);
         if (user.password !== hash) {
-        //    err.classList.remove('d-none');
-        //    return;
+            err.classList.remove('d-none');
+            return;
         }
-
 
         err.classList.add('d-none');
         currentUser = user;
@@ -1237,16 +1099,17 @@
         initAllForms();
         refreshAllTables();
         refreshDashboard();
-        saveLog("LOGIN", "User login");
+        refreshAuditLog();
+        saveLog('LOGIN', 'User login');
     });
 
     document.getElementById('btnLogout').addEventListener('click', () => {
+        saveLog('LOGOUT', 'User logout');
         currentUser = null;
         document.getElementById('appView').classList.add('d-none');
         document.getElementById('loginView').classList.remove('d-none');
         document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
-        saveLog("LOGOUT", "User logout");
     });
 
     function applyRoleToMenu(role) {
@@ -1259,7 +1122,6 @@
                 link.classList.remove('d-none');
             }
         });
-        // default ke dashboard
         showPage('dashboard');
         links.forEach(l => l.classList.remove('active'));
         const dashLink = Array.from(links).find(l => l.getAttribute('data-page') === 'dashboard');
@@ -1280,24 +1142,83 @@
             document.querySelectorAll('#sidebarMenu a.nav-link').forEach(l => l.classList.remove('active'));
             link.classList.add('active');
             showPage(page);
+            if (page === 'auditlog') refreshAuditLog();
         });
     });
 
+    // ====== MULTI ITEM TRANSAKSI ======
+    let trxCart = [];
+    function resetCart() {
+        trxCart = [];
+        renderCart();
+    }
+
+    function renderCart() {
+        const tbody = document.getElementById('trxCartBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        trxCart.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.type}</td>
+                <td>${item.name}</td>
+                <td>${item.qty}</td>
+                <td>Rp ${formatRupiah(item.price)}</td>
+                <td>Rp ${formatRupiah(item.price * item.qty)}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="removeCartItem(${idx})">X</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+        updatePaymentSummary();
+    }
+
+    window.removeCartItem = function(idx) {
+        trxCart.splice(idx, 1);
+        renderCart();
+    };
+
+    function updatePaymentSummary() {
+        const discountManual = Number(document.getElementById('trxDiscount').value || 0);
+        const paid = Number(document.getElementById('trxPaid').value || 0);
+
+        const subtotal = trxCart.reduce((sum, i) => sum + (Number(i.price) * Number(i.qty)), 0);
+
+        // promo sederhana: pakai promo pertama jika ada
+        const data = loadData();
+        let promoDiscount = 0;
+        if (data.promo && data.promo.length > 0) {
+            const p = data.promo[0];
+            if (p.type === 'percent') {
+                promoDiscount = subtotal * (Number(p.value || 0) / 100);
+            } else {
+                promoDiscount = Number(p.value || 0);
+            }
+        }
+        const discountTotal = discountManual + promoDiscount;
+        const total = Math.max(0, subtotal - discountTotal);
+
+        document.getElementById('trxTotal').value = total;
+        const change = paid - total;
+        document.getElementById('trxChange').value = change >= 0 ? change : 0;
+    }
+
+    document.getElementById('trxPaid').addEventListener('input', updatePaymentSummary);
+    document.getElementById('trxDiscount').addEventListener('input', updatePaymentSummary);
+
     // ====== INIT FORM & DROPDOWN ======
     function initAllForms() {
-        document.getElementById('trxDate').value = todayStr();
+        const trxDate = document.getElementById('trxDate');
+        if (trxDate) trxDate.value = todayStr();
         populateDropdowns();
-        
-        refreshBranchTable();
         populateBranchDropdown();
+        renderCart();
     }
 
     function populateDropdowns() {
         const data = loadData();
 
-        // Pelanggan dropdowns
-        const custSelects = [document.getElementById('trxCustomer'),
-            document.getElementById('bookingCustomer')];
+        // pelanggan
+        const custSelects = [document.getElementById('trxCustomer'), document.getElementById('bookingCustomer')];
         custSelects.forEach(sel => {
             if (!sel) return;
             sel.innerHTML = '';
@@ -1309,27 +1230,39 @@
             });
         });
 
-        // Service dropdowns
-        const svcSelects = [document.getElementById('bookingService')];
-        svcSelects.forEach(sel => {
-            if (!sel) return;
-            sel.innerHTML = '';
+        // service untuk booking
+        const svcSel = document.getElementById('bookingService');
+        if (svcSel) {
+            svcSel.innerHTML = '';
             data.services.forEach(s => {
                 const opt = document.createElement('option');
                 opt.value = s.id;
                 opt.textContent = s.name + ' (Rp ' + formatRupiah(s.price) + ')';
-                sel.appendChild(opt);
+                svcSel.appendChild(opt);
             });
-        });
+        }
 
-        // POS item dropdown (tergantung jenis)
         fillPosItemDropdown();
+    }
+
+    function populateBranchDropdown() {
+        const data = loadData();
+        const sel = document.getElementById('trxBranch');
+        if (!sel) return;
+        sel.innerHTML = '';
+        (data.cabang || []).forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            sel.appendChild(opt);
+        });
     }
 
     function fillPosItemDropdown() {
         const data = loadData();
         const type = document.getElementById('trxType').value;
         const itemSelect = document.getElementById('trxItem');
+        if (!itemSelect) return;
         itemSelect.innerHTML = '';
         if (type === 'service') {
             data.services.forEach(s => {
@@ -1354,6 +1287,7 @@
     function refreshCustomerTable() {
         const data = loadData();
         const tbody = document.getElementById('custTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
         data.customers.forEach(c => {
             const tr = document.createElement('tr');
@@ -1361,7 +1295,6 @@
                 <td>${c.name}</td>
                 <td>${c.phone || ''}</td>
                 <td>${c.note || ''}</td>
-                <td>${c.photo ? '<img src="' + c.photo + '" style="max-width:60px;max-height:60px;">' : ''}</td>
                 <td>
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editCustomer(${c.id})">Edit</button>
                     <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${c.id})">Hapus</button>
@@ -1372,7 +1305,7 @@
         populateDropdowns();
     }
 
-    function editCustomer(id) {
+    window.editCustomer = function(id) {
         const data = loadData();
         const c = data.customers.find(x => x.id === id);
         if (!c) return;
@@ -1380,16 +1313,17 @@
         document.getElementById('custName').value = c.name;
         document.getElementById('custPhone').value = c.phone || '';
         document.getElementById('custNote').value = c.note || '';
-    }
+    };
 
-    function deleteCustomer(id) {
+    window.deleteCustomer = function(id) {
         if (!confirm('Hapus pelanggan ini?')) return;
         const data = loadData();
         data.customers = data.customers.filter(x => x.id !== id);
         saveData(data);
         refreshCustomerTable();
         populateDropdowns();
-    }
+        saveLog('CUSTOMER_DELETE', 'Pelanggan ID ' + id);
+    };
 
     document.getElementById('btnSaveCust').addEventListener('click', () => {
         const id = document.getElementById('custId').value;
@@ -1405,14 +1339,14 @@
 
         const data = loadData();
 
-        function finishSave(photoDataUrl) {
+        function finishSave(photoId) {
             if (id) {
                 const c = data.customers.find(x => x.id === Number(id));
                 if (c) {
                     c.name = name;
                     c.phone = phone;
                     c.note = note;
-                    if (photoDataUrl !== undefined) c.photo = photoDataUrl;
+                    if (photoId) c.photoImageId = photoId;
                 }
             } else {
                 const newId = Date.now();
@@ -1421,7 +1355,7 @@
                     name,
                     phone,
                     note,
-                    photo: photoDataUrl || null
+                    photoImageId: photoId || null
                 });
             }
             saveData(data);
@@ -1432,14 +1366,14 @@
             photoInput.value = '';
             refreshCustomerTable();
             populateDropdowns();
+            saveLog('CUSTOMER_SAVE', 'Pelanggan: ' + name);
         }
 
         if (photoInput.files && photoInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => finishSave(e.target.result);
-            reader.readAsDataURL(photoInput.files[0]);
+            const photoId = 'cust-' + (id || Date.now());
+            saveImage(photoId, photoInput.files[0], () => finishSave(photoId));
         } else {
-            finishSave(undefined);
+            finishSave(null);
         }
     });
 
@@ -1455,6 +1389,7 @@
     function refreshServiceTable() {
         const data = loadData();
         const tbody = document.getElementById('svcTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
         data.services.forEach(s => {
             const tr = document.createElement('tr');
@@ -1472,7 +1407,7 @@
         populateDropdowns();
     }
 
-    function editService(id) {
+    window.editService = function(id) {
         const data = loadData();
         const s = data.services.find(x => x.id === id);
         if (!s) return;
@@ -1480,16 +1415,17 @@
         document.getElementById('svcName').value = s.name;
         document.getElementById('svcPrice').value = s.price;
         document.getElementById('svcDuration').value = s.duration || 0;
-    }
+    };
 
-    function deleteService(id) {
+    window.deleteService = function(id) {
         if (!confirm('Hapus service ini?')) return;
         const data = loadData();
         data.services = data.services.filter(x => x.id !== id);
         saveData(data);
         refreshServiceTable();
         populateDropdowns();
-    }
+        saveLog('SERVICE_DELETE', 'Service ID ' + id);
+    };
 
     document.getElementById('btnSaveSvc').addEventListener('click', () => {
         const id = document.getElementById('svcId').value;
@@ -1520,6 +1456,7 @@
         document.getElementById('svcDuration').value = '';
         refreshServiceTable();
         populateDropdowns();
+        saveLog('SERVICE_SAVE', 'Service: ' + name);
     });
 
     document.getElementById('btnResetSvc').addEventListener('click', () => {
@@ -1533,6 +1470,7 @@
     function refreshProductTable() {
         const data = loadData();
         const tbody = document.getElementById('prodTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
         data.products.forEach(p => {
             const tr = document.createElement('tr');
@@ -1550,7 +1488,7 @@
         populateDropdowns();
     }
 
-    function editProduct(id) {
+    window.editProduct = function(id) {
         const data = loadData();
         const p = data.products.find(x => x.id === id);
         if (!p) return;
@@ -1558,16 +1496,17 @@
         document.getElementById('prodName').value = p.name;
         document.getElementById('prodPrice').value = p.price;
         document.getElementById('prodStock').value = p.stock;
-    }
+    };
 
-    function deleteProduct(id) {
+    window.deleteProduct = function(id) {
         if (!confirm('Hapus produk ini?')) return;
         const data = loadData();
         data.products = data.products.filter(x => x.id !== id);
         saveData(data);
         refreshProductTable();
         populateDropdowns();
-    }
+        saveLog('PRODUCT_DELETE', 'Produk ID ' + id);
+    };
 
     document.getElementById('btnSaveProd').addEventListener('click', () => {
         const id = document.getElementById('prodId').value;
@@ -1599,6 +1538,7 @@
         document.getElementById('prodStock').value = '';
         refreshProductTable();
         populateDropdowns();
+        saveLog('PRODUCT_SAVE', 'Produk: ' + name);
     });
 
     document.getElementById('btnResetProd').addEventListener('click', () => {
@@ -1608,144 +1548,231 @@
         document.getElementById('prodStock').value = '';
     });
 
-    // ====== TRANSAKSI / POS ======
-    function refreshTransactionTable() {
+    // ====== PROMO CRUD ======
+    function refreshPromoTable() {
         const data = loadData();
-        const tbody = document.getElementById("trxTableBody");
-        tbody.innerHTML = "";
-
-        data.transactions.forEach(t => {
-            const tr = document.createElement("tr");
-
-            const itemSummary = t.items
-                .map(i => `${i.name} x${i.qty}`)
-                .join("<br>");
-
+        const tbody = document.getElementById('promoTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        (data.promo || []).forEach(p => {
+            const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${t.date}</td>
-                <td>${t.customerName}</td>
-                <td>${t.branchName || '-'}</td>
-                <td>${t.cashierName || '-'}</td>
-                <td>${itemSummary}</td>
-                <td>${t.payStatus}</td>
-                <td>${t.payMethod}</td>
-                <td>Rp ${formatRupiah(t.total)}</td>
-
+                <td>${p.name}</td>
+                <td>${p.type}</td>
+                <td>${p.value}</td>
                 <td>
-                    <button class="btn btn-sm btn-warning mb-1" onclick="editTransaction(${t.id})">Edit</button>
-                    <button class="btn btn-sm btn-danger mb-1" onclick="deleteTransaction(${t.id})">Hapus</button>
-                    <button class="btn btn-sm btn-secondary mb-1" onclick="printStruk(${t.id})">Print</button>
-                    <button class="btn btn-sm btn-success mb-1" onclick="copyStrukWA(${t.id})">WA</button>
-                    ${t.proofImage ? 
-                        `<button class="btn btn-sm btn-info" onclick="viewProofImage(${t.id})">Bukti</button>`
-                        : ''}
+                    <button class="btn btn-sm btn-warning me-1" onclick="editPromo(${p.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deletePromo(${p.id})">Hapus</button>
                 </td>
             `;
-
             tbody.appendChild(tr);
         });
-
-        refreshDashboard();
     }
 
-    function viewProofImage(id) {
+    window.editPromo = function(id) {
         const data = loadData();
-        const t = data.transactions.find(x => x.id === id);
-        if (!t || !t.proofImage) return alert("Tidak ada bukti.");
-
-        const w = window.open("");
-        w.document.write(`<img src="${t.proofImage}" style="max-width:100%">`);
-    }
-
-    window.editTransaction = function(id) {
-        const data = loadData();
-        const t = data.transactions.find(x => x.id === id);
-        if (!t) return;
-
-        document.getElementById("editTrxId").value = id;
-        document.getElementById("editPayStatus").value = t.payStatus;
-        document.getElementById("editPayMethod").value = t.payMethod;
-
-        const modal = new bootstrap.Modal(document.getElementById("editTrxModal"));
-        modal.show();
+        const p = data.promo.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('promoId').value = p.id;
+        document.getElementById('promoName').value = p.name;
+        document.getElementById('promoType').value = p.type;
+        document.getElementById('promoValue').value = p.value;
     };
 
-    window.saveEditTransaction = function() {
-        const id = Number(document.getElementById("editTrxId").value);
-        const payStatus = document.getElementById("editPayStatus").value;
-        const payMethod = document.getElementById("editPayMethod").value;
-        const proofInput = document.getElementById("editProof");
-
+    window.deletePromo = function(id) {
+        if (!confirm('Hapus promo ini?')) return;
         const data = loadData();
-        const t = data.transactions.find(x => x.id === id);
-        if (!t) return;
-
-        t.payStatus = payStatus;
-        t.payMethod = payMethod;
-
-        function finalize() {
-            saveData(data);
-            refreshTransactionTable();
-            alert("Transaksi berhasil diperbarui.");
-        }
-
-        if (proofInput.files && proofInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                t.proofImage = e.target.result;
-                finalize();
-            };
-            reader.readAsDataURL(proofInput.files[0]);
-        } else {
-            finalize();
-        }
-
-        saveLog("TRANSACTION_EDIT", `Edit transaksi ${id}: ${payStatus}, ${payMethod}`);
-    };
-
-    window.deleteTransaction = function(id) {
-        if (!confirm("Hapus transaksi ini?")) return;
-        const data = loadData();
-        data.transactions = data.transactions.filter(t => t.id !== id);
+        data.promo = data.promo.filter(x => x.id !== id);
         saveData(data);
-        refreshTransactionTable();
-        saveLog("TRANSACTION_DELETE", `Hapus transaksi ${id}`);
+        refreshPromoTable();
+        saveLog('PROMO_DELETE', 'Promo ID ' + id);
     };
 
-    document.getElementById("btnSaveTrx").addEventListener("click", () => {
+    document.getElementById('btnSavePromo').addEventListener('click', () => {
+        const id = document.getElementById('promoId').value;
+        const name = document.getElementById('promoName').value.trim();
+        const type = document.getElementById('promoType').value;
+        const value = Number(document.getElementById('promoValue').value || 0);
+
+        if (!name) {
+            alert('Nama promo wajib diisi');
+            return;
+        }
+        const data = loadData();
+        if (id) {
+            const p = data.promo.find(x => x.id === Number(id));
+            if (p) {
+                p.name = name;
+                p.type = type;
+                p.value = value;
+            }
+        } else {
+            const newId = Date.now();
+            data.promo.push({id: newId, name, type, value});
+        }
+        saveData(data);
+        document.getElementById('promoId').value = '';
+        document.getElementById('promoName').value = '';
+        document.getElementById('promoValue').value = 0;
+        refreshPromoTable();
+        saveLog('PROMO_SAVE', 'Promo: ' + name);
+        updatePaymentSummary();
+    });
+
+    document.getElementById('btnResetPromo').addEventListener('click', () => {
+        document.getElementById('promoId').value = '';
+        document.getElementById('promoName').value = '';
+        document.getElementById('promoValue').value = 0;
+    });
+
+    // ====== CABANG CRUD ======
+    function refreshBranchTable() {
+        const data = loadData();
+        const tbody = document.getElementById('branchTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        (data.cabang || []).forEach(b => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${b.name}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning me-1" onclick="editBranch(${b.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteBranch(${b.id})">Hapus</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        populateBranchDropdown();
+    }
+
+    window.editBranch = function(id) {
+        const data = loadData();
+        const b = data.cabang.find(x => x.id === id);
+        if (!b) return;
+        document.getElementById('branchId').value = b.id;
+        document.getElementById('branchName').value = b.name;
+    };
+
+    window.deleteBranch = function(id) {
+        if (!confirm('Hapus cabang ini?')) return;
+        const data = loadData();
+        data.cabang = data.cabang.filter(x => x.id !== id);
+        saveData(data);
+        refreshBranchTable();
+        populateBranchDropdown();
+        saveLog('BRANCH_DELETE', 'Cabang ID ' + id);
+    };
+
+    document.getElementById('btnSaveBranch').addEventListener('click', () => {
+        const id = document.getElementById('branchId').value;
+        const name = document.getElementById('branchName').value.trim();
+
+        if (!name) {
+            alert('Nama cabang wajib diisi.');
+            return;
+        }
+
+        const data = loadData();
+        if (id) {
+            const b = data.cabang.find(x => x.id === Number(id));
+            if (b) b.name = name;
+        } else {
+            const newId = Date.now();
+            data.cabang.push({id: newId, name});
+        }
+        saveData(data);
+        refreshBranchTable();
+        populateBranchDropdown();
+        document.getElementById('branchId').value = '';
+        document.getElementById('branchName').value = '';
+        saveLog('BRANCH_SAVE', 'Cabang: ' + name);
+    });
+
+    document.getElementById('btnResetBranch').addEventListener('click', () => {
+        document.getElementById('branchId').value = '';
+        document.getElementById('branchName').value = '';
+    });
+
+    // ====== TRANSAKSI / POS ======
+    document.getElementById('btnAddItem').addEventListener('click', () => {
+        const data = loadData();
+
+        const type = document.getElementById('trxType').value;
+        const val = document.getElementById('trxItem').value;
+        const qty = Number(document.getElementById('trxQty').value || 1);
+
+        let obj, name, price;
+
+        if (type === 'service') {
+            const id = Number(val.replace('svc-', ''));
+            obj = data.services.find(s => s.id === id);
+            if (!obj) return;
+            name = obj.name;
+            price = obj.price;
+        } else {
+            const id = Number(val.replace('prod-', ''));
+            obj = data.products.find(p => p.id === id);
+            if (!obj) return;
+            name = obj.name;
+            price = obj.price;
+        }
+
+        trxCart.push({
+            type,
+            id: obj.id,
+            name,
+            price,
+            qty
+        });
+
+        renderCart();
+    });
+
+    document.getElementById('btnSaveTrx').addEventListener('click', () => {
         if (trxCart.length === 0) {
-            alert("Keranjang kosong.");
+            alert('Keranjang kosong.');
             return;
         }
 
         const data = loadData();
 
-        const date = document.getElementById("trxDate").value || todayStr();
-        const custId = Number(document.getElementById("trxCustomer").value);
-        const cashier = document.getElementById("trxCashier").value || "";
-        const branchId = Number(document.getElementById("trxBranch").value);
-        const payStatus = document.getElementById("trxPayStatus").value;
-        const payMethod = document.getElementById("trxPayMethod").value;
-        const discount = Number(document.getElementById("trxDiscount").value || 0);
-        const proofInput = document.getElementById("trxProof");
+        const date = document.getElementById('trxDate').value || todayStr();
+        const custId = Number(document.getElementById('trxCustomer').value);
+        const cashier = document.getElementById('trxCashier').value || '';
+        const branchId = Number(document.getElementById('trxBranch').value);
+        const payStatus = document.getElementById('trxPayStatus').value;
+        const payMethod = document.getElementById('trxPayMethod').value;
+        const discountManual = Number(document.getElementById('trxDiscount').value || 0);
+        const paid = Number(document.getElementById('trxPaid').value || 0);
+        const proofInput = document.getElementById('trxProof');
 
         const cust = data.customers.find(c => c.id === custId);
         const branch = (data.cabang || []).find(c => c.id === branchId);
 
         const subtotal = trxCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+        // promo
+        let promoDiscount = 0;
+        if (data.promo && data.promo.length > 0) {
+            const p = data.promo[0];
+            if (p.type === 'percent') {
+                promoDiscount = subtotal * (Number(p.value || 0) / 100);
+            } else {
+                promoDiscount = Number(p.value || 0);
+            }
+        }
+        const discount = discountManual + promoDiscount;
         const total = Math.max(0, subtotal - discount);
-        // const total = Number(document.getElementById("trxTotal").value);
-        const paid = Number(document.getElementById("trxPaid").value);
         const change = paid - total;
 
         const trxObj = {
             id: Date.now(),
             date,
             customerId: custId,
-            customerName: cust ? cust.name : "",
+            customerName: cust ? cust.name : '',
             cashierName: cashier,
             branchId,
-            branchName: branch ? branch.name : "",
+            branchName: branch ? branch.name : '',
             items: JSON.parse(JSON.stringify(trxCart)),
             subtotal,
             discount,
@@ -1754,16 +1781,16 @@
             change,
             payMethod,
             payStatus,
-            proofImage: null,
-            createdBy: currentUser ? currentUser.username : "admin"
+            imageId: null,
+            createdBy: currentUser ? currentUser.username : 'admin'
         };
 
-        // kurangi stok untuk produk
+        // Kurangi stok produk
         trxCart.forEach(it => {
-            if (it.type === "product") {
+            if (it.type === 'product') {
                 const p = data.products.find(p => p.id === it.id);
                 if (p) {
-                    p.stock = Math.max(0, p.stock - it.qty);
+                    p.stock = Math.max(0, Number(p.stock || 0) - it.qty);
                 }
             }
         });
@@ -1775,27 +1802,237 @@
             refreshTransactionTable();
             refreshProductTable();
             refreshDashboard();
-            alert("Transaksi berhasil disimpan.");
+            saveLog('TRANSACTION_ADD', 'Transaksi ID ' + trxObj.id + ', Total ' + trxObj.total);
+            alert('Transaksi berhasil disimpan.');
         }
 
-        // bukti bayar
         if (proofInput.files && proofInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                trxObj.proofImage = e.target.result;
-                finalize();
-            };
-            reader.readAsDataURL(proofInput.files[0]);
+            trxObj.imageId = 'trx-' + trxObj.id;
+            saveImage(trxObj.imageId, proofInput.files[0], finalize);
         } else {
             finalize();
         }
-        saveLog("TRANSACTION_ADD", `Transaksi ID ${trxObj.id}, Total Rp ${trxObj.total}`);
     });
+
+    function refreshTransactionTable() {
+        const data = loadData();
+        const tbody = document.getElementById('trxTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        data.transactions.forEach(t => {
+            const tr = document.createElement('tr');
+            const itemSummary = (t.items || []).map(i => `${i.name} x${i.qty}`).join('<br>');
+            tr.innerHTML = `
+                <td>${t.date}</td>
+                <td>${t.customerName || ''}</td>
+                <td>${t.branchName || '-'}</td>
+                <td>${t.cashierName || '-'}</td>
+                <td>${itemSummary}</td>
+                <td>${t.payStatus}</td>
+                <td>${t.payMethod}</td>
+                <td>Rp ${formatRupiah(t.total)}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning mb-1" onclick="editTransaction(${t.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger mb-1" onclick="deleteTransaction(${t.id})">Hapus</button>
+                    <button class="btn btn-sm btn-secondary mb-1" onclick="printStruk(${t.id})">Print</button>
+                    <button class="btn btn-sm btn-success mb-1" onclick="copyStrukWA(${t.id})">WA</button>
+                    ${t.imageId ? `<button class="btn btn-sm btn-info" onclick="viewProofImage(${t.id})">Bukti</button>` : ''}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        refreshDashboard();
+    }
+
+    window.deleteTransaction = function(id) {
+        if (!confirm('Hapus transaksi ini?')) return;
+        const data = loadData();
+        const trx = data.transactions.find(t => t.id === id);
+        if (trx && trx.imageId) {
+            deleteImage(trx.imageId);
+        }
+        data.transactions = data.transactions.filter(x => x.id !== id);
+        saveData(data);
+        refreshTransactionTable();
+        refreshDashboard();
+        saveLog('TRANSACTION_DELETE', 'Transaksi ID ' + id);
+    };
+
+    window.editTransaction = function(id) {
+        const data = loadData();
+        const t = data.transactions.find(x => x.id === id);
+        if (!t) return;
+        document.getElementById('editTrxId').value = id;
+        document.getElementById('editPayStatus').value = t.payStatus;
+        document.getElementById('editPayMethod').value = t.payMethod;
+        document.getElementById('editProof').value = '';
+        const modal = new bootstrap.Modal(document.getElementById('editTrxModal'));
+        modal.show();
+    };
+
+    document.getElementById('btnSaveEditTrx').addEventListener('click', () => {
+        const id = Number(document.getElementById('editTrxId').value);
+        const payStatus = document.getElementById('editPayStatus').value;
+        const payMethod = document.getElementById('editPayMethod').value;
+        const proofInput = document.getElementById('editProof');
+
+        const data = loadData();
+        const t = data.transactions.find(x => x.id === id);
+        if (!t) return;
+
+        t.payStatus = payStatus;
+        t.payMethod = payMethod;
+
+        function finalize() {
+            saveData(data);
+            refreshTransactionTable();
+            saveLog('TRANSACTION_EDIT', 'Transaksi ID ' + id + ', ' + payStatus + ', ' + payMethod);
+            alert('Transaksi berhasil diperbarui.');
+            const md = bootstrap.Modal.getInstance(document.getElementById('editTrxModal'));
+            if (md) md.hide();
+        }
+
+        if (proofInput.files && proofInput.files[0]) {
+            if (!t.imageId) t.imageId = 'trx-' + t.id;
+            saveImage(t.imageId, proofInput.files[0], finalize);
+        } else {
+            finalize();
+        }
+    });
+
+    window.viewProofImage = function(id) {
+        const data = loadData();
+        const t = data.transactions.find(x => x.id === id);
+        if (!t || !t.imageId) {
+            alert('Tidak ada bukti.');
+            return;
+        }
+        loadImage(t.imageId, blob => {
+            if (!blob) {
+                alert('Gambar tidak ditemukan.');
+                return;
+            }
+            const w = window.open('');
+            w.document.write('<img src="' + blob + '" style="max-width:100%;">');
+        });
+    };
+
+    function buildStrukText(t) {
+        let lines = [];
+        lines.push('=== BARBERSHOP ===');
+        lines.push('Tanggal   : ' + t.date);
+        lines.push('Cabang    : ' + (t.branchName || '-'));
+        lines.push('Kasir     : ' + (t.cashierName || '-'));
+        lines.push('Pelanggan : ' + (t.customerName || '-'));
+        lines.push('---------------------------');
+        (t.items || []).forEach(i => {
+            lines.push(`${i.name} x${i.qty} @Rp ${formatRupiah(i.price)}`);
+        });
+        lines.push('---------------------------');
+        lines.push('Subtotal : Rp ' + formatRupiah(t.subtotal));
+        lines.push('Diskon   : Rp ' + formatRupiah(t.discount));
+        lines.push('TOTAL    : Rp ' + formatRupiah(t.total));
+        lines.push('---------------------------');
+        lines.push('Dibayar  : Rp ' + formatRupiah(t.paid || 0));
+        lines.push('Kembali  : Rp ' + formatRupiah(t.change || 0));
+        lines.push('Status   : ' + t.payStatus);
+        lines.push('Metode   : ' + t.payMethod);
+        lines.push('');
+        lines.push('Terima kasih telah berkunjung');
+        lines.push('================================');
+        return lines.join('\n');
+    }
+
+    window.printStruk = function(id) {
+        const data = loadData();
+        const t = data.transactions.find(x => x.id === id);
+        if (!t) {
+            alert('Transaksi tidak ditemukan.');
+            return;
+        }
+
+        let html = `
+            <html>
+            <head>
+                <title>Struk</title>
+                <style>
+                    body { font-family: monospace; font-size: 12px; }
+                    .center { text-align: center; }
+                    hr { border-top: 1px dashed #000; }
+                </style>
+            </head>
+            <body onload="window.print();">
+                <div class="center"><strong>BARBERSHOP</strong></div>
+                <hr>
+                <div>Tanggal : ${t.date}</div>
+                <div>Cabang  : ${t.branchName || '-'}</div>
+                <div>Kasir   : ${t.cashierName || '-'}</div>
+                <div>Pelanggan : ${t.customerName || '-'}</div>
+                <hr>
+        `;
+        (t.items || []).forEach(i => {
+            html += `<div>${i.name} x${i.qty} @Rp ${formatRupiah(i.price)}</div>`;
+        });
+        html += `
+            <hr>
+            <div>Subtotal : Rp ${formatRupiah(t.subtotal)}</div>
+            <div>Diskon   : Rp ${formatRupiah(t.discount)}</div>
+            <div><strong>Total   : Rp ${formatRupiah(t.total)}</strong></div>
+            <div>Dibayar  : Rp ${formatRupiah(t.paid || 0)}</div>
+            <div>Kembali  : Rp ${formatRupiah(t.change || 0)}</div>
+            <hr>
+            <div>Status : ${t.payStatus}</div>
+            <div>Metode : ${t.payMethod}</div>
+            <hr>
+            <div class="center">Terima kasih</div>
+            </body>
+            </html>
+        `;
+        const w = window.open('', '_blank');
+        w.document.write(html);
+        w.document.close();
+    };
+
+    window.copyStrukWA = function(id) {
+        const data = loadData();
+        const t = data.transactions.find(x => x.id === id);
+        if (!t) {
+            alert('Transaksi tidak ditemukan.');
+            return;
+        }
+        const text = buildStrukText(t);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text)
+                .then(() => alert('Teks struk sudah disalin.\nSilakan paste di WhatsApp.'))
+                .catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    };
+
+    function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            alert('Teks struk sudah disalin.\nSilakan paste di WhatsApp.');
+        } catch (e) {
+            alert('Gagal menyalin. Silakan copy manual:\n\n' + text);
+        }
+        document.body.removeChild(ta);
+    }
 
     // ====== BOOKING ======
     function refreshBookingTable() {
         const data = loadData();
         const tbody = document.getElementById('bookingTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
         data.bookings.forEach(b => {
             const tr = document.createElement('tr');
@@ -1807,7 +2044,6 @@
             `;
             tbody.appendChild(tr);
         });
-        refreshDashboard();
     }
 
     document.getElementById('btnSaveBooking').addEventListener('click', () => {
@@ -1841,6 +2077,8 @@
         document.getElementById('bookingDateTime').value = '';
         document.getElementById('bookingBarber').value = '';
         refreshBookingTable();
+        refreshDashboard();
+        saveLog('BOOKING_SAVE', 'Booking oleh ' + cust.name);
         alert('Booking tersimpan.');
     });
 
@@ -1848,40 +2086,27 @@
     function refreshDashboard() {
         const data = loadData();
         const today = todayStr();
-
-        // TRANSAKSI HARI INI
         const trxToday = data.transactions.filter(t => t.date === today);
         const incomeToday = trxToday.reduce((sum, t) => sum + Number(t.total || 0), 0);
+        const bookingToday = data.bookings.filter(b => (b.datetime || '').slice(0, 10) === today);
 
-        // BOOKING HARI INI
-        const bookingToday = data.bookings.filter(
-            b => (b.datetime || "").slice(0,10) === today
-        );
+        document.getElementById('dashTrxToday').innerText = trxToday.length;
+        document.getElementById('dashIncomeToday').innerText = 'Rp ' + formatRupiah(incomeToday);
+        document.getElementById('dashCustomerCount').innerText = data.customers.length;
+        document.getElementById('dashBookingToday').innerText = bookingToday.length;
 
-        // SET KE DASHBOARD UI
-        document.getElementById("dashTrxToday").innerText = trxToday.length;
-        document.getElementById("dashIncomeToday").innerText = "Rp " + formatRupiah(incomeToday);
-        document.getElementById("dashCustomerCount").innerText = data.customers.length;
-        document.getElementById("dashBookingToday").innerText = bookingToday.length;
-
-        // OPTIONAL SECTION: Jika Anda ingin menampilkan statistik cabang
         renderDashboardCabang(trxToday, data.cabang || []);
     }
 
     function renderDashboardCabang(trxToday, cabangs) {
-        // Cek apakah UI untuk cabang sudah ada
-        const container = document.getElementById("dashCabangContainer");
+        const container = document.getElementById('dashCabangContainer');
         if (!container) return;
-
-        container.innerHTML = ""; // reset
-
+        container.innerHTML = '';
         cabangs.forEach(c => {
             const trxByBranch = trxToday.filter(t => t.branchId === c.id);
             const incomeByBranch = trxByBranch.reduce((sum, t) => sum + Number(t.total || 0), 0);
-
-            const div = document.createElement("div");
-            div.className = "col-sm-6 col-lg-3";
-
+            const div = document.createElement('div');
+            div.className = 'col-sm-6 col-lg-3';
             div.innerHTML = `
                 <div class="card border-dark">
                     <div class="card-body">
@@ -1891,175 +2116,24 @@
                     </div>
                 </div>
             `;
-
             container.appendChild(div);
         });
     }
 
-    // ====== STRUK PRINT & COPY WA ======
-    function getTransactionById(id) {
-        const data = loadData();
-        return data.transactions.find(t => t.id === id);
-    }
-
-    function buildStrukText(t) {
-        let lines = [];
-
-        lines.push("=== MR BARBERSHOP ===");
-        lines.push("Tanggal   : " + t.date);
-        lines.push("Cabang    : " + (t.branchName || "-"));
-        lines.push("Kasir     : " + (t.cashierName || "-"));
-        lines.push("Pelanggan : " + (t.customerName || "-"));
-        lines.push("---------------------------");
-
-        t.items.forEach(i => {
-            lines.push(`${i.name} x${i.qty} @Rp ${formatRupiah(i.price)}`);
-        });
-
-        lines.push("---------------------------");
-        lines.push("Subtotal : Rp " + formatRupiah(t.subtotal));
-        lines.push("Diskon   : Rp " + formatRupiah(t.discount));
-        lines.push("TOTAL    : Rp " + formatRupiah(t.total));
-        lines.push("---------------------------");
-        lines.push("Status   : " + t.payStatus);
-        lines.push("Metode   : " + t.payMethod);
-        lines.push("");
-        lines.push("Terima kasih telah berkunjung");
-        lines.push("================================");
-
-        return lines.join("\n");
-    }
-
-    function printStruk(id) {
-
-        const data = loadData();
-        const t = data.transactions.find(x => x.id === id);
-        if (!t) return alert("Transaksi tidak ditemukan.");
-
-        let html = `
-            <html>
-            <head>
-                <title>Struk</title>
-                <style>
-                    body { font-family: monospace; font-size: 12px; }
-                    .center { text-align: center; }
-                    hr { border-top: 1px dashed #000; }
-                </style>
-            </head>
-            <body onload="window.print();">
-                <div class="center"><strong>BARBERSHOP</strong></div>
-                <hr>
-                <div>Tanggal : ${t.date}</div>
-                <div>Cabang  : ${t.branchName}</div>
-                <div>Kasir   : ${t.cashierName}</div>
-                <div>Pelanggan : ${t.customerName}</div>
-                <hr>
-        `;
-
-        t.items.forEach(i => {
-            html += `
-                <div>${i.name} x${i.qty} @Rp ${formatRupiah(i.price)}</div>
-            `;
-        });
-
-        html += `
-            <hr>
-            <div>Subtotal : Rp ${formatRupiah(t.subtotal)}</div>
-            <div>Diskon   : Rp ${formatRupiah(t.discount)}</div>
-            <div><strong>Total : Rp ${formatRupiah(t.total)}</strong></div>
-            <hr>
-            <div>Status : ${t.payStatus}</div>
-            <div>Metode : ${t.payMethod}</div>
-            <hr>
-            <div class="center">Terima kasih</div>
-            </body>
-            </html>
-        `;
-
-        const w = window.open("", "_blank");
-        w.document.write(html);
-        w.document.close();
-    }
-
-    function copyStrukWA(id) {
-
-        const data = loadData();
-        const t = data.transactions.find(x => x.id === id);
-        if (!t) return alert("Transaksi tidak ditemukan.");
-
-        const text = buildStrukText(t);
-
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text)
-                .then(() => {
-                    alert("Teks struk sudah disalin.\nSilakan paste di WhatsApp.");
-                })
-                .catch(() => fallbackCopy(text));
-        } else {
-            fallbackCopy(text);
-        }
-    }
-
-    function fallbackCopy(text) {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-
-        try {
-            document.execCommand("copy");
-            alert("Teks struk sudah disalin.\nSilakan paste di WhatsApp.");
-        } catch {
-            alert("Gagal menyalin. Silakan copy manual:\n\n" + text);
-        }
-
-        document.body.removeChild(ta);
-    }
-
-    function fallbackCopyText(text) {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-            document.execCommand('copy');
-            alert('Teks struk sudah disalin. Silakan paste di WhatsApp.');
-        } catch (e) {
-            alert('Gagal menyalin teks. Silakan pilih dan copy manual:\n\n' + text);
-        }
-        document.body.removeChild(ta);
-    }
-
-    window.printStruk = printStruk;
-    window.copyStrukWA = copyStrukWA;
-    window.viewProofImage = viewProofImage;
-    window.editCustomer = editCustomer;
-    window.deleteCustomer = deleteCustomer;
-    window.editService = editService;
-    window.deleteService = deleteService;
-    window.editProduct = editProduct;
-    window.deleteProduct = deleteProduct;
-
     // ====== BACKUP / RESTORE JSON ======
     document.getElementById('btnExportJson').addEventListener('click', () => {
         const data = loadData();
-
-        // pastikan struktur baru ada
         if (!data.cabang) data.cabang = [];
         if (!data.transactions) data.transactions = [];
-
         data.transactions.forEach(t => {
             if (!t.items) t.items = [];
             if (!t.branchId) t.branchId = null;
-            if (!t.branchName) t.branchName = "";
-            if (!t.cashierName) t.cashierName = "";
-            if (!t.payStatus) t.payStatus = "Belum Lunas";
-            if (!t.payMethod) t.payMethod = "Cash";
+            if (!t.branchName) t.branchName = '';
+            if (!t.cashierName) t.cashierName = '';
+            if (!t.payStatus) t.payStatus = 'Belum Lunas';
+            if (!t.payMethod) t.payMethod = 'Cash';
         });
+
         const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -2076,23 +2150,20 @@
         reader.onload = ev => {
             try {
                 const obj = JSON.parse(ev.target.result);
-
-                // Jika data lama belum punya struktur baru, tambahkan
                 if (!obj.cabang) obj.cabang = [];
-
                 (obj.transactions || []).forEach(t => {
                     if (!t.items) t.items = [];
                     if (!t.branchId) t.branchId = null;
-                    if (!t.branchName) t.branchName = "";
-                    if (!t.cashierName) t.cashierName = "";
-                    if (!t.payStatus) t.payStatus = "Belum Lunas";
-                    if (!t.payMethod) t.payMethod = "Cash";
+                    if (!t.branchName) t.branchName = '';
+                    if (!t.cashierName) t.cashierName = '';
+                    if (!t.payStatus) t.payStatus = 'Belum Lunas';
+                    if (!t.payMethod) t.payMethod = 'Cash';
                 });
-                saveData(obj);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
                 alert('Import JSON berhasil.');
-                initAllForms();
                 refreshAllTables();
                 refreshDashboard();
+                refreshAuditLog();
             } catch (e) {
                 alert('File JSON tidak valid.');
             }
@@ -2105,38 +2176,35 @@
     document.getElementById('btnExportExcel').addEventListener('click', () => {
         const data = loadData();
         const wb = XLSX.utils.book_new();
-        Object.keys(data).forEach(key => {
+
+        // users, customers, products, services, cabang, promo, audit, bookings
+        const simpleSheets = ['users','customers','products','services','cabang','promo','audit','bookings'];
+        simpleSheets.forEach(key => {
             const arr = data[key];
             if (!Array.isArray(arr) || arr.length === 0) return;
-            const headers = Array.from(new Set(arr.flatMap(obj => Object.keys(obj))));
-            const rows = [headers];
-            arr.forEach(obj => {
-                rows.push(headers.map(h => obj[h] !== undefined ? obj[h] : ''));
-            });
-            const ws = XLSX.utils.aoa_to_sheet(rows);
-            XLSX.utils.book_append_sheet(wb, ws, key.substring(0, 31));
+            const ws = XLSX.utils.json_to_sheet(arr);
+            XLSX.utils.book_append_sheet(wb, ws, key.substring(0,31));
         });
-        // Flatten transaksi agar bisa masuk ke Excel
-        const trxFlat = data.transactions.map(t => ({
+
+        // transactions flatten
+        const trxFlat = (data.transactions || []).map(t => ({
             id: t.id,
             date: t.date,
             customerName: t.customerName,
             branchName: t.branchName,
             cashierName: t.cashierName,
-            items: t.items.map(i => `${i.name} x${i.qty}`).join("; "),
+            items: (t.items || []).map(i => `${i.name} x${i.qty}`).join('; '),
             subtotal: t.subtotal,
             discount: t.discount,
             total: t.total,
+            paid: t.paid,
+            change: t.change,
             payStatus: t.payStatus,
             payMethod: t.payMethod
         }));
+        const wsTrx = XLSX.utils.json_to_sheet(trxFlat);
+        XLSX.utils.book_append_sheet(wb, wsTrx, 'transactions');
 
-        // Replace sheet transaksi
-        XLSX.utils.book_append_sheet(
-            wb,
-            XLSX.utils.json_to_sheet(trxFlat),
-            "transactions"
-        );
         XLSX.writeFile(wb, 'barbershop_data.xlsx');
     });
 
@@ -2145,65 +2213,122 @@
         if (!file) return;
         const reader = new FileReader();
         reader.onload = ev => {
-            const data = new Uint8Array(ev.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            const result = loadData(); // mulai dari yang ada
+            const dataArr = new Uint8Array(ev.target.result);
+            const workbook = XLSX.read(dataArr, {type: 'array'});
+            const result = loadData();
+
             workbook.SheetNames.forEach(sheetName => {
                 const ws = workbook.Sheets[sheetName];
-                const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
-                if (sheetName === "transactions") {
-                    // Rebuild transactions with multi item parsing
+                const rows = XLSX.utils.sheet_to_json(ws);
+                if (sheetName === 'transactions') {
                     result.transactions = rows.map(r => ({
                         id: Number(r.id),
                         date: r.date,
                         customerName: r.customerName,
                         branchName: r.branchName,
                         cashierName: r.cashierName,
-                        items: (r.items || "").split(";").map(txt => {
-                            const part = txt.trim().split(" x");
+                        items: (r.items || '').split(';').map(txt => {
+                            const part = txt.trim().split(' x');
                             return {
-                                name: part[0] || "",
-                                qty: Number(part[1] || 1)
+                                name: part[0] || '',
+                                qty: Number(part[1] || 1),
+                                price: 0
                             };
                         }).filter(i => i.name),
                         subtotal: Number(r.subtotal || 0),
                         discount: Number(r.discount || 0),
                         total: Number(r.total || 0),
-                        payStatus: r.payStatus || "Belum Lunas",
-                        payMethod: r.payMethod || "Cash",
-                        proofImage: null
+                        paid: Number(r.paid || 0),
+                        change: Number(r.change || 0),
+                        payStatus: r.payStatus || 'Belum Lunas',
+                        payMethod: r.payMethod || 'Cash',
+                        imageId: null,
+                        createdBy: result.users[0] ? result.users[0].username : 'admin'
                     }));
-                    return;
-                }
-
-                if (rows.length < 2) return;
-                const headers = rows[0];
-                const items = [];
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    if (row.every(cell => cell === null || cell === '')) continue;
-                    const obj = {};
-                    headers.forEach((h, idx) => {
-                        obj[h] = row[idx];
-                    });
-                    items.push(obj);
-                }
-                // Nama sheet dipakai langsung sebagai key jika cocok
-                if (result[sheetName]) {
-                    result[sheetName] = items;
-                } else {
-                    // kalau key belum ada, tambahkan baru
-                    result[sheetName] = items;
+                } else if (result[sheetName]) {
+                    result[sheetName] = rows;
                 }
             });
             saveData(result);
             alert('Import Excel selesai. Harap pastikan struktur kolom sudah sesuai.');
-            initAllForms();
             refreshAllTables();
             refreshDashboard();
+            refreshAuditLog();
         };
         reader.readAsArrayBuffer(file);
         e.target.value = '';
+    });
+
+    // ====== RESET / CLEAR SEMUA DATA ======
+    document.getElementById('btnClearAllData').addEventListener('click', () => {
+        let check = prompt('Ketik RESET untuk menghapus semua data:');
+        if (check !== 'RESET') {
+            alert('Input salah. Data tidak dihapus.');
+            return;
+        }
+
+        const fresh = {
+            users: [
+                {
+                    id: 1,
+                    username: 'admin',
+                    password: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+                    role: 'admin',
+                    name: 'Administrator'
+                }
+            ],
+            customers: [],
+            products: [],
+            services: [],
+            transactions: [],
+            bookings: [],
+            cabang: [],
+            promo: [],
+            audit: []
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+        alert('Semua data sudah dihapus. Aplikasi akan dimuat ulang.');
+        location.reload();
+    });
+
+    // ====== UBAH PASSWORD ======
+    document.getElementById('btnChangePass').addEventListener('click', async () => {
+        const oldPass = document.getElementById('oldPass').value;
+        const newPass1 = document.getElementById('newPass1').value;
+        const newPass2 = document.getElementById('newPass2').value;
+
+        if (!oldPass || !newPass1 || !newPass2) {
+            alert('Semua field wajib diisi');
+            return;
+        }
+        if (newPass1 !== newPass2) {
+            alert('Password baru tidak sama');
+            return;
+        }
+        const data = loadData();
+        const user = currentUser;
+        if (!user) {
+            alert('Tidak ada user login');
+            return;
+        }
+
+        const oldHash = await hashPassword(oldPass);
+        if (oldHash !== user.password) {
+            alert('Password lama salah');
+            return;
+        }
+
+        const newHash = await hashPassword(newPass1);
+        const u = data.users.find(u => u.id === user.id);
+        if (!u) {
+            alert('User tidak ditemukan di data.');
+            return;
+        }
+        u.password = newHash;
+        saveData(data);
+        saveLog('CHANGE_PASSWORD', 'User ' + user.username);
+        alert('Password berhasil diubah. Silakan login ulang.');
+        location.reload();
     });
 
     // ====== REFRESH SEMUA TABEL ======
@@ -2213,16 +2338,14 @@
         refreshProductTable();
         refreshTransactionTable();
         refreshBookingTable();
-
         refreshBranchTable();
-        populateBranchDropdown();
+        refreshPromoTable();
         refreshAuditLog();
     }
 
-    // ====== AUTO INIT (untuk set data awal saja) ======
-    // Tidak login otomatis, user tetap harus login
-    loadData(); // memicu inisialisasi admin bila belum ada
-    
+    // ====== INIT SAAT LOAD ======
+    initImageDB();
+    loadData(); // untuk ensure initial data
 </script>
 </body>
 </html>
