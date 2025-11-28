@@ -1638,22 +1638,24 @@ if (fileFoto) {
     const deskripsi = document.getElementById('edit-biaya-deskripsi').value.trim();
     const nominal = toNumber(document.getElementById('edit-biaya-nominal').value);
     const fileFoto = document.getElementById('edit-biaya-foto').files[0];
-    var fotoBukti = null;
 
     const idx = data.biaya.findIndex(b => b.id === id);
     if (idx >= 0) {
+      const fotoBukti = data.biaya[idx].fotoBukti;
       data.biaya[idx] = { id, tanggal, kategori, deskripsi, nominal , fotoBukti};
       if (fileFoto) {
         const reader = new FileReader();
         reader.onload = () => {
           data.biaya[idx].fotoBukti = reader.result;
           saveData();
+					bootstrap.Modal.getInstance(document.getElementById('modalEditBiaya')).hide();
         };
         reader.readAsDataURL(fileFoto);
       } else {
         saveData();
+				bootstrap.Modal.getInstance(document.getElementById('modalEditBiaya')).hide();
       }
-      bootstrap.Modal.getInstance(document.getElementById('modalEditBiaya')).hide();
+      
     }
   
   });
