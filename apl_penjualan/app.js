@@ -124,16 +124,8 @@ async function saveToGoogleSheets(type, data) {
     return;
   }
   
-  // Try different encoding approaches
-  let encodedData;
-  try {
-    // Simple base64 encode
-    encodedData = btoa(JSON.stringify(data));
-  } catch (e) {
-    console.error('Encoding error:', e);
-    // Fallback for Unicode
-    encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-  }
+  // Encode - use encodeURIComponent instead of btoa for better compatibility
+  const encodedData = encodeURIComponent(JSON.stringify(data));
   
   // Build URL - add ? if not present
   let url = gasUrl;
@@ -181,14 +173,22 @@ async function autoSyncLogStok() {
 
 // Auto-save all data
 async function autoSaveAll() {
-  if (!isOnline || !getGasUrl()) return;
+  console.log('=== AUTO SAVE ALL ===');
+  console.log('GAS URL:', getGasUrl());
   
-  showSyncStatus('Auto-saving ke Google Sheets...', 'info');
+  if (!isOnline || !getGasUrl()) {
+    console.log('Skipped - offline or no URL');
+    return;
+  }
+  
+  showSyncStatus('Menyimpan ke Google Sheets...', 'info');
+  
   await Promise.all([
     autoSyncProduk(),
     autoSyncTransaksi(),
     autoSyncLogStok()
   ]);
+  
   showSyncStatus('Tersimpan ke Google Sheets!', 'success');
 }
 
@@ -376,9 +376,20 @@ function load(key) {
 
 function save(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+  console.log('=== SAVE CALLED ===');
+  console.log('Key:', key);
+  console.log('Data length:', value ? value.length : 0);
+  
+  // Always show current settings
+  console.log('GAS URL:', getGasUrl());
+  console.log('Is Online:', isOnline);
+  
   // Trigger auto-sync to Google Sheets when online
   if (isOnline) {
+    console.log('Calling autoSaveAll...');
     autoSaveAll();
+  } else {
+    console.log('Skipping sync - offline');
   }
 }
 
@@ -980,8 +991,12 @@ document.getElementById("btnImportTransaksi").onclick = function () {
 
     save("transaksi", trx);
     renderTransaksi();
-
-    alert("Import transaksi selesai!");
+    
+    // Auto sync after import
+    setTimeout(() => {
+      autoSyncTransaksi();
+      alert("Import dan sync selesai!");
+    }, 500);
   };
 
   reader.readAsArrayBuffer(file);

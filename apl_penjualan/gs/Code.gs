@@ -57,25 +57,16 @@ function doGet(e) {
       var data = [];
       var dataStrRaw = e.parameter.data;
       
-      Logger.log('Raw data string length: ' + (dataStrRaw ? dataStrRaw.length : 0));
+      Logger.log('Raw data: ' + (dataStrRaw ? dataStrRaw.substring(0, 50) : 'empty'));
       
       if (dataStrRaw) {
         try {
-          // Decode URL encoding first
+          // Decode URL encoding
           var decoded = decodeURIComponent(dataStrRaw);
-          // Then base64 decode
-          data = JSON.parse(Utilities.newBlob(Utilities.base64Decode(decoded)).getDataAsString());
+          data = JSON.parse(decoded);
           Logger.log('Parsed data count: ' + data.length);
         } catch (e) {
-          Logger.log('Data parse error method 1: ' + e.toString());
-          
-          // Try alternative method
-          try {
-            data = JSON.parse(decodeURIComponent(escape(Utilities.newBlob(Utilities.base64Decode(dataStrRaw)).getDataAsString())));
-            Logger.log('Parsed data count (method 2): ' + data.length);
-          } catch (e2) {
-            Logger.log('Data parse error method 2: ' + e2.toString());
-          }
+          Logger.log('Data parse error: ' + e.toString());
         }
       }
       
