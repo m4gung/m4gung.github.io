@@ -83,7 +83,7 @@ async function loadFromGoogleSheets(sheetName) {
 /* ===========================================================
    GOOGLE APPS SCRIPT - AUTO SAVE
    =========================================================== */
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbx8PzP-g1yMT07_-xISkvoKLOASxcFocLfCfTimou7zAKh9_3oTVyQ6RpqSinIOwqKu/exec'; // Will be set from settings
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxUbQULF0RI2XZN-OOLMo5vp9dBfbdfmHVuOp4pPCi5AdQ6OwuesPhAW_egeYy5DfvV/exec'; // Will be set from settings
 
 function setGasUrl(url) {
   localStorage.setItem('gasWebAppUrl', url);
