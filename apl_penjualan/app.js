@@ -6,7 +6,7 @@
 // Option 2: Use public sheet CSV export URL
 const SHEET_CONFIG = {
   // Your Google Sheets Spreadsheet ID (from URL)
-  spreadsheetId: 'YOUR_SPREADSHEET_ID',
+  spreadsheetId: '1061LUKUjj9rzcLlyXSVGzxG-jx1gsQZLtzVOmT5LX0U',
   
   // Sheet names in your spreadsheet
   sheets: {
@@ -83,7 +83,7 @@ async function loadFromGoogleSheets(sheetName) {
 /* ===========================================================
    GOOGLE APPS SCRIPT - AUTO SAVE
    =========================================================== */
-var GAS_URL = ''; // Will be set from settings
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbx8PzP-g1yMT07_-xISkvoKLOASxcFocLfCfTimou7zAKh9_3oTVyQ6RpqSinIOwqKu/exec'; // Will be set from settings
 
 function setGasUrl(url) {
   localStorage.setItem('gasWebAppUrl', url);
