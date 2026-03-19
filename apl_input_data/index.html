@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mesin Pro v5</title>
+    <title id="title-text-head">USAHA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .nav-active { color: #2563eb; border-top: 3px solid #2563eb; background: #f0f7ff; }
@@ -45,6 +45,14 @@
                     <h2 class="text-xs sm:text-[10px] md:text-sm font-black text-slate-400 uppercase tracking-widest">📋 Database</h2>
                     <button onclick="fetchCloud()" class="text-blue-500 text-[10px] sm:text-xs md:text-sm font-black uppercase hover:text-blue-600 transition-colors">Sync Cloud</button>
                 </div>
+                <div class="flex flex-wrap gap-2 mb-4 items-center">
+                    <span class="text-[10px] font-black text-slate-400 uppercase">Filter:</span>
+                    <input type="date" id="filter-start" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500" onchange="applyFilter()">
+                    <span class="text-[10px] text-slate-400">-</span>
+                    <input type="date" id="filter-end" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500" onchange="applyFilter()">
+                    <button onclick="clearFilter()" class="text-[10px] font-black text-red-400 uppercase ml-2 hover:text-red-500">Clear</button>
+                    <span id="filter-count" class="text-[10px] text-slate-400 ml-auto"></span>
+                </div>
                 <div class="overflow-x-auto rounded-lg -mx-4 px-4 sm:mx-0 sm:px-0">
                     <table class="w-full text-xs sm:text-sm md:text-base">
                         <thead><tr id="thr" class="bg-slate-50 text-left text-[10px] sm:text-[10px] md:text-xs text-slate-400 uppercase tracking-tighter"></tr></thead>
@@ -76,6 +84,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbwMuwobTL4pMfs7cWb-vpyJmuBJrWPiP74eOLpwcDeqR5iwBD9wNRsuDmoBk4zCsyoR/exec"; 
         let config = JSON.parse(localStorage.getItem('m_cfg')) || { name: "USAHA", cols: [{n: "Nama", t: "text"}] };
         let db, currentEditTs = null;
+        let allData = [];
 
         const dbReq = indexedDB.open("AplikasiPWA", 1);
         dbReq.onupgradeneeded = e => {
@@ -96,6 +105,7 @@
         function renderSettings() {
             document.getElementById('app-name-input').value = config.name;
             document.getElementById('title-text').innerText = config.name;
+            document.getElementById('title-text-head').innerText = config.name;
             document.getElementById('col-list').innerHTML = config.cols.map((c, i) => `
                 <div class="flex gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
                     <input type="text" value="${c.n}" onchange="config.cols[${i}].n=this.value" class="flex-1 bg-transparent text-sm font-bold outline-none">
@@ -138,21 +148,49 @@
         function refreshUI() {
             if(!db) return;
             db.transaction("data").objectStore("data").getAll().onsuccess = e => {
-                const list = e.target.result.reverse();
-                if(list.length === 0) return;
-                const keys = Object.keys(list[0]).filter(k => k !== "Timestamp");
-                document.getElementById('thr').innerHTML = `<th class="p-3 border-b">Waktu</th>` + keys.map(k => `<th class="p-3 border-b">${k}</th>`).join('') + `<th class="p-3 border-b text-right">Aksi</th>`;
-                document.getElementById('tbd').innerHTML = list.map(r => `
-                    <tr class="hover:bg-slate-50 font-medium">
-                        <td class="p-3 border-b text-[9px] text-slate-400 italic">${new Date(r.Timestamp).toLocaleDateString('id-ID')}</td>
-                        ${keys.map(k => `<td class="p-3 border-b whitespace-nowrap">${r[k]||'-'}</td>`).join('')}
-                        <td class="p-3 border-b whitespace-nowrap text-right">
-                            <button onclick="openEdit('${r.Timestamp}')" class="text-blue-500 font-black text-[10px] uppercase mr-3">Edit</button>
-                            <button onclick="deleteData('${r.Timestamp}')" class="text-red-400 font-black text-[10px] uppercase">Hapus</button>
-                        </td>
-                    </tr>
-                `).join('');
+                allData = e.target.result.reverse();
+                applyFilter();
             };
+        }
+
+        function applyFilter() {
+            const startDate = document.getElementById('filter-start').value;
+            const endDate = document.getElementById('filter-end').value;
+            
+            let filtered = allData;
+            if(startDate || endDate) {
+                filtered = allData.filter(r => {
+                    const itemDate = new Date(r.Timestamp).toISOString().split('T')[0];
+                    if(startDate && itemDate < startDate) return false;
+                    if(endDate && itemDate > endDate) return false;
+                    return true;
+                });
+            }
+            
+            document.getElementById('filter-count').textContent = filtered.length !== allData.length ? `${filtered.length} / ${allData.length} data` : '';
+            
+            if(filtered.length === 0) {
+                document.getElementById('tbd').innerHTML = '<tr><td colspan="100" class="p-8 text-center text-slate-400 text-sm">Tidak ada data</td></tr>';
+                return;
+            }
+            const keys = Object.keys(filtered[0]).filter(k => k !== "Timestamp");
+            document.getElementById('thr').innerHTML = `<th class="p-3 border-b">Waktu</th>` + keys.map(k => `<th class="p-3 border-b">${k}</th>`).join('') + `<th class="p-3 border-b text-right">Aksi</th>`;
+            document.getElementById('tbd').innerHTML = filtered.map(r => `
+                <tr class="hover:bg-slate-50 font-medium">
+                    <td class="p-3 border-b text-[9px] text-slate-400 italic">${new Date(r.Timestamp).toLocaleDateString('id-ID')}</td>
+                    ${keys.map(k => `<td class="p-3 border-b whitespace-nowrap">${r[k]||'-'}</td>`).join('')}
+                    <td class="p-3 border-b whitespace-nowrap text-right">
+                        <button onclick="openEdit('${r.Timestamp}')" class="text-blue-500 font-black text-[10px] uppercase mr-3">Edit</button>
+                        <button onclick="deleteData('${r.Timestamp}')" class="text-red-400 font-black text-[10px] uppercase">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function clearFilter() {
+            document.getElementById('filter-start').value = '';
+            document.getElementById('filter-end').value = '';
+            applyFilter();
         }
 
         async function deleteData(ts) {
