@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesin Pro v5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .nav-active { color: #2563eb; border-top: 3px solid #2563eb; background: #f0f7ff; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal.active { display: flex; }
+    </style>
+</head>
+<body class="bg-slate-50 pb-20 text-slate-800">
+
+    <header class="bg-white p-4 shadow-sm sticky top-0 z-50 flex justify-between items-center border-b">
+        <h1 id="title-text" class="font-black text-blue-600 italic tracking-tighter uppercase">USAHA</h1>
+        <div id="status-badge" class="px-2 py-1 rounded text-[9px] font-bold bg-green-100 text-green-600 tracking-widest uppercase">Online</div>
+    </header>
+
+    <main class="w-full mx-auto p-4 md:max-w-3xl lg:max-w-5xl">
+        <section id="pengaturan" class="page active">
+            <div class="bg-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xs sm:text-[10px] md:text-sm font-black text-slate-400 uppercase mb-4 tracking-widest">⚙️ Konfigurasi</h2>
+                <input type="text" id="app-name-input" class="w-full p-2 border-b-2 mb-6 outline-none font-bold text-blue-600 focus:border-blue-500 transition-all">
+                <div id="col-list" class="space-y-3"></div>
+                <button onclick="addCol()" class="w-full py-3 mt-4 border-2 border-dashed border-slate-200 text-slate-400 rounded-xl text-[10px] font-bold uppercase tracking-widest">+ Tambah Kolom</button>
+                <button onclick="saveSettings()" class="w-full bg-blue-600 text-white mt-8 py-4 rounded-xl font-bold shadow-lg shadow-blue-100 active:scale-95 transition">SIMPAN PENGATURAN</button>
+            </div>
+        </section>
+
+        <section id="input" class="page">
+            <div class="bg-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xs sm:text-[10px] md:text-sm font-black text-blue-600 uppercase mb-6 tracking-widest">📝 Form Input</h2>
+                <div id="form-container" class="space-y-5"></div>
+                <button id="btn-submit" onclick="submitData()" class="w-full bg-slate-900 text-white mt-8 py-4 rounded-xl font-bold uppercase tracking-widest active:scale-95 transition">Kirim Data</button>
+            </div>
+        </section>
+
+        <section id="output" class="page">
+            <div class="bg-white p-4 md:p-6 lg:p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
+                    <h2 class="text-xs sm:text-[10px] md:text-sm font-black text-slate-400 uppercase tracking-widest">📋 Database</h2>
+                    <button onclick="fetchCloud()" class="text-blue-500 text-[10px] sm:text-xs md:text-sm font-black uppercase hover:text-blue-600 transition-colors">Sync Cloud</button>
+                </div>
+                <div class="overflow-x-auto rounded-lg -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <table class="w-full text-xs sm:text-sm md:text-base">
+                        <thead><tr id="thr" class="bg-slate-50 text-left text-[10px] sm:text-[10px] md:text-xs text-slate-400 uppercase tracking-tighter"></tr></thead>
+                        <tbody id="tbd" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="editModal" class="modal p-4">
+        <div class="bg-white w-full max-w-xs p-6 rounded-2xl shadow-2xl border">
+            <h3 class="font-black text-blue-600 uppercase text-xs mb-6 tracking-widest">Edit Entry</h3>
+            <div id="edit-fields" class="space-y-5"></div>
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeEdit()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-xs uppercase tracking-widest">Batal</button>
+                <button onclick="saveEdit()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-1 shadow-[0_-5px_15px_rgba(0,0,0,0.02)] z-50">
+        <button onclick="nav('pengaturan')" class="nav-btn flex-1 py-2 flex flex-col items-center text-[9px] font-black nav-active uppercase tracking-tighter" id="n-pengaturan"><span>⚙️</span>SET</button>
+        <button onclick="nav('input')" class="nav-btn flex-1 py-2 flex flex-col items-center text-[9px] font-black text-slate-300 uppercase tracking-tighter" id="n-input"><span>📝</span>IN</button>
+        <button onclick="nav('output')" class="nav-btn flex-1 py-2 flex flex-col items-center text-[9px] font-black text-slate-300 uppercase tracking-tighter" id="n-output"><span>📋</span>OUT</button>
+    </nav>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwMuwobTL4pMfs7cWb-vpyJmuBJrWPiP74eOLpwcDeqR5iwBD9wNRsuDmoBk4zCsyoR/exec"; 
+        let config = JSON.parse(localStorage.getItem('m_cfg')) || { name: "USAHA", cols: [{n: "Nama", t: "text"}] };
+        let db, currentEditTs = null;
+
+        const dbReq = indexedDB.open("AplikasiPWA", 1);
+        dbReq.onupgradeneeded = e => {
+            db = e.target.result;
+            db.createObjectStore("data", { keyPath: "Timestamp" });
+        };
+        dbReq.onsuccess = e => { db = e.target.result; refreshUI(); fetchCloud(); };
+
+        function nav(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active', 'text-slate-300'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('n-'+id).classList.add('nav-active');
+            if(id === 'input') renderForm();
+            if(id === 'output') refreshUI();
+        }
+
+        function renderSettings() {
+            document.getElementById('app-name-input').value = config.name;
+            document.getElementById('title-text').innerText = config.name;
+            document.getElementById('col-list').innerHTML = config.cols.map((c, i) => `
+                <div class="flex gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    <input type="text" value="${c.n}" onchange="config.cols[${i}].n=this.value" class="flex-1 bg-transparent text-sm font-bold outline-none">
+                    <select onchange="config.cols[${i}].t=this.value" class="text-[10px] bg-white border rounded px-1 font-bold">
+                        <option value="text" ${c.t=='text'?'selected':''}>Teks</option>
+                        <option value="date" ${c.t=='date'?'selected':''}>Tgl</option>
+                        <option value="number" ${c.t=='number'?'selected':''}>No</option>
+                    </select>
+                    <button onclick="config.cols.splice(${i},1); renderSettings();" class="text-red-400 px-2 font-black text-lg">&times;</button>
+                </div>
+            `).join('');
+        }
+        function addCol() { config.cols.push({n: "Kolom", t: "text"}); renderSettings(); }
+        function saveSettings() { 
+            const titleName = document.getElementById('app-name-input').value;
+            config.name = titleName;
+            localStorage.setItem('m_cfg', JSON.stringify(config)); alert("Tersimpan!"); renderSettings(); 
+        }
+
+        function renderForm() {
+            document.getElementById('form-container').innerHTML = config.cols.map(c => `
+                <div><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">${c.n}</label>
+                <input type="${c.t}" data-key="${c.n}" class="in-val w-full p-3 border-2 border-slate-50 rounded-xl bg-slate-50 outline-none focus:bg-white focus:border-blue-500 transition-all"></div>
+            `).join('');
+        }
+
+        async function submitData() {
+            const payload = { "Timestamp": new Date().toISOString() };
+            
+            document.querySelectorAll('.in-val').forEach(i => payload[i.dataset.key] = i.value);
+            
+            const tx = db.transaction("data", "readwrite");
+            tx.objectStore("data").add(payload);
+            tx.oncomplete = () => {
+                nav('output');
+                fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => fetchCloud());
+            };
+        }
+
+        function refreshUI() {
+            if(!db) return;
+            db.transaction("data").objectStore("data").getAll().onsuccess = e => {
+                const list = e.target.result.reverse();
+                if(list.length === 0) return;
+                const keys = Object.keys(list[0]).filter(k => k !== "Timestamp");
+                document.getElementById('thr').innerHTML = `<th class="p-3 border-b">Waktu</th>` + keys.map(k => `<th class="p-3 border-b">${k}</th>`).join('') + `<th class="p-3 border-b text-right">Aksi</th>`;
+                document.getElementById('tbd').innerHTML = list.map(r => `
+                    <tr class="hover:bg-slate-50 font-medium">
+                        <td class="p-3 border-b text-[9px] text-slate-400 italic">${new Date(r.Timestamp).toLocaleDateString('id-ID')}</td>
+                        ${keys.map(k => `<td class="p-3 border-b whitespace-nowrap">${r[k]||'-'}</td>`).join('')}
+                        <td class="p-3 border-b whitespace-nowrap text-right">
+                            <button onclick="openEdit('${r.Timestamp}')" class="text-blue-500 font-black text-[10px] uppercase mr-3">Edit</button>
+                            <button onclick="deleteData('${r.Timestamp}')" class="text-red-400 font-black text-[10px] uppercase">Hapus</button>
+                        </td>
+                    </tr>
+                `).join('');
+            };
+        }
+
+        async function deleteData(ts) {
+            if(!confirm("Hapus data ini?")) return;
+            const tx = db.transaction("data", "readwrite");
+            tx.objectStore("data").delete(ts);
+            tx.oncomplete = () => {
+                refreshUI();
+                fetch(API_URL, { method: 'POST', body: JSON.stringify({ mode: "DELETE", timestamp: ts }) });
+            };
+        }
+
+        function openEdit(ts) {
+            currentEditTs = ts;
+            db.transaction("data").objectStore("data").get(ts).onsuccess = e => {
+                const item = e.target.result;
+                // Ambil info tipe dari config agar inputan edit sesuai jenisnya
+                document.getElementById('edit-fields').innerHTML = config.cols.map(c => `
+                    <div>
+                        <label class="text-[9px] uppercase font-black text-slate-400 tracking-widest">${c.n}</label>
+                        <input type="${c.t}" id="edit-${c.n}" value="${item[c.n] || ''}" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500">
+                    </div>
+                `).join('');
+                document.getElementById('editModal').classList.add('active');
+            };
+        }
+
+        function closeEdit() { document.getElementById('editModal').classList.remove('active'); }
+
+        async function saveEdit() {
+            db.transaction("data").objectStore("data").get(currentEditTs).onsuccess = e => {
+                const item = e.target.result;
+                const updated = {};
+                config.cols.forEach(c => {
+                    const val = document.getElementById(`edit-${c.n}`).value;
+                    item[c.n] = val;
+                    updated[c.n] = val;
+                });
+                const tx = db.transaction("data", "readwrite");
+                tx.objectStore("data").put(item);
+                tx.oncomplete = () => {
+                    closeEdit(); refreshUI();
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ mode: "EDIT", timestamp: currentEditTs, updatedData: updated }) });
+                };
+            };
+        }
+
+        async function fetchCloud() {
+            if(!navigator.onLine) return;
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                if(data.length > 1) {
+                    const headers = data[0];
+                    const tx = db.transaction("data", "readwrite");
+                    const store = tx.objectStore("data");
+                    store.clear();
+                    data.slice(1).forEach(row => {
+                        let obj = {}; headers.forEach((h, i) => obj[h] = row[i]);
+                        if(obj.Timestamp) store.add(obj);
+                    });
+                    refreshUI();
+                }
+            } catch(e) {}
+        }
+
+        window.addEventListener('online', () => { document.getElementById('status-badge').innerText = "Online"; document.getElementById('status-badge').className = "px-2 py-1 rounded text-[9px] font-bold bg-green-100 text-green-600 tracking-widest uppercase"; fetchCloud(); });
+        window.addEventListener('offline', () => { document.getElementById('status-badge').innerText = "Offline"; document.getElementById('status-badge').className = "px-2 py-1 rounded text-[9px] font-bold bg-red-100 text-red-600 tracking-widest uppercase"; });
+        
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+        renderSettings();
+    </script>
+</body>
+</html>
