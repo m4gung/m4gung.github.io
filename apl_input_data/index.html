@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d6efd">
+    <meta name="description" content="Aplikasi Penjualan dengan Google Sheets Sync">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Penjualan">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.svg">
     <title id="title-text-head">USAHA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -139,7 +146,9 @@
         }
 
         async function submitData() {
-            const payload = { "Timestamp": new Date().toISOString() };
+            const timestamp = new Date().toISOString();
+            const id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+            const payload = { "id": id, "Timestamp": timestamp, "mode": "INSERT" };
             
             document.querySelectorAll('.in-val').forEach(i => payload[i.dataset.key] = i.value);
             
@@ -147,7 +156,7 @@
             tx.objectStore("data").add(payload);
             tx.oncomplete = () => {
                 nav('output');
-                if(config.apiUrl) fetch(config.apiUrl, { method: 'POST', body: JSON.stringify(payload) }).then(() => fetchCloud());
+                if(config.apiUrl) fetch(config.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
             };
         }
 
@@ -191,7 +200,7 @@
                 document.getElementById('tbd').innerHTML = '<tr><td colspan="100" class="p-8 text-center text-slate-400 text-sm">Tidak ada data</td></tr>';
                 return;
             }
-            const keys = Object.keys(filtered[0]).filter(k => k !== "Timestamp");
+            const keys = Object.keys(filtered[0]).filter(k => k !== "Timestamp" && k !== "id" && k !== "mode");
             document.getElementById('thr').innerHTML = `<th class="p-3 border-b">Waktu</th>` + keys.map(k => `<th class="p-3 border-b">${k}</th>`).join('') + `<th class="p-3 border-b text-right">Aksi</th>`;
             document.getElementById('tbd').innerHTML = filtered.map(r => `
                 <tr class="hover:bg-slate-50 font-medium">
@@ -214,10 +223,15 @@
         async function deleteData(ts) {
             if(!confirm("Hapus data ini?")) return;
             const tx = db.transaction("data", "readwrite");
-            tx.objectStore("data").delete(ts);
-            tx.oncomplete = () => {
-                refreshUI();
-                if(config.apiUrl) fetch(config.apiUrl, { method: 'POST', body: JSON.stringify({ mode: "DELETE", timestamp: ts }) });
+            const store = tx.objectStore("data");
+            store.get(ts).onsuccess = e => {
+                const item = e.target.result;
+                const deletePayload = { mode: "DELETE", id: item?.id, timestamp: ts };
+                store.delete(ts);
+                tx.oncomplete = () => {
+                    refreshUI();
+                    if(config.apiUrl) fetch(config.apiUrl, { method: 'POST', body: JSON.stringify(deletePayload) });
+                };
             };
         }
 
@@ -247,11 +261,12 @@
                     item[c.n] = val;
                     updated[c.n] = val;
                 });
+                item.mode = "UPSERT";
                 const tx = db.transaction("data", "readwrite");
                 tx.objectStore("data").put(item);
                 tx.oncomplete = () => {
                     closeEdit(); refreshUI();
-                    if(config.apiUrl) fetch(config.apiUrl, { method: 'POST', body: JSON.stringify({ mode: "EDIT", timestamp: currentEditTs, updatedData: updated }) });
+                    if(config.apiUrl) fetch(config.apiUrl, { method: 'POST', body: JSON.stringify(item) });
                 };
             };
         }
@@ -260,20 +275,72 @@
             if(!navigator.onLine) return;
             if(!config.apiUrl) return;
             try {
+                // Step 1: Get local data
+                const localData = await new Promise((resolve) => {
+                    db.transaction("data").objectStore("data").getAll().onsuccess = e => resolve(e.target.result);
+                });
+                
+                // Step 2: Get latest timestamps
+                const getLatestTimestamp = (dataList) => {
+                    if(!dataList || dataList.length === 0) return null;
+                    return dataList.reduce((latest, item) => {
+                        const ts = new Date(item.Timestamp);
+                        return (!latest || ts > latest) ? ts : latest;
+                    }, null);
+                };
+                
+                const latestLocal = getLatestTimestamp(localData);
+                
+                // Step 3: Fetch cloud data
                 const res = await fetch(config.apiUrl);
                 const data = await res.json();
+                
                 if(data.length > 1) {
                     const headers = data[0];
+                    const cloudData = data.slice(1).map(row => {
+                        let obj = {}; headers.forEach((h, i) => obj[h] = row[i]);
+                        return obj;
+                    });
+                    const latestCloud = getLatestTimestamp(cloudData);
+                    
                     const tx = db.transaction("data", "readwrite");
                     const store = tx.objectStore("data");
-                    store.clear();
-                    data.slice(1).forEach(row => {
-                        let obj = {}; headers.forEach((h, i) => obj[h] = row[i]);
-                        if(obj.Timestamp) store.add(obj);
-                    });
+                    
+                    // If local is empty, take all from cloud
+                    if(!latestLocal) {
+                        store.clear();
+                        cloudData.forEach(obj => {
+                            if(obj.Timestamp) store.add(obj);
+                        });
+                    } else if (latestCloud && latestCloud > latestLocal) {
+                        // Cloud has newer data - replace local with cloud
+                        store.clear();
+                        cloudData.forEach(obj => {
+                            if(obj.Timestamp) store.add(obj);
+                        });
+                    } else {
+                        // Local has newer data - upload only NEW local items to cloud (by ID)
+                        const cloudIds = new Set(cloudData.map(c => c.id).filter(Boolean));
+                        for(const item of localData) {
+                            // Only upload if ID doesn't exist in cloud
+                            if(!cloudIds.has(item.id)) {
+                                const syncPayload = { ...item, mode: item.mode || "INSERT" };
+                                await fetch(config.apiUrl, { method: 'POST', body: JSON.stringify(syncPayload) });
+                            }
+                        }
+                        // Add cloud data that doesn't exist locally (by ID)
+                        const localIds = new Set(localData.map(d => d.id).filter(Boolean));
+                        cloudData.forEach(obj => {
+                            if(obj.id && !localIds.has(obj.id)) {
+                                store.add(obj);
+                            }
+                        });
+                    }
                     refreshUI();
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.error('Sync error:', e);
+            }
         }
 
         window.addEventListener('online', () => { document.getElementById('status-badge').innerText = "Online"; document.getElementById('status-badge').className = "px-2 py-1 rounded text-[9px] font-bold bg-green-100 text-green-600 tracking-widest uppercase"; if(config.apiUrl) fetchCloud(); });
