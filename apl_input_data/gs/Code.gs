@@ -1,60 +1,50 @@
 function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
-  
-  // 1. LOGIKA DELETE
-  if (data.mode === "DELETE") {
-    var rows = sheet.getDataRange().getValues();
-    for (var i = rows.length - 1; i >= 1; i--) {
-      if (rows[i][0].toString() === data.timestamp) {
-        sheet.deleteRow(i + 1);
-        break;
-      }
-    }
-    return ContentService.createTextOutput("Deleted").setMimeType(ContentService.MimeType.TEXT);
-  }
+  var rows = sheet.getDataRange().getValues();
+  var headers = rows[0];
 
-  // 2. LOGIKA EDIT
-  if (data.mode === "EDIT") {
-    var rows = sheet.getDataRange().getValues();
-    var headers = rows[0];
+  // 1. CARI INDEX BARIS BERDASARKAN ID
+  var idIdx = headers.indexOf("id");
+  var rowIndex = -1;
+  if (idIdx > -1) {
     for (var i = 1; i < rows.length; i++) {
-      if (rows[i][0].toString() === data.timestamp) {
-        var rowNum = i + 1;
-        Object.keys(data.updatedData).forEach(function(key) {
-          var colIdx = headers.indexOf(key);
-          if (colIdx > -1) {
-            sheet.getRange(rowNum, colIdx + 1).setValue(data.updatedData[key]);
-          }
-        });
+      if (rows[i][idIdx] == data.id) {
+        rowIndex = i + 1;
         break;
       }
     }
-    return ContentService.createTextOutput("Updated").setMimeType(ContentService.MimeType.TEXT);
   }
 
-  // 3. LOGIKA INSERT (DEFAULT)
-  var headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0].filter(String);
-  if (headers.length === 0) { 
-    headers = ["Timestamp"]; 
-    sheet.getRange(1, 1).setValue("Timestamp"); 
-  }
-
-  // Cek kolom baru
-  Object.keys(data).forEach(function(key) {
-    if (headers.indexOf(key) === -1 && key !== "mode") {
-      sheet.getRange(1, sheet.getLastColumn() + 1).setValue(key);
-      headers.push(key);
+  // 2. LOGIKA DELETE
+  if (data.mode === "DELETE") {
+    if (rowIndex > -1) {
+      sheet.deleteRow(rowIndex);
+      return ContentService.createTextOutput("Deleted").setMimeType(ContentService.MimeType.TEXT);
     }
-  });
+  }
 
-  var newRow = headers.map(function(header) {
-    if (header === "Timestamp") return data.Timestamp || new Date().toISOString();
-    return data[header] || "";
-  });
+  // 3. LOGIKA UPSERT (INSERT atau EDIT)
+  if (data.mode === "UPSERT" || data.mode === "INSERT" || !data.mode) {
+    // Pastikan header lengkap
+    Object.keys(data).forEach(function(key) {
+      if (headers.indexOf(key) === -1 && key !== "mode") {
+        sheet.getRange(1, sheet.getLastColumn() + 1).setValue(key);
+        headers.push(key);
+      }
+    });
 
-  sheet.appendRow(newRow);
-  return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+    var rowValues = headers.map(function(h) { return data[h] || ""; });
+
+    if (rowIndex > -1) {
+      // Update baris yang ada
+      sheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
+    } else {
+      // Tambah baris baru
+      sheet.appendRow(rowValues);
+    }
+    return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+  }
 }
 
 function doGet() {

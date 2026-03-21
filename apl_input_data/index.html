@@ -74,16 +74,27 @@
         </section>
     </main>
 
-    <div id="editModal" class="modal p-4">
-        <div class="bg-white w-full max-w-xs p-6 rounded-2xl shadow-2xl border">
-            <h3 class="font-black text-blue-600 uppercase text-xs mb-6 tracking-widest">Edit Entry</h3>
-            <div id="edit-fields" class="space-y-5"></div>
-            <div class="flex gap-3 mt-8">
-                <button onclick="closeEdit()" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-xs uppercase tracking-widest">Batal</button>
-                <button onclick="saveEdit()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest">Update</button>
+    <div id="editModal" class="modal p-4 sm:p-6 md:p-10">
+        <div class="bg-white w-full max-w-full sm:max-w-lg md:max-w-2xl p-6 sm:p-8 rounded-2xl shadow-2xl border transition-all">
+            
+            <h3 class="font-black text-blue-600 uppercase text-xs sm:text-sm mb-6 tracking-widest text-center sm:text-left">
+                Edit Entry
+            </h3>
+            
+            <div id="edit-fields" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
+                </div>
+            
+            <div class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 justify-end">
+                <button onclick="closeEdit()" class="flex-1 sm:flex-initial px-6 py-3 bg-slate-100 rounded-xl font-bold text-xs uppercase tracking-widest active:scale-95 transition">
+                    Batal
+                </button>
+                <button onclick="saveEdit()" class="flex-1 sm:flex-initial px-8 py-3 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition">
+                    Update
+                </button>
             </div>
         </div>
     </div>
+    
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-1 shadow-[0_-5px_15px_rgba(0,0,0,0.02)] z-50">
         <button onclick="nav('pengaturan')" class="nav-btn flex-1 py-2 flex flex-col items-center text-[9px] font-black nav-active uppercase tracking-tighter" id="n-pengaturan"><span>⚙️</span>SET</button>
@@ -147,8 +158,8 @@
 
         async function submitData() {
             const timestamp = new Date().toISOString();
-            const id = Date.now().toString(36) + Math.random().toString(36).substr(2);
-            const payload = { "id": id, "Timestamp": timestamp, "mode": "INSERT" };
+            const id = "ID-" + Date.now() + Math.random().toString(36).substr(2, 5); // ID Unik
+            const payload = { "id": id, "Timestamp": timestamp, "mode": "UPSERT" };
             
             document.querySelectorAll('.in-val').forEach(i => payload[i.dataset.key] = i.value);
             
@@ -156,9 +167,17 @@
             tx.objectStore("data").add(payload);
             tx.oncomplete = () => {
                 nav('output');
-                if(config.apiUrl) fetch(config.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                // Kirim ke cloud jika online
+                if(config.apiUrl && navigator.onLine) {
+                    fetch(config.apiUrl, { 
+                        method: 'POST', 
+                        mode: 'no-cors', 
+                        body: JSON.stringify(payload) 
+                    });
+                }
             };
         }
+
 
         function refreshUI() {
             if(!db) return;
@@ -168,6 +187,7 @@
             };
         }
 
+        // Update fungsi applyFilter untuk formatting tampilan
         function applyFilter() {
             const startDate = document.getElementById('filter-start').value;
             const endDate = document.getElementById('filter-end').value;
@@ -175,21 +195,9 @@
             let filtered = allData;
             if(startDate || endDate) {
                 filtered = allData.filter(r => {
-                    const itemDate = new Date(r.Timestamp);
-                    const itemDateStr = itemDate.toISOString().split('T')[0];
-                    
-                    // Start date dari jam 00:00:00
-                    if(startDate) {
-                        const start = new Date(startDate);
-                        start.setHours(0, 0, 0, 0);
-                        if(itemDate < start) return false;
-                    }
-                    // End date sampai jam 23:59:59
-                    if(endDate) {
-                        const end = new Date(endDate);
-                        end.setHours(23, 59, 59, 999);
-                        if(itemDate > end) return false;
-                    }
+                    const itemDateStr = formatDate(r.Timestamp);
+                    if(startDate && itemDateStr < startDate) return false;
+                    if(endDate && itemDateStr > endDate) return false;
                     return true;
                 });
             }
@@ -200,18 +208,32 @@
                 document.getElementById('tbd').innerHTML = '<tr><td colspan="100" class="p-8 text-center text-slate-400 text-sm">Tidak ada data</td></tr>';
                 return;
             }
+
             const keys = Object.keys(filtered[0]).filter(k => k !== "Timestamp" && k !== "id" && k !== "mode");
             document.getElementById('thr').innerHTML = `<th class="p-3 border-b">Waktu</th>` + keys.map(k => `<th class="p-3 border-b">${k}</th>`).join('') + `<th class="p-3 border-b text-right">Aksi</th>`;
-            document.getElementById('tbd').innerHTML = filtered.map(r => `
-                <tr class="hover:bg-slate-50 font-medium">
-                    <td class="p-3 border-b text-[9px] text-slate-400 italic">${new Date(r.Timestamp).toLocaleDateString('id-ID')}</td>
-                    ${keys.map(k => `<td class="p-3 border-b whitespace-nowrap">${r[k]||'-'}</td>`).join('')}
-                    <td class="p-3 border-b whitespace-nowrap text-right">
-                        <button onclick="openEdit('${r.Timestamp}')" class="text-blue-500 font-black text-[10px] uppercase mr-3">Edit</button>
-                        <button onclick="deleteData('${r.Timestamp}')" class="text-red-400 font-black text-[10px] uppercase">Hapus</button>
-                    </td>
-                </tr>
-            `).join('');
+            
+            document.getElementById('tbd').innerHTML = filtered.map(r => {
+                // Cek apakah key adalah 'Jumlah' atau mengandung unsur angka untuk diformat
+                return `
+                    <tr class="hover:bg-slate-50 font-medium text-[11px] sm:text-xs">
+                        <td class="p-3 border-b text-slate-400">${formatDate(r.Timestamp)}</td>
+                        ${keys.map(k => {
+                            let displayVal = r[k] || '-';
+                            // Jika kolom adalah 'Jumlah' atau bertipe number di config, beri format ribuan
+                            const colCfg = config.cols.find(c => c.n === k);
+                            if(colCfg && colCfg.t === 'number') displayVal = formatNumber(displayVal);
+                            // Jika kolom bertipe date, pastikan format YYYY-MM-DD
+                            if(colCfg && colCfg.t === 'date') displayVal = formatDate(displayVal);
+                            
+                            return `<td class="p-3 border-b whitespace-nowrap">${displayVal}</td>`;
+                        }).join('')}
+                        <td class="p-3 border-b whitespace-nowrap text-right">
+                            <button onclick="openEdit('${r.Timestamp}')" class="text-blue-500 font-black uppercase mr-3">Edit</button>
+                            <button onclick="deleteData('${r.Timestamp}')" class="text-red-400 font-black uppercase">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function clearFilter() {
@@ -239,115 +261,118 @@
             currentEditTs = ts;
             db.transaction("data").objectStore("data").get(ts).onsuccess = e => {
                 const item = e.target.result;
-                // Ambil info tipe dari config agar inputan edit sesuai jenisnya
-                document.getElementById('edit-fields').innerHTML = config.cols.map(c => `
-                    <div>
-                        <label class="text-[9px] uppercase font-black text-slate-400 tracking-widest">${c.n}</label>
-                        <input type="${c.t}" id="edit-${c.n}" value="${item[c.n] || ''}" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500">
-                    </div>
-                `).join('');
+                document.getElementById('edit-fields').innerHTML = config.cols.map(c => {
+                    let val = item[c.n] || '';
+                    // KHUSUS: Jika tipe input adalah date, pastikan formatnya YYYY-MM-DD agar muncul di form
+                    if (c.t === 'date') {
+                        val = formatDate(val);
+                    }
+                    
+                    return `
+                        <div>
+                            <label class="text-[9px] uppercase font-black text-slate-400 tracking-widest">${c.n}</label>
+                            <input type="${c.t}" id="edit-${c.n}" value="${val}" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500">
+                        </div>
+                    `;
+                }).join('');
                 document.getElementById('editModal').classList.add('active');
             };
         }
 
+
         function closeEdit() { document.getElementById('editModal').classList.remove('active'); }
 
         async function saveEdit() {
-            db.transaction("data").objectStore("data").get(currentEditTs).onsuccess = e => {
-                const item = e.target.result;
-                const updated = {};
-                config.cols.forEach(c => {
-                    const val = document.getElementById(`edit-${c.n}`).value;
-                    item[c.n] = val;
-                    updated[c.n] = val;
-                });
-                item.mode = "UPSERT";
-                const tx = db.transaction("data", "readwrite");
-                tx.objectStore("data").put(item);
-                tx.oncomplete = () => {
-                    closeEdit(); refreshUI();
-                    if(config.apiUrl) fetch(config.apiUrl, { method: 'POST', body: JSON.stringify(item) });
-                };
+            const tx = db.transaction("data", "readwrite");
+            const store = tx.objectStore("data");
+
+            store.get(currentEditTs).onsuccess = e => {
+            const item = e.target.result;
+            config.cols.forEach(c => {
+                item[c.n] = document.getElementById(`edit-${c.n}`).value;
+            });
+            item.mode = "UPSERT"; // Sesuai dengan logika di Code.gs
+
+            store.put(item);
+            tx.oncomplete = () => {
+                closeEdit(); 
+                refreshUI();
+                if(config.apiUrl) {
+                    fetch(config.apiUrl, { 
+                        method: 'POST', 
+                        mode: 'no-cors', // Penting untuk menghindari error CORS Google Script
+                        body: JSON.stringify(item) 
+                    });
+                }
+            };
             };
         }
 
+
         async function fetchCloud() {
-            if(!navigator.onLine) return;
-            if(!config.apiUrl) return;
+            if (!navigator.onLine || !config.apiUrl) return;
+
             try {
-                // Step 1: Get local data
-                const localData = await new Promise((resolve) => {
-                    db.transaction("data").objectStore("data").getAll().onsuccess = e => resolve(e.target.result);
-                });
-                
-                // Step 2: Get latest timestamps
-                const getLatestTimestamp = (dataList) => {
-                    if(!dataList || dataList.length === 0) return null;
-                    return dataList.reduce((latest, item) => {
-                        const ts = new Date(item.Timestamp);
-                        return (!latest || ts > latest) ? ts : latest;
-                    }, null);
-                };
-                
-                const latestLocal = getLatestTimestamp(localData);
-                
-                // Step 3: Fetch cloud data
                 const res = await fetch(config.apiUrl);
-                const data = await res.json();
-                
-                if(data.length > 1) {
-                    const headers = data[0];
-                    const cloudData = data.slice(1).map(row => {
-                        let obj = {}; headers.forEach((h, i) => obj[h] = row[i]);
-                        return obj;
-                    });
-                    const latestCloud = getLatestTimestamp(cloudData);
-                    
-                    const tx = db.transaction("data", "readwrite");
-                    const store = tx.objectStore("data");
-                    
-                    // If local is empty, take all from cloud
-                    if(!latestLocal) {
-                        store.clear();
-                        cloudData.forEach(obj => {
-                            if(obj.Timestamp) store.add(obj);
-                        });
-                    } else if (latestCloud && latestCloud > latestLocal) {
-                        // Cloud has newer data - replace local with cloud
-                        store.clear();
-                        cloudData.forEach(obj => {
-                            if(obj.Timestamp) store.add(obj);
-                        });
-                    } else {
-                        // Local has newer data - upload only NEW local items to cloud (by ID)
-                        const cloudIds = new Set(cloudData.map(c => c.id).filter(Boolean));
-                        for(const item of localData) {
-                            // Only upload if ID doesn't exist in cloud
-                            if(!cloudIds.has(item.id)) {
-                                const syncPayload = { ...item, mode: item.mode || "INSERT" };
-                                await fetch(config.apiUrl, { method: 'POST', body: JSON.stringify(syncPayload) });
-                            }
-                        }
-                        // Add cloud data that doesn't exist locally (by ID)
-                        const localIds = new Set(localData.map(d => d.id).filter(Boolean));
-                        cloudData.forEach(obj => {
-                            if(obj.id && !localIds.has(obj.id)) {
-                                store.add(obj);
-                            }
-                        });
+                const rawData = await res.json(); //[span_1](start_span)// Mengambil data dari doGet[span_1](end_span)
+
+                if (!rawData || rawData.length <= 1) return; // Kosong atau hanya header
+
+                const headers = rawData[0];
+                const cloudData = rawData.slice(1).map(row => {
+                    let obj = {};
+                    headers.forEach((h, i) => obj[h] = row[i]);
+                    return obj;
+                });
+
+                const tx = db.transaction("data", "readwrite");
+                const store = tx.objectStore("data");
+
+                // Ambil ID lokal untuk perbandingan
+                const localData = await new Promise(resolve => {
+                    store.getAll().onsuccess = e => resolve(e.target.result);
+                });
+                const localIds = new Set(localData.map(d => d.id));
+
+                cloudData.forEach(cloudItem => {
+                    // Jika ID di Cloud belum ada di Local, atau data di Cloud lebih baru (berdasarkan Timestamp)
+                    // Di sini kita pakai logika: Cloud adalah sumber kebenaran (Source of Truth)
+                    if (cloudItem.id) {
+                        store.put(cloudItem); // .put akan menambah jika baru, menimpa jika ID sama
                     }
+                });
+
+                tx.oncomplete = () => {
+                    console.log("Sync Berhasil");
                     refreshUI();
-                }
-            } catch(e) {
-                console.error('Sync error:', e);
+                };
+
+            } catch (e) {
+                console.error('Gagal memuat data dari Cloud:', e);
             }
         }
+
 
         window.addEventListener('online', () => { document.getElementById('status-badge').innerText = "Online"; document.getElementById('status-badge').className = "px-2 py-1 rounded text-[9px] font-bold bg-green-100 text-green-600 tracking-widest uppercase"; if(config.apiUrl) fetchCloud(); });
         window.addEventListener('offline', () => { document.getElementById('status-badge').innerText = "Offline"; document.getElementById('status-badge').className = "px-2 py-1 rounded text-[9px] font-bold bg-red-100 text-red-600 tracking-widest uppercase"; });
         
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
         renderSettings();
+
+        // Fungsi Helper untuk format angka ribuan
+        function formatNumber(val) {
+            if (!val || isNaN(val)) return val;
+            return new Intl.NumberFormat('id-ID').format(val);
+        }
+
+        // Fungsi Helper untuk memastikan format YYYY-MM-DD
+        function formatDate(dateInput) {
+            if (!dateInput) return "";
+            const d = new Date(dateInput);
+            if (isNaN(d.getTime())) return dateInput; // Kembalikan asli jika gagal parse
+            return d.toISOString().split('T')[0];
+        }
+
     </script>
 </body>
 </html>
