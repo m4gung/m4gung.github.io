@@ -56,13 +56,8 @@
                     <h2 class="text-xs sm:text-[10px] md:text-sm font-black text-slate-400 uppercase tracking-widest">📋 Database</h2>
                     <button onclick="fetchCloud()" class="text-blue-500 text-[10px] sm:text-xs md:text-sm font-black uppercase hover:text-blue-600 transition-colors">Sync Cloud</button>
                 </div>
-                <div class="flex flex-wrap gap-2 mb-4 items-center">
-                    <span class="text-[10px] font-black text-slate-400 uppercase">Filter:</span>
-                    <input type="date" id="filter-start" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500" onchange="applyFilter()">
-                    <span class="text-[10px] text-slate-400">-</span>
-                    <input type="date" id="filter-end" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500" onchange="applyFilter()">
-                    <button onclick="clearFilter()" class="text-[10px] font-black text-red-400 uppercase ml-2 hover:text-red-500">Clear</button>
-                    <span id="filter-count" class="text-[10px] text-slate-400 ml-auto"></span>
+                <div id="filter-container" class="flex flex-wrap gap-2 mb-4 items-center">
+                    <!-- Filter akan di-render secara dinamis berdasarkan config.cols -->
                 </div>
                 <div class="overflow-x-auto rounded-lg -mx-4 px-4 sm:mx-0 sm:px-0">
                     <table class="w-full text-xs sm:text-sm md:text-base">
@@ -112,7 +107,18 @@
             db = e.target.result;
             db.createObjectStore("data", { keyPath: "Timestamp" });
         };
-        dbReq.onsuccess = e => { db = e.target.result; refreshUI(); fetchCloud(); };
+        dbReq.onsuccess = e => { 
+            db = e.target.result; 
+            renderFilters(); // Render filter saat load
+            // Jika offline, tampilkan data lokal saja
+            if (!navigator.onLine) {
+                showLocalData().then(() => {
+                    refreshUI();
+                });
+            } else {
+                fetchCloud();
+            }
+        };
 
         function nav(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -120,7 +126,10 @@
             document.getElementById(id).classList.add('active');
             document.getElementById('n-'+id).classList.add('nav-active');
             if(id === 'input') renderForm();
-            if(id === 'output') refreshUI();
+            if(id === 'output') {
+                renderFilters(); // Pastikan filter ter-render sebelum refreshUI
+                refreshUI();
+            }
         }
 
         function renderSettings() {
@@ -146,7 +155,14 @@
             const apiUrl = document.getElementById('api-url-input').value.trim();
             config.name = titleName;
             config.apiUrl = apiUrl;
-            localStorage.setItem('m_cfg', JSON.stringify(config)); alert("Tersimpan!"); renderSettings(); 
+            localStorage.setItem('m_cfg', JSON.stringify(config)); 
+            alert("Tersimpan!"); 
+            renderSettings();
+            renderFilters(); // Render ulang filter saat settings disimpan
+            // Trigger sync setelah menyimpan pengaturan
+            if (navigator.onLine && config.apiUrl) {
+                fetchCloud();
+            }
         }
 
         function renderForm() {
@@ -187,20 +203,106 @@
             };
         }
 
+        // Helper untuk sanitize nama kolom menjadi ID yang valid
+        function sanitizeId(name) {
+            return name.replace(/[^a-zA-Z0-9]/g, '_');
+        }
+
+        // Render filter berdasarkan konfigurasi kolom
+        function renderFilters() {
+            const container = document.getElementById('filter-container');
+            if (!container) return;
+            
+            let html = `<span class="text-[10px] font-black text-slate-400 uppercase">Filter:</span>`;
+            
+            // Tambahkan filter untuk Timestamp (Waktu)
+            html += `
+                <div class="flex items-center gap-1">
+                    <span class="text-[9px] text-slate-400">Waktu:</span>
+                    <input type="date" id="filter-Timestamp-start" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500" onchange="applyFilter()">
+                    <span class="text-[10px] text-slate-400">-</span>
+                    <input type="date" id="filter-Timestamp-end" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500" onchange="applyFilter()">
+                </div>`;
+            
+            // Tambahkan filter untuk setiap kolom berdasarkan tipe
+            config.cols.forEach(col => {
+                const colName = col.n;
+                const colType = col.t;
+                const safeId = sanitizeId(colName);
+                
+                if (colType === 'date') {
+                    // Filter rentang tanggal untuk kolom date
+                    html += `
+                        <div class="flex items-center gap-1">
+                            <span class="text-[9px] text-slate-400">${colName}:</span>
+                            <input type="date" id="filter-${safeId}-start" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500" onchange="applyFilter()">
+                            <span class="text-[10px] text-slate-400">-</span>
+                            <input type="date" id="filter-${safeId}-end" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500" onchange="applyFilter()">
+                        </div>`;
+                } else {
+                    // Filter search untuk kolom text dan number
+                    html += `
+                        <div class="flex items-center gap-1">
+                            <span class="text-[9px] text-slate-400">${colName}:</span>
+                            <input type="text" id="filter-${safeId}" placeholder="Cari..." class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 w-24" oninput="applyFilter()">
+                        </div>`;
+                }
+            });
+            
+            html += `
+                <button onclick="clearFilter()" class="text-[10px] font-black text-red-400 uppercase ml-2 hover:text-red-500">Clear</button>
+                <span id="filter-count" class="text-[10px] text-slate-400 ml-auto"></span>`;
+            
+            container.innerHTML = html;
+        }
+
         // Update fungsi applyFilter untuk formatting tampilan
         function applyFilter() {
-            const startDate = document.getElementById('filter-start').value;
-            const endDate = document.getElementById('filter-end').value;
+            let filtered = [...allData];
             
-            let filtered = allData;
-            if(startDate || endDate) {
-                filtered = allData.filter(r => {
+            // Filter Timestamp (Waktu)
+            const tsStart = document.getElementById('filter-Timestamp-start')?.value;
+            const tsEnd = document.getElementById('filter-Timestamp-end')?.value;
+            if (tsStart || tsEnd) {
+                filtered = filtered.filter(r => {
                     const itemDateStr = formatDate(r.Timestamp);
-                    if(startDate && itemDateStr < startDate) return false;
-                    if(endDate && itemDateStr > endDate) return false;
+                    if (tsStart && itemDateStr < tsStart) return false;
+                    if (tsEnd && itemDateStr > tsEnd) return false;
                     return true;
                 });
             }
+            
+            // Filter berdasarkan konfigurasi kolom
+            config.cols.forEach(col => {
+                const colName = col.n;
+                const colType = col.t;
+                const safeId = sanitizeId(colName);
+                
+                if (colType === 'date') {
+                    // Filter rentang tanggal
+                    const startVal = document.getElementById(`filter-${safeId}-start`)?.value;
+                    const endVal = document.getElementById(`filter-${safeId}-end`)?.value;
+                    
+                    if (startVal || endVal) {
+                        filtered = filtered.filter(r => {
+                            const itemVal = formatDate(r[colName]);
+                            if (startVal && itemVal < startVal) return false;
+                            if (endVal && itemVal > endVal) return false;
+                            return true;
+                        });
+                    }
+                } else {
+                    // Filter search untuk text dan number
+                    const searchVal = document.getElementById(`filter-${safeId}`)?.value?.toLowerCase() || '';
+                    
+                    if (searchVal) {
+                        filtered = filtered.filter(r => {
+                            const itemVal = String(r[colName] || '').toLowerCase();
+                            return itemVal.includes(searchVal);
+                        });
+                    }
+                }
+            });
             
             document.getElementById('filter-count').textContent = filtered.length !== allData.length ? `${filtered.length} / ${allData.length} data` : '';
             
@@ -237,8 +339,29 @@
         }
 
         function clearFilter() {
-            document.getElementById('filter-start').value = '';
-            document.getElementById('filter-end').value = '';
+            // Clear Timestamp filter
+            const tsStart = document.getElementById('filter-Timestamp-start');
+            const tsEnd = document.getElementById('filter-Timestamp-end');
+            if (tsStart) tsStart.value = '';
+            if (tsEnd) tsEnd.value = '';
+            
+            // Clear filter berdasarkan konfigurasi kolom
+            config.cols.forEach(col => {
+                const colName = col.n;
+                const colType = col.t;
+                const safeId = sanitizeId(colName);
+                
+                if (colType === 'date') {
+                    const startVal = document.getElementById(`filter-${safeId}-start`);
+                    const endVal = document.getElementById(`filter-${safeId}-end`);
+                    if (startVal) startVal.value = '';
+                    if (endVal) endVal.value = '';
+                } else {
+                    const searchVal = document.getElementById(`filter-${safeId}`);
+                    if (searchVal) searchVal.value = '';
+                }
+            });
+            
             applyFilter();
         }
 
@@ -309,52 +432,163 @@
         }
 
 
+        // Fungsi untuk menampilkan data lokal (offline)
+        async function showLocalData() {
+            const tx = db.transaction("data", "readonly");
+            const store = tx.objectStore("data");
+            
+            return new Promise(resolve => {
+                store.getAll().onsuccess = e => {
+                    const data = e.target.result;
+                    allData = data.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+                    resolve(allData);
+                };
+            });
+        }
+
+        // Fungsi untuk upload data lokal ke cloud
+        async function uploadToCloud(item) {
+            if (!config.apiUrl) return false;
+            
+            try {
+                const res = await fetch(config.apiUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(item)
+                });
+                return true;
+            } catch (e) {
+                console.error('Gagal upload ke cloud:', e);
+                return false;
+            }
+        }
+
+        // Fungsi utama untuk sync data
         async function fetchCloud() {
-            if (!navigator.onLine || !config.apiUrl) return;
+            // Jika offline, tampilkan data lokal saja
+            if (!navigator.onLine) {
+                console.log("Offline - Menampilkan data lokal");
+                await showLocalData();
+                refreshUI();
+                return;
+            }
+
+            if (!config.apiUrl) return;
 
             try {
+                // ===== LANGKAH 1: Upload data lokal yang belum di-sync =====
+                const txLocal = db.transaction("data", "readwrite");
+                const storeLocal = txLocal.objectStore("data");
+                
+                const localData = await new Promise(resolve => {
+                    storeLocal.getAll().onsuccess = e => resolve(e.target.result);
+                });
+
+                // Ambil data dari cloud untuk perbandingan
                 const res = await fetch(config.apiUrl);
-                const rawData = await res.json(); //[span_1](start_span)// Mengambil data dari doGet[span_1](end_span)
+                const rawData = await res.json();
 
-                if (!rawData || rawData.length <= 1) return; // Kosong atau hanya header
+                if (!rawData || rawData.length <= 1) {
+                    // Cloud kosong, upload semua data lokal
+                    console.log("Cloud kosong - Upload semua data lokal");
+                    for (const item of localData) {
+                        // Hapus field sync agar tidak mempengaruhi cloud
+                        const uploadItem = { ...item };
+                        delete uploadItem.synced;
+                        delete uploadItem.mode;
+                        await uploadToCloud(uploadItem);
+                    }
+                } else {
+                    // Parse cloud data
+                    const headers = rawData[0];
+                    const cloudData = rawData.slice(1).map(row => {
+                        let obj = {};
+                        headers.forEach((h, i) => obj[h] = row[i]);
+                        return obj;
+                    });
 
-                const headers = rawData[0];
-                const cloudData = rawData.slice(1).map(row => {
+                    // Buat map untuk easy lookup
+                    const cloudIds = new Map();
+                    cloudData.forEach(c => {
+                        if (c.id) cloudIds.set(c.id, c);
+                    });
+
+                    // ===== LANGKAH 2: Upload data lokal yang tidak ada di cloud atau lebih baru =====
+                    for (const localItem of localData) {
+                        const cloudItem = cloudIds.get(localItem.id);
+                        
+                        if (!cloudItem) {
+                            // Tidak ada di cloud, upload
+                            console.log("Upload: Data baru -", localItem.id);
+                            const uploadItem = { ...localItem };
+                            delete uploadItem.synced;
+                            delete uploadItem.mode;
+                            await uploadToCloud(uploadItem);
+                        } else {
+                            // Ada di cloud, cek timestamp
+                            const localTime = new Date(localItem.Timestamp).getTime();
+                            const cloudTime = new Date(cloudItem.Timestamp).getTime();
+                            
+                            if (localTime > cloudTime) {
+                                // Data lokal lebih baru, upload
+                                console.log("Upload: Data lebih baru -", localItem.id);
+                                const uploadItem = { ...localItem };
+                                delete uploadItem.synced;
+                                delete uploadItem.mode;
+                                await uploadToCloud(uploadItem);
+                            }
+                        }
+                    }
+                }
+
+                // ===== LANGKAH 3: Fetch ulang data dari cloud dan simpan ke local =====
+                const res2 = await fetch(config.apiUrl);
+                const rawData2 = await res2.json();
+
+                if (!rawData2 || rawData2.length <= 1) return;
+
+                const headers2 = rawData2[0];
+                const cloudData2 = rawData2.slice(1).map(row => {
                     let obj = {};
-                    headers.forEach((h, i) => obj[h] = row[i]);
+                    headers2.forEach((h, i) => obj[h] = row[i]);
                     return obj;
                 });
 
                 const tx = db.transaction("data", "readwrite");
                 const store = tx.objectStore("data");
 
-                // Ambil ID lokal untuk perbandingan
-                const localData = await new Promise(resolve => {
-                    store.getAll().onsuccess = e => resolve(e.target.result);
-                });
-                const localIds = new Set(localData.map(d => d.id));
-
-                cloudData.forEach(cloudItem => {
-                    // Jika ID di Cloud belum ada di Local, atau data di Cloud lebih baru (berdasarkan Timestamp)
-                    // Di sini kita pakai logika: Cloud adalah sumber kebenaran (Source of Truth)
+                cloudData2.forEach(cloudItem => {
+                    // Cloud adalah sumber kebenaran (Source of Truth)
                     if (cloudItem.id) {
-                        store.put(cloudItem); // .put akan menambah jika baru, menimpa jika ID sama
+                        store.put(cloudItem);
                     }
                 });
 
                 tx.oncomplete = () => {
-                    console.log("Sync Berhasil");
+                    console.log("Sync Berhasil - Data Cloud dan Local telah disesuaikan");
                     refreshUI();
                 };
 
             } catch (e) {
                 console.error('Gagal memuat data dari Cloud:', e);
+                // Jika gagal, tampilkan data lokal
+                await showLocalData();
+                refreshUI();
             }
         }
 
 
-        window.addEventListener('online', () => { document.getElementById('status-badge').innerText = "Online"; document.getElementById('status-badge').className = "px-2 py-1 rounded text-[9px] font-bold bg-green-100 text-green-600 tracking-widest uppercase"; if(config.apiUrl) fetchCloud(); });
-        window.addEventListener('offline', () => { document.getElementById('status-badge').innerText = "Offline"; document.getElementById('status-badge').className = "px-2 py-1 rounded text-[9px] font-bold bg-red-100 text-red-600 tracking-widest uppercase"; });
+        window.addEventListener('online', () => { 
+            document.getElementById('status-badge').innerText = "Online"; 
+            document.getElementById('status-badge').className = "px-2 py-1 rounded text-[9px] font-bold bg-green-100 text-green-600 tracking-widest uppercase"; 
+            if(config.apiUrl) fetchCloud(); 
+        });
+        window.addEventListener('offline', () => { 
+            document.getElementById('status-badge').innerText = "Offline"; 
+            document.getElementById('status-badge').className = "px-2 py-1 rounded text-[9px] font-bold bg-red-100 text-red-600 tracking-widest uppercase"; 
+            // Tampilkan data lokal saat offline
+            showLocalData().then(() => refreshUI());
+        });
         
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
         renderSettings();
