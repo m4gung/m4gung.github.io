@@ -312,12 +312,13 @@
             }
 
             const keys = Object.keys(filtered[0]).filter(k => k !== "Timestamp" && k !== "id" && k !== "mode");
-            document.getElementById('thr').innerHTML = `<th class="p-3 border-b">Waktu</th>` + keys.map(k => `<th class="p-3 border-b">${k}</th>`).join('') + `<th class="p-3 border-b text-right">Aksi</th>`;
+            document.getElementById('thr').innerHTML = `<th class="p-3 border-b w-12">No.</th><th class="p-3 border-b">Waktu</th>` + keys.map(k => `<th class="p-3 border-b">${k}</th>`).join('') + `<th class="p-3 border-b text-right">Aksi</th>`;
             
-            document.getElementById('tbd').innerHTML = filtered.map(r => {
+            document.getElementById('tbd').innerHTML = filtered.map((r, index) => {
                 // Cek apakah key adalah 'Jumlah' atau mengandung unsur angka untuk diformat
                 return `
                     <tr class="hover:bg-slate-50 font-medium text-[11px] sm:text-xs">
+                        <td class="p-3 border-b text-slate-400 text-center">${index + 1}</td>
                         <td class="p-3 border-b text-slate-400">${formatDate(r.Timestamp)}</td>
                         ${keys.map(k => {
                             let displayVal = r[k] || '-';
