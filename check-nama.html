@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hitung Nilai Nama</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 6px 12px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        input { padding: 6px; width: 200px; }
+        button { padding: 6px 12px; cursor: pointer; }
+        .box { margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<h2>Mapping Alfabet (a–z)</h2>
+
+<table id="tabelAlfabet">
+    <thead>
+        <tr>
+            <th>Huruf</th>
+            <th>Nilai</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h2>Hitung Nilai Nama</h2>
+
+<input type="text" id="nama" placeholder="Masukkan nama">
+<button onclick="hitung()">Hitung</button>
+
+<div id="hasil" class="box"></div>
+
+<script>
+const mapping = {
+    a:4,b:8,c:9,d:9,e:6,f:7,g:9,h:2,i:1,j:7,
+    k:2,l:6,m:2,n:6,o:0,p:9,q:0,r:2,s:8,t:7,
+    u:0,v:0,w:2,x:0,y:7,z:0
+};
+
+// render tabel alfabet di atas
+const tbody = document.querySelector("#tabelAlfabet tbody");
+for (let huruf in mapping) {
+    tbody.innerHTML += `
+        <tr>
+            <td>${huruf.toUpperCase()}</td>
+            <td>${mapping[huruf]}</td>
+        </tr>
+    `;
+}
+
+function hitung() {
+    let nama = document.getElementById("nama").value.toLowerCase();
+    let total = 0;
+    let detail = [];
+    let keterangan = [];
+
+    for (let i = 0; i < nama.length; i++) {
+        let huruf = nama[i];
+        if (mapping[huruf] !== undefined) {
+            total += mapping[huruf];
+            detail.push(mapping[huruf]);
+            keterangan.push(huruf.toUpperCase() + " = " + mapping[huruf]);
+        }
+    }
+
+    let proses = detail.join(" + ") + " = " + total;
+
+    function reduksi(angka) {
+        let langkah = [];
+        while (angka > 9) {
+            let jumlah = angka.toString().split('').reduce((a,b)=>a+parseInt(b),0);
+            langkah.push(angka + " → " + jumlah);
+            angka = jumlah;
+        }
+        return {hasil: angka, langkah: langkah};
+    }
+
+    let hasilReduksi = reduksi(total);
+
+    document.getElementById("hasil").innerHTML = `
+        <b>Keterangan Huruf:</b><br>
+        ${keterangan.join("<br>")}<br><br>
+
+        <b>Perhitungan:</b><br>
+        ${proses}<br><br>
+
+        <b>Reduksi:</b><br>
+        ${hasilReduksi.langkah.join("<br>")}<br><br>
+
+        <b>Hasil akhir:</b> ${hasilReduksi.hasil}
+    `;
+}
+</script>
+
+</body>
+</html>
