@@ -2,11 +2,13 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Pembukuan Usaha Pompanisasi</title>
+  <title>Pompanisasi</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0d6efd">
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2942/2942503.png">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
@@ -57,6 +59,7 @@
       background-color: #121212;
       color: #e0e0e0;
     }
+
     body.dark-mode .sidebar {
       background-color: #1e1e1e;
       border-color: #333;
@@ -108,6 +111,10 @@
       border-color: #e0e0e0;
       color: #e0e0e0;
     }
+    body.dark-mode .h6 {
+      color: #ffffff;
+    }
+    
   </style>
 </head>
 <body>
@@ -307,6 +314,7 @@
                 <tbody id="table-petani-body"></tbody>
               </table>
             </div>
+            <div id="pagination-petani" class="mt-2"></div>
           </div>
         </div>
       </section>
@@ -353,6 +361,7 @@
                 <tbody id="table-pengepul-body"></tbody>
               </table>
             </div>
+            <div id="pagination-pengepul" class="mt-2"></div>
           </div>
         </div>
       </section>
@@ -424,6 +433,7 @@
                 <tbody id="table-transaksi-petani-body"></tbody>
               </table>
             </div>
+            <div id="pagination-tp" class="mt-2"></div>
           </div>
         </div>
       </section>
@@ -516,6 +526,7 @@
                 <tbody id="table-transaksi-pengepul-body"></tbody>
               </table>
             </div>
+            <div id="pagination-tpen" class="mt-2"></div>
           </div>
         </div>
       </section>
@@ -584,6 +595,7 @@
                 <tbody id="table-biaya-body"></tbody>
               </table>
             </div>
+            <div id="pagination-biaya" class="mt-2"></div>
           </div>
         </div>
       </section>
@@ -1186,6 +1198,55 @@
     return str;
   }
 
+  const PAGE_SIZE = 10;
+  let currentPage = {
+    petani: 1,
+    pengepul: 1,
+    tp: 1,
+    tpen: 1,
+    biaya: 1
+  };
+
+  function renderPagination(containerId, totalItems, currentPageKey, renderFunc) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const totalPages = Math.ceil(totalItems / PAGE_SIZE) || 1;
+    if (currentPage[currentPageKey] > totalPages) currentPage[currentPageKey] = totalPages;
+    if (currentPage[currentPageKey] < 1) currentPage[currentPageKey] = 1;
+
+    let html = `
+      <div class="d-flex justify-content-between align-items-center text-small">
+        <div class="text-muted">Total: ${totalItems} data</div>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item ${currentPage[currentPageKey] === 1 ? 'disabled' : ''}">
+              <a class="page-link" href="#" data-page="${currentPage[currentPageKey] - 1}">Prev</a>
+            </li>
+            <li class="page-item disabled">
+              <span class="page-link text-dark">${currentPage[currentPageKey]} / ${totalPages}</span>
+            </li>
+            <li class="page-item ${currentPage[currentPageKey] === totalPages ? 'disabled' : ''}">
+              <a class="page-link" href="#" data-page="${currentPage[currentPageKey] + 1}">Next</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    `;
+    container.innerHTML = html;
+
+    container.querySelectorAll('.page-link[data-page]').forEach(link => {
+      link.onclick = (e) => {
+        e.preventDefault();
+        const newPage = parseInt(link.dataset.page);
+        if (newPage >= 1 && newPage <= totalPages) {
+          currentPage[currentPageKey] = newPage;
+          renderFunc();
+        }
+      };
+    });
+  }
+
   // Navigation
   document.querySelectorAll('#side-nav .nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
@@ -1265,10 +1326,14 @@
   function renderPetani() {
     const tbody = document.getElementById('table-petani-body');
     tbody.innerHTML = '';
-    data.petani.forEach((p, idx) => {
+    const start = (currentPage.petani - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageData = data.petani.slice(start, end);
+
+    pageData.forEach((p, idx) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${idx + 1}</td>
+        <td>${start + idx + 1}</td>
         <td>${p.nama}</td>
         <td>
           ${p.fotoKTP
@@ -1288,6 +1353,8 @@
       `;
       tbody.appendChild(tr);
     });
+
+    renderPagination('pagination-petani', data.petani.length, 'petani', renderPetani);
 
     tbody.querySelectorAll('.btn-del-petani').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1385,10 +1452,14 @@
   function renderPengepul() {
     const tbody = document.getElementById('table-pengepul-body');
     tbody.innerHTML = '';
-    data.pengepul.forEach((p, idx) => {
+    const start = (currentPage.pengepul - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageData = data.pengepul.slice(start, end);
+
+    pageData.forEach((p, idx) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${idx + 1}</td>
+        <td>${start + idx + 1}</td>
         <td>${p.nama}</td>
         <td>${p.catatan || ''}</td>
         <td>
@@ -1402,6 +1473,8 @@
       `;
       tbody.appendChild(tr);
     });
+
+    renderPagination('pagination-pengepul', data.pengepul.length, 'pengepul', renderPengepul);
 
     tbody.querySelectorAll('.btn-del-pengepul').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1496,14 +1569,16 @@
   function renderTransaksiPetani() {
     const tbody = document.getElementById('table-transaksi-petani-body');
     tbody.innerHTML = '';
-    data.transaksiPetani
-      .slice()
-      .sort((a,b) => b.tanggal.localeCompare(a.tanggal))
-      .forEach((t, idx) => {
+    const sortedData = data.transaksiPetani.slice().sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+    const start = (currentPage.tp - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageData = sortedData.slice(start, end);
+
+    pageData.forEach((t, idx) => {
         const petani = data.petani.find(p => p.id === t.petaniId);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${idx + 1}</td>
+          <td>${start + idx + 1}</td>
           <td>${formatDateID(t.tanggal)}</td>
           <td>${petani ? petani.nama : '-'}</td>
           <td class="text-end">${t.jumlahKarungPanen}</td>
@@ -1522,6 +1597,8 @@
         `;
         tbody.appendChild(tr);
       });
+
+    renderPagination('pagination-tp', sortedData.length, 'tp', renderTransaksiPetani);
 
     tbody.querySelectorAll('.btn-del-tp').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1640,14 +1717,16 @@
   function renderPenjualanPengepul() {
     const tbody = document.getElementById('table-transaksi-pengepul-body');
     tbody.innerHTML = '';
-    data.penjualanPengepul
-      .slice()
-      .sort((a,b) => b.tanggal.localeCompare(a.tanggal))
-      .forEach((t, idx) => {
+    const sortedData = data.penjualanPengepul.slice().sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+    const start = (currentPage.tpen - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageData = sortedData.slice(start, end);
+
+    pageData.forEach((t, idx) => {
         const pengepul = data.pengepul.find(p => p.id === t.pengepulId);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${idx + 1}</td>
+          <td>${start + idx + 1}</td>
           <td>${formatDateID(t.tanggal)}</td>
           <td>${pengepul ? pengepul.nama : '-'}</td>
           <td class="text-end">${t.jumlahKarung}</td>
@@ -1674,6 +1753,8 @@
         `;
         tbody.appendChild(tr);
       });
+
+    renderPagination('pagination-tpen', sortedData.length, 'tpen', renderPenjualanPengepul);
 
     tbody.querySelectorAll('.btn-del-tpen').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1798,13 +1879,15 @@
   function renderBiaya() {
     const tbody = document.getElementById('table-biaya-body');
     tbody.innerHTML = '';
-    data.biaya
-      .slice()
-      .sort((a,b) => b.tanggal.localeCompare(a.tanggal))
-      .forEach((b, idx) => {
+    const sortedData = data.biaya.slice().sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+    const start = (currentPage.biaya - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageData = sortedData.slice(start, end);
+
+    pageData.forEach((b, idx) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${idx + 1}</td>
+          <td>${start + idx + 1}</td>
           <td>${formatDateID(b.tanggal)}</td>
           <td>${b.kategori}</td>
           <td>${b.deskripsi || ''}</td>
@@ -1826,6 +1909,8 @@
         `;
         tbody.appendChild(tr);
       });
+
+    renderPagination('pagination-biaya', sortedData.length, 'biaya', renderBiaya);
 
     tbody.querySelectorAll('.btn-del-biaya').forEach(btn => {
       btn.addEventListener('click', () => {
