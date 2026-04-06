@@ -73,6 +73,19 @@
                         (adsbygoogle = window.adsbygoogle || []).push({});
                     </script>
                 </div>
+                <div class="my4">
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885"
+                        crossorigin="anonymous"></script>
+                    <ins class="adsbygoogle"
+                        style="display:block"
+                        data-ad-format="fluid"
+                        data-ad-layout-key="-6t+ed+2i-1n-4w"
+                        data-ad-client="ca-pub-6643133281488885"
+                        data-ad-slot="1536187996"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
             </div>
         </section>
 
@@ -165,8 +178,8 @@
     <script>
         const db = new Dexie("DesaPOS_Final_Wajo");
         db.version(1).stores({ 
-            produk: 'id, nama, jual, modal, stok, sync_status', 
-            transaksi: '++id, id_transaksi, metode, pelanggan, total, waktu, status' 
+            produk: 'id, nama, jual, modal, stok, sync_status, cabang', 
+            transaksi: '++id, id_transaksi, metode, pelanggan, total, waktu, status, cabang' 
         });
 
         let products = [], cart = [], config = JSON.parse(localStorage.getItem('pos_config')) || { url: '', branch: '' };
@@ -181,7 +194,7 @@
 
         // --- CORE FUNCTIONS ---
         async function loadLocal() {
-            products = await db.produk.toArray();
+            products = await db.produk.where('cabang').equals(config.branch).toArray();
             renderAll();
         }
 
@@ -353,7 +366,7 @@
         async function renderTransaksi() {
             const q = document.getElementById('filter-transaksi').value.toLowerCase();
             const list = document.getElementById('transaksi-list');
-            const data = await db.transaksi.reverse().toArray();
+            const data = await db.transaksi.where('cabang').equals(config.branch).reverse().toArray();
             const filtered = data.filter(t => t.pelanggan.toLowerCase().includes(q) || (t.metode === 'debt' ? 'utang' : 'lunas').includes(q));
             list.innerHTML = filtered.map(t => `
                 <tr onclick="showTrxDetail('${t.id_transaksi}')" class="border-b text-[10px] hover:bg-blue-50 cursor-pointer">
@@ -366,7 +379,7 @@
 
         async function renderLaporan() {
             const period = document.getElementById('filter-periode').value;
-            const trxs = await db.transaksi.toArray();
+            const trxs = await db.transaksi.where('cabang').equals(config.branch).toArray();
             const now = new Date();
             const filt = trxs.filter(t => {
                 const d = new Date(t.waktu);
