@@ -60,16 +60,16 @@
                 </div>
                 
                 <div class="my-4">
-                <ins class="adsbygoogle"
-                    style="display:block"
-                    data-ad-client="ca-pub-6643133281488885"
-                    data-ad-slot="NOMOR_SLOT_IKLAN_ANDA"
-                    data-ad-format="auto"
-                    data-full-width-responsive="true"></ins>
-                <script>
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
+                    <!-- Homepage Leaderboard -->
+                    <ins class="adsbygoogle"
+                    style="display:inline-block;width:728px;height:90px"
+                    data-ad-client="ca-pub-1234567890123456"
+                    data-ad-slot="1234567890"></ins>
+                    <script>
                     (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            </div>
+                    </script>
+                </div>
             </div>
         </section>
 
@@ -191,6 +191,16 @@
                 for (let p of data.produk) {
                     const local = await db.produk.get(p.id);
                     if (!local || local.sync_status !== 'pending') await db.produk.put({ ...p, sync_status: 'synced' });
+                }
+                
+                // --- SYNC TRANSAKSI DARI CLOUD ---
+                if (data.transaksi && data.transaksi.length > 0) {
+                    for (let t of data.transaksi) {
+                        const local = await db.transaksi.where('id_transaksi').equals(t.id_transaksi).first();
+                        if (!local) {
+                            await db.transaksi.put({ ...t, status: 'synced' });
+                        }
+                    }
                 }
                 
                 if (data.sponsorAd) renderSponsorAd(data.sponsorAd);
