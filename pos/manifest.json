@@ -1,0 +1,17 @@
+{
+  "name": "DesaPOS Wajo",
+  "short_name": "DesaPOS",
+  "description": "Aplikasi POS Offline-First untuk UMKM Desa",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#2563eb",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/263/263142.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
