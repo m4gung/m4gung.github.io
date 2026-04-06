@@ -2,110 +2,148 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Hitung Nilai Nama</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitung Nilai Nama - Numerologi</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial; padding: 20px; }
-        table { border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 6px 12px; text-align: center; }
-        th { background-color: #f2f2f2; }
-        input { padding: 6px; width: 200px; }
-        button { padding: 6px 12px; cursor: pointer; }
-        .box { margin-top: 15px; }
+        body { font-family: 'Inter', sans-serif; }
+        .result-box {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885"
-     crossorigin="anonymous"></script>
-<!-- 1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-6643133281488885"
-     data-ad-slot="5669107767"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-<h2>Mapping Alfabet (a–z)</h2>
+<body class="bg-slate-50 min-h-screen text-slate-800 p-4 md:p-8">
 
-<table id="tabelAlfabet">
-    <thead>
-        <tr>
-            <th>Huruf</th>
-            <th>Nilai</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+    <div class="max-w-4xl mx-auto">
+        <!-- Header & Nav -->
+        <div class="mb-8 flex justify-between items-center">
+            <a href="index.html" class="text-blue-600 font-semibold flex items-center gap-2 hover:underline">
+                <span>←</span> Kembali ke Portal
+            </a>
+        </div>
 
-<h2>Hitung Nilai Nama</h2>
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-10 mb-8">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mb-6">Kalkulator Nilai Nama</h1>
+            
+            <div class="flex flex-col md:flex-row gap-4 mb-10">
+                <input type="text" id="nama" placeholder="Masukkan nama lengkap..." 
+                    class="flex-grow p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-400 font-semibold uppercase">
+                <button onclick="hitung()" 
+                    class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100">
+                    Hitung Nilai
+                </button>
+            </div>
 
-<input type="text" id="nama" placeholder="Masukkan nama">
-<button onclick="hitung()">Hitung</button>
+            <div id="hasil" class="hidden result-box bg-blue-50 rounded-2xl p-6 border border-blue-100">
+                <!-- Hasil akan muncul di sini -->
+            </div>
+        </div>
 
-<div id="hasil" class="box"></div>
+        <!-- Ad Unit Tengah -->
+        <div class="my-8 overflow-hidden rounded-2xl bg-white p-2 border border-slate-100">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-6643133281488885"
+                 data-ad-slot="5669107767"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
 
-<script>
-const mapping = {
-    a:4,b:8,c:9,d:9,e:6,f:7,g:9,h:2,i:1,j:7,
-    k:2,l:6,m:2,n:6,o:0,p:9,q:0,r:2,s:8,t:7,
-    u:0,v:0,w:2,x:0,y:7,z:0
-};
+        <!-- Mapping Alfabet Section -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-10">
+            <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <span>📊</span> Tabel Mapping Alfabet
+            </h2>
+            <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-2" id="tabelAlfabetGrid">
+                <!-- Alfabet akan di-render di sini -->
+            </div>
+        </div>
+    </div>
 
-// render tabel alfabet di atas
-const tbody = document.querySelector("#tabelAlfabet tbody");
-for (let huruf in mapping) {
-    tbody.innerHTML += `
-        <tr>
-            <td>${huruf.toUpperCase()}</td>
-            <td>${mapping[huruf]}</td>
-        </tr>
-    `;
-}
+    <script>
+    const mapping = {
+        a:4,b:8,c:9,d:9,e:6,f:7,g:9,h:2,i:1,j:7,
+        k:2,l:6,m:2,n:6,o:0,p:9,q:0,r:2,s:8,t:7,
+        u:0,v:0,w:2,x:0,y:7,z:0
+    };
 
-function hitung() {
-    let nama = document.getElementById("nama").value.toLowerCase();
-    let total = 0;
-    let detail = [];
-    let keterangan = [];
-
-    for (let i = 0; i < nama.length; i++) {
-        let huruf = nama[i];
-        if (mapping[huruf] !== undefined) {
-            total += mapping[huruf];
-            detail.push(mapping[huruf]);
-            keterangan.push(huruf.toUpperCase() + " = " + mapping[huruf]);
-        }
+    // Render tabel alfabet dalam bentuk grid yang lebih modern
+    const grid = document.getElementById("tabelAlfabetGrid");
+    for (let huruf in mapping) {
+        grid.innerHTML += `
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">
+                <div class="text-[10px] text-slate-400 font-bold uppercase">${huruf}</div>
+                <div class="text-lg font-black text-slate-700">${mapping[huruf]}</div>
+            </div>
+        `;
     }
 
-    let proses = detail.join(" + ") + " = " + total;
+    function hitung() {
+        let nama = document.getElementById("nama").value.trim().toLowerCase();
+        if (!nama) return alert("Silakan masukkan nama terlebih dahulu.");
 
-    function reduksi(angka) {
-        let langkah = [];
-        while (angka > 9) {
-            let jumlah = angka.toString().split('').reduce((a,b)=>a+parseInt(b),0);
-            langkah.push(angka + " → " + jumlah);
-            angka = jumlah;
+        let total = 0;
+        let detail = [];
+        let keterangan = [];
+
+        for (let i = 0; i < nama.length; i++) {
+            let huruf = nama[i];
+            if (mapping[huruf] !== undefined) {
+                total += mapping[huruf];
+                detail.push(mapping[huruf]);
+                keterangan.push(`<span class="inline-block bg-white px-2 py-1 rounded-md border border-blue-100 text-[10px] font-bold mr-1 mb-1">${huruf.toUpperCase()} = ${mapping[huruf]}</span>`);
+            }
         }
-        return {hasil: angka, langkah: langkah};
+
+        let proses = detail.join(" + ") + " = " + total;
+
+        function reduksi(angka) {
+            let langkah = [];
+            while (angka > 9) {
+                let jumlah = angka.toString().split('').reduce((a,b)=>a+parseInt(b),0);
+                langkah.push(`<div class="text-xs text-slate-500 font-medium">${angka} → ${jumlah}</div>`);
+                angka = jumlah;
+            }
+            return {hasil: angka, langkah: langkah};
+        }
+
+        let hasilReduksi = reduksi(total);
+        const hasilDiv = document.getElementById("hasil");
+        hasilDiv.classList.remove("hidden");
+
+        hasilDiv.innerHTML = `
+            <div class="mb-6">
+                <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 text-center">Keterangan Huruf</p>
+                <div class="flex flex-wrap justify-center">${keterangan.join("")}</div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 mb-6 text-center border border-blue-100">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Perhitungan Awal</p>
+                <div class="text-sm font-bold text-slate-700">${proses}</div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div class="text-center md:text-left">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Proses Reduksi</p>
+                    <div class="space-y-1">${hasilReduksi.langkah.join("") || '<div class="text-xs text-slate-500">Tidak ada reduksi</div>'}</div>
+                </div>
+                <div class="text-center bg-blue-600 rounded-2xl p-6 shadow-lg shadow-blue-200">
+                    <p class="text-[10px] font-black text-blue-200 uppercase mb-1">Hasil Akhir</p>
+                    <div class="text-5xl font-black text-white">${hasilReduksi.hasil}</div>
+                </div>
+            </div>
+        `;
     }
-
-    let hasilReduksi = reduksi(total);
-
-    document.getElementById("hasil").innerHTML = `
-        <b>Keterangan Huruf:</b><br>
-        ${keterangan.join("<br>")}<br><br>
-
-        <b>Perhitungan:</b><br>
-        ${proses}<br><br>
-
-        <b>Reduksi:</b><br>
-        ${hasilReduksi.langkah.join("<br>")}<br><br>
-
-        <b>Hasil akhir:</b> ${hasilReduksi.hasil}
-    `;
-}
-</script>
+    </script>
 
 </body>
 </html>
