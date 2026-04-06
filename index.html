@@ -2,42 +2,119 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-adsense-account" content="ca-pub-6643133281488885">
-  <title>Kalkulator Pembagian Hasil Panen</title>
+  <title>Portal Aplikasi & Kalkulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    label { display: block; margin: 8px 0 4px; }
-    input { padding: 5px; width: 200px; }
-    button { padding: 8px 15px; margin-top: 10px; cursor: pointer; }
-    .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; width: 300px; }
+    body { font-family: 'Inter', sans-serif; }
+    .menu-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .menu-card:hover {
+      transform: translateY(-5px);
+    }
   </style>
 </head>
-<body>
-	<h1>Pilih Menu</h1>
-  <a href="./perhitungan-hasil-panen.html">Pembagian Hasil Panen</a><br>
-	<a href="./hitung-hasil-2.html">Pembagian Hasil Panen Konversi</a><br>
-	<a href="./olshop.html">Olshop</a><br>
-	<a href="./penjualan/index.html">Penjualan</a><br>	
-  <a href="./apl_penjualan/index.html">Aplikasi Penjualan</a><br>	
-	<a href="./pembukuan">Pompanisasi</a><br>
-  <a href="./mrbarbershop">MR Barbershop</a><br>
-  <a href="./apl_input_data/index.html">APL INPUT DATA</a><br>
-  <a href="./check_nama.html">Check Nama</a><br> 
-  <a href="./pos/">POS System</a><br> 
+<body class="bg-slate-50 min-h-screen flex flex-col">
 
-  <div class="my-4">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885"
-        crossorigin="anonymous"></script>
-    <!-- 1 -->
-    <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-client="ca-pub-6643133281488885"
-        data-ad-slot="5669107767"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
-    <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-</div>
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 py-8 mb-8">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">Pilih Menu</h1>
+      <p class="text-slate-500 font-medium uppercase tracking-widest text-xs">Portal Aplikasi & Kalkulator Pembukuan</p>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 flex-grow mb-12">
+    <!-- Grid Menu -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+      
+      <a href="./perhitungan-hasil-panen.html" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-amber-100 transition-colors">🌾</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Pembagian Hasil Panen</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Kalkulator bagi hasil tani</p>
+      </a>
+
+      <a href="./hitung-hasil-2.html" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-blue-100 transition-colors">🔄</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Hasil Panen Konversi</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Konversi bagi hasil otomatis</p>
+      </a>
+
+      <a href="./olshop.html" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-pink-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-pink-100 transition-colors">🛍️</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Olshop</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Manajemen Toko Online</p>
+      </a>
+
+      <a href="./penjualan/index.html" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-green-100 transition-colors">💰</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Penjualan</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Sistem Penjualan V1</p>
+      </a>
+
+      <a href="./apl_penjualan/index.html" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-emerald-100 transition-colors">📱</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Aplikasi Penjualan</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Sistem Penjualan V2</p>
+      </a>
+
+      <a href="./pembukuan" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-cyan-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-cyan-100 transition-colors">💧</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Pompanisasi</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Pembukuan Usaha Pompa</p>
+      </a>
+
+      <a href="./mrbarbershop" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-indigo-100 transition-colors">✂️</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">MR Barbershop</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Manajemen Barbershop</p>
+      </a>
+
+      <a href="./apl_input_data/index.html" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-slate-200 transition-colors">📝</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">APL INPUT DATA</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Input data ke Cloud</p>
+      </a>
+
+      <a href="./check_nama.html" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-purple-100 transition-colors">✅</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Check Nama</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Validasi nama pelanggan</p>
+      </a>
+
+      <a href="./pos/" class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
+        <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-lg shadow-blue-200">🏪</div>
+        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">POS System</h3>
+        <p class="text-slate-400 text-xs mt-2 font-medium">Point of Sale (Kasir)</p>
+      </a>
+
+    </div>
+
+    <!-- Iklan Section -->
+    <div class="mt-12 max-w-4xl mx-auto bg-white p-4 rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+      <p class="text-[10px] font-black text-slate-300 uppercase mb-4 tracking-tighter text-center">Informasi Sponsor</p>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885" crossorigin="anonymous"></script>
+      <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-6643133281488885"
+          data-ad-slot="5669107767"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+      <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+    <div class="container mx-auto px-4 text-center">
+      <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">&copy; 2026 Portal Aplikasi - Magung</p>
+    </div>
+  </footer>
+
 </body>
 </html>
