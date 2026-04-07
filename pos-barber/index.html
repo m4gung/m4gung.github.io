@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DesaPOS Wajo v3.5 - Ads & Profit</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        .active-tab { border-bottom: 3px solid white; font-weight: bold; opacity: 1 !important; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .pending-sync { border-left: 4px solid #facc15; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+    </style>
+    
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+
+    <nav class="bg-blue-600 p-4 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="font-bold flex items-center gap-2 text-sm md:text-base"><span>💸</span> POS BARBER</h1>
+            <div class="flex space-x-3 md:space-x-6 text-[10px] md:text-xs uppercase overflow-x-auto hide-scroll">
+                <button onclick="showSection('kasir')" id="tab-kasir" class="py-1 active-tab">Kasir</button>
+                <button onclick="showSection('inventori')" id="tab-inventori" class="py-1 opacity-70">Stok</button>
+                <button onclick="showSection('transaksi')" id="tab-transaksi" class="py-1 opacity-70">Riwayat</button> 
+                <button onclick="showSection('laporan')" id="tab-laporan" class="py-1 opacity-70">Laporan</button> 
+                <button onclick="showSection('settings')" id="tab-settings" class="py-1 opacity-50">Setelan</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="p-4 max-w-6xl mx-auto min-h-screen">
+        <section id="sec-kasir" class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
+            <div class="lg:col-span-2">
+                <input type="text" id="search-kasir" placeholder="CARI BARANG..." class="w-full p-4 mb-4 rounded-2xl shadow-sm border-none outline-none focus:ring-2 focus:ring-blue-400 uppercase text-sm font-bold" onkeyup="renderKasir()">
+                <div id="product-list" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-xl h-fit sticky top-24 border">
+                <h2 class="font-bold text-blue-600 mb-4 border-b pb-2 uppercase text-xs tracking-widest">Keranjang Belanja</h2>
+                <div id="cart-items" class="space-y-3 mb-6 max-h-60 overflow-y-auto hide-scroll"></div>
+                
+                <div id="sponsor-ad-box" class="hidden mb-6 p-3 bg-blue-50 rounded-2xl border border-blue-100 animate-pulse cursor-pointer">
+                    <p class="text-[8px] font-black text-blue-400 uppercase mb-2 tracking-tighter">Sponsor Lokal</p>
+                    <div id="ad-content" class="flex items-center gap-3">
+                        </div>
+                </div>
+
+                <div class="pt-4 border-t border-dashed">
+                    <div class="flex justify-between items-end mb-4">
+                        <span class="text-gray-400 text-[10px] uppercase font-bold">Total Tagihan</span>
+                        <span id="cart-total" class="text-2xl font-black text-blue-600 leading-none">Rp 0</span>
+                    </div>
+                    <input type="text" id="customer-name" class="w-full p-3 bg-slate-50 rounded-xl mb-4 text-sm uppercase font-bold border" placeholder="NAMA PELANGGAN">
+                    <button onclick="checkout('cash')" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg mb-2 text-sm uppercase">Bayar CASH</button>
+                    <button onclick="checkout('qris')" class="w-full bg-indigo-50 text-indigo-600 py-3 rounded-2xl font-bold text-[11px] border border-indigo-100 uppercase">Bayar QRIS</button>
+                </div>
+                
+                <div class="my-4">
+                    <!-- 1 -->
+                    <ins class="adsbygoogle"
+                        style="display:block"
+                        data-ad-client="ca-pub-6643133281488885"
+                        data-ad-slot="5669107767"
+                        data-ad-format="auto"
+                        data-full-width-responsive="true"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+                <div class="my4">
+                    <ins class="adsbygoogle"
+                        style="display:block"
+                        data-ad-format="fluid"
+                        data-ad-layout-key="-6t+ed+2i-1n-4w"
+                        data-ad-client="ca-pub-6643133281488885"
+                        data-ad-slot="1536187996"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-inventori" class="hidden bg-white p-6 rounded-3xl shadow-md animate-fadeIn">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <h2 class="text-xl font-bold">Manajemen Stok</h2>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <input type="text" id="filter-stok" onkeyup="renderInventori()" placeholder="Cari di stok..." class="bg-slate-100 p-2 px-4 rounded-xl text-xs outline-none w-full uppercase">
+                    <button onclick="openProductModal()" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-bold whitespace-nowrap">+ Tambah</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-gray-400 border-b text-[10px] uppercase font-bold">
+                            <th class="p-3">ID</th>
+                            <th class="p-3">Nama</th>
+                            <th class="p-3">Komisi Barber</th>
+                            <th class="p-3">Jual</th>
+                            <th class="p-3 text-center">Stok</th>
+                            <th class="p-3">Cabang</th>
+                            <th class="p-3">Komisi Kepster</th>
+                            <th class="p-3">Jenis</th>
+                            <th class="p-3 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-list" class="divide-y divide-slate-50"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="sec-transaksi" class="hidden bg-white p-6 rounded-3xl shadow-md animate-fadeIn">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <h2 class="text-xl font-bold">Riwayat Jualan</h2>
+                <input type="text" id="filter-transaksi" onkeyup="renderTransaksi()" placeholder="Cari pelanggan/status..." class="bg-slate-100 p-2 px-4 rounded-xl text-xs outline-none w-full md:w-64 uppercase">
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm cursor-pointer">
+                    <thead>
+                        <tr class="text-gray-400 border-b text-[10px] uppercase font-bold">
+                            <th class="p-3">Waktu</th>
+                            <th class="p-3">ID Transaksi</th>
+                            <th class="p-3">Cabang</th>
+                            <th class="p-3">Items</th>
+                            <th class="p-3">Total</th>
+                            <th class="p-3">Metode</th>
+                            <th class="p-3">Pelanggan</th>
+                            <th class="p-3">Karyawan</th>
+                            <th class="p-3">Keterangan</th>
+                            <th class="p-3 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaksi-list" class="divide-y divide-slate-50"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="sec-laporan" class="hidden animate-fadeIn">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Laporan Laba</h2>
+                <select id="filter-periode" onchange="renderLaporan()" class="bg-white p-2 rounded-xl text-xs font-bold border outline-none">
+                    <option value="today">Hari Ini</option><option value="month">Bulan Ini</option><option value="all">Semua</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border-l-4 border-blue-500"><p class="text-[10px] text-gray-400 uppercase font-bold">Omzet</p><h3 id="rep-omzet" class="text-2xl font-black">Rp 0</h3></div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border-l-4 border-green-500"><p class="text-[10px] text-gray-400 uppercase font-bold text-green-600">Laba Bersih</p><h3 id="rep-laba" class="text-2xl font-black text-green-600">Rp 0</h3></div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border-l-4 border-amber-500"><p class="text-[10px] text-gray-400 uppercase font-bold text-amber-500">Total Komisi</p><h3 id="rep-komisi" class="text-2xl font-black text-amber-600">Rp 0</h3></div>
+            </div>
+            
+            <div class="mt-8 bg-white p-6 rounded-3xl shadow-md overflow-x-auto">
+                <h3 class="text-sm font-bold mb-4 uppercase text-slate-400">Rincian Komisi & Transaksi</h3>
+                <table class="w-full text-left text-[11px]">
+                    <thead>
+                        <tr class="text-gray-400 border-b uppercase font-bold">
+                            <th class="p-3">Waktu</th>
+                            <th class="p-3">Karyawan</th>
+                            <th class="p-3">Komisi Total</th>
+                            <th class="p-3">Jenis</th>
+                            <th class="p-3">Komisi/Unit</th>
+                            <th class="p-3">ID Transaksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="laporan-detail-list" class="divide-y divide-slate-50"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="sec-settings" class="hidden max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl animate-fadeIn border">
+            <h2 class="text-xl font-bold mb-6 text-center uppercase text-blue-600 tracking-tighter">Pengaturan</h2>
+            <div class="space-y-4">
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase">GAS Web App URL</label><input type="password" id="gas-url" class="w-full p-3 bg-slate-50 rounded-xl border outline-none"></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase">ID Cabang</label><input type="text" id="branch-id" class="w-full p-3 bg-slate-50 rounded-xl border outline-none uppercase"></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase">ID Karyawan</label><input type="text" id="employee-id" class="w-full p-3 bg-slate-50 rounded-xl border outline-none uppercase"></div>
+                <button onclick="saveConfig()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold uppercase shadow-lg">Simpan & Restart</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="modal-detail" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[70]">
+        <div class="bg-white p-6 rounded-3xl w-full max-w-md shadow-2xl animate-fadeIn">
+            <div id="detail-content" class="text-sm"></div>
+            <div id="detail-actions" class="mt-4 border-t pt-4"></div>
+            <button onclick="closeModal('modal-detail')" class="w-full py-3 text-slate-400 font-bold uppercase text-[10px] mt-2 tracking-widest">Tutup</button>
+        </div>
+    </div>
+
+    <div id="modal-product" class="hidden fixed inset-0 bg-black/50 backdrop-blur flex items-center justify-center p-4 z-[60]">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl animate-fadeIn text-center">
+            <h3 id="modal-title" class="text-lg font-black mb-6 uppercase text-blue-600">Form Barang</h3>
+            <div class="space-y-4 text-left">
+                <input type="hidden" id="p-id">
+                <input type="text" id="p-nama" placeholder="NAMA BARANG" class="w-full p-3 bg-slate-50 rounded-xl border outline-none uppercase font-bold text-sm">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-[9px] font-bold text-gray-400 ml-2">HARGA MODAL</label><input type="number" id="p-modal" class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm"></div>
+                    <div><label class="text-[9px] font-bold text-blue-400 ml-2 font-black text-blue-600">HARGA JUAL</label><input type="number" id="p-jual" class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm font-bold text-blue-600"></div>
+                </div>
+                <div><label class="text-[9px] font-bold text-gray-400 ml-2">JUMLAH STOK</label><input type="number" id="p-stok" class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-[9px] font-bold text-gray-400 ml-2">KOMISI BARBER</label><input type="number" id="p-komisi-barber" class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm"></div>
+                    <div><label class="text-[9px] font-bold text-gray-400 ml-2">KOMISI KEPSTER</label><input type="number" id="p-komisi-kepster" class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm"></div>
+                </div>
+                <div><label class="text-[9px] font-bold text-gray-400 ml-2">JENIS</label><input type="text" id="p-jenis" placeholder="BARBER/KEPSTER/PRODUK" class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm uppercase"></div>
+            </div>
+            <button onclick="saveProduct()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold uppercase text-sm mt-6 shadow-md transition active:scale-95">Simpan Produk</button>
+            <button onclick="closeModal('modal-product')" class="w-full py-3 text-gray-400 font-bold uppercase text-[10px]">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        const db = new Dexie("DesaPOS_Final_Wajo");
+        db.version(1).stores({ 
+            produk: 'id, nama, jual, modal, stok, sync_status, cabang, komisi_barber, komisi_kepster, jenis', 
+            transaksi: '++id, id_transaksi, metode, pelanggan, total, waktu, status, cabang, karyawan, keterangan' 
+        });
+
+        let products = [], cart = [], config = JSON.parse(localStorage.getItem('pos_config')) || { url: '', branch: '', employee: '' };
+
+        window.onload = async () => {
+            if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+            document.getElementById('gas-url').value = config.url;
+            document.getElementById('branch-id').value = config.branch;
+            const empEl = document.getElementById('employee-id');
+            if (empEl) empEl.value = config.employee || '';
+            await loadLocal();
+            syncCloud();
+        };
+
+        // --- CORE FUNCTIONS ---
+        async function loadLocal() {
+            products = await db.produk.where('cabang').equals(config.branch).toArray();
+            renderAll();
+        }
+
+        async function syncCloud() {
+            if (!navigator.onLine || !config.url) return;
+            try {
+                const res = await fetch(config.url, { method: 'POST', body: JSON.stringify({ action: 'getInitialData', branch: config.branch }) });
+                const data = await res.json();
+                
+                for (let p of data.produk) {
+                    const local = await db.produk.get(p.id);
+                    if (!local || local.sync_status !== 'pending') await db.produk.put({ ...p, sync_status: 'synced' });
+                }
+                
+                // --- SYNC TRANSAKSI DARI CLOUD ---
+                if (data.transaksi && data.transaksi.length > 0) {
+                    for (let t of data.transaksi) {
+                        const local = await db.transaksi.where('id_transaksi').equals(t.id_transaksi).first();
+                        if (!local) {
+                            await db.transaksi.put({ ...t, status: 'synced' });
+                        }
+                    }
+                }
+                
+                if (data.sponsorAd) renderSponsorAd(data.sponsorAd);
+                
+                await loadLocal();
+                processSync();
+            } catch (e) { console.warn("Cloud Offline."); }
+        }
+
+        function renderSponsorAd(ad) {
+            const box = document.getElementById('sponsor-ad-box');
+            const content = document.getElementById('ad-content');
+            box.classList.remove('hidden');
+            content.innerHTML = `
+                <img src="${ad.img}" class="w-10 h-10 rounded-lg object-cover shadow-sm">
+                <div class="flex-1">
+                    <p class="text-[10px] font-bold text-slate-800 leading-none mb-1">${ad.title}</p>
+                    <p class="text-[9px] text-slate-400 line-clamp-1">${ad.desc}</p>
+                </div>
+            `;
+            box.onclick = () => window.open(ad.link, '_blank');
+        }
+
+        function renderAll() {
+            renderKasir();
+            renderInventori();
+            renderTransaksi();
+        }
+
+        function renderKasir() {
+            const query = document.getElementById('search-kasir').value.toLowerCase();
+            const container = document.getElementById('product-list');
+            const filtered = products.filter(p => p.nama.toLowerCase().includes(query));
+            container.innerHTML = filtered.map(p => `
+                <div onclick="addToCart('${p.id}')" class="bg-white p-4 rounded-2xl shadow-sm border active:scale-95 transition cursor-pointer hover:border-blue-400">
+                    <h3 class="font-bold text-[10px] uppercase truncate text-slate-600">${p.nama}</h3>
+                    <p class="text-blue-600 font-black text-sm mt-1">Rp ${p.jual.toLocaleString()}</p>
+                    <p class="text-[9px] text-gray-400 mt-2 font-bold">STOK: ${p.stok}</p>
+                </div>`).join('');
+        }
+
+        function addToCart(id) {
+            const p = products.find(x => x.id === id);
+            if(p.stok <= 0) return alert("Habis!");
+            const it = cart.find(x => x.id === id);
+            if(it) { if(it.qty < p.stok) it.qty++; } else { cart.push({...p, qty: 1}); }
+            updateCart();
+        }
+
+        function updateCart() {
+            const container = document.getElementById('cart-items');
+            let total = 0;
+            if(!cart.length) { container.innerHTML = '<p class="text-center py-10 italic text-[10px] text-gray-300">Keranjang Kosong</p>'; document.getElementById('cart-total').innerText = "Rp 0"; return; }
+            container.innerHTML = cart.map((it, i) => {
+                total += it.jual * it.qty;
+                return `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-xl text-[11px] font-bold">
+                    <span class="truncate w-1/3">${it.nama}</span>
+                    <div class="flex gap-2 border rounded-lg bg-white px-2 py-1 items-center">
+                        <button onclick="changeQty('${it.id}',-1)">-</button><span class="text-[10px]">${it.qty}</span><button onclick="changeQty('${it.id}',1)">+</button>
+                    </div>
+                    <span class="text-blue-600 font-black">Rp ${(it.jual*it.qty).toLocaleString()}</span>
+                </div>`;
+            }).join('');
+            document.getElementById('cart-total').innerText = `Rp ${total.toLocaleString()}`;
+        }
+
+        function changeQty(id, d) {
+            const it = cart.find(x => x.id === id);
+            it.qty += d;
+            if(it.qty <= 0) cart = cart.filter(x => x.id !== id);
+            updateCart();
+        }
+
+        async function checkout(m) {
+            if(!cart.length) return;
+            const trx = {
+                id_transaksi: 'TRX-' + Date.now(),
+                items: JSON.stringify(cart),
+                total: cart.reduce((a,b)=>a+(b.jual*b.qty),0),
+                metode: m,
+                pelanggan: document.getElementById('customer-name').value.toUpperCase() || 'UMUM',
+                waktu: new Date().toISOString(),
+                status: 'pending',
+                cabang: config.branch,
+                karyawan: config.employee || '',
+                keterangan: ''
+            };
+            await db.transaksi.add(trx);
+            for(let it of cart) {
+                const p = await db.produk.get(it.id);
+                await db.produk.update(it.id, { stok: p.stok - it.qty, sync_status: 'pending' });
+            }
+            cart = []; document.getElementById('customer-name').value = '';
+            updateCart(); await loadLocal(); processSync();
+            alert("Berhasil!");
+        }
+
+        // --- INVENTORI ---
+        function renderInventori() {
+            const q = document.getElementById('filter-stok').value.toLowerCase();
+            const list = document.getElementById('inventory-list');
+            const filt = products.filter(p => p.nama.toLowerCase().includes(q));
+            list.innerHTML = filt.map(p => `
+                <tr class="border-b ${p.sync_status === 'pending' ? 'pending-sync' : ''}">
+                    <td class="p-3 text-[10px] font-mono">${p.id}</td>
+                    <td class="p-3 font-bold uppercase text-[10px]">${p.nama}</td>
+                    <td class="p-3 text-[10px] text-gray-600">Rp ${(p.komisi_barber||0).toLocaleString()}</td>
+                    <td class="p-3 font-bold text-blue-600">Rp ${p.jual.toLocaleString()}</td>
+                    <td class="p-3 text-center font-black">${p.stok}</td>
+                    <td class="p-3 text-[10px]">${p.cabang || '-'}</td>
+                    <td class="p-3 text-[10px] text-gray-600">Rp ${(p.komisi_kepster||0).toLocaleString()}</td>
+                    <td class="p-3 text-[10px] uppercase">${p.jenis || '-'}</td>
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <button onclick="openProductModal('${p.id}')" class="text-blue-600 font-bold text-[9px] mr-2">EDIT</button>
+                        <button onclick="deleteProduct('${p.id}')" class="text-red-400 font-bold text-[9px]">HAPUS</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function openProductModal(id = null) {
+            document.getElementById('modal-product').classList.remove('hidden');
+            if(id) {
+                const p = products.find(x => x.id == id);
+                document.getElementById('p-id').value = p.id; document.getElementById('p-nama').value = p.nama;
+                document.getElementById('p-modal').value = p.modal; document.getElementById('p-jual').value = p.jual;
+                document.getElementById('p-stok').value = p.stok;
+                const kb = document.getElementById('p-komisi-barber'); if (kb) kb.value = p.komisi_barber || 0;
+                const kk = document.getElementById('p-komisi-kepster'); if (kk) kk.value = p.komisi_kepster || 0;
+                const jn = document.getElementById('p-jenis'); if (jn) jn.value = p.jenis || '';
+            } else {
+                document.getElementById('p-id').value = 'P-' + Date.now(); document.getElementById('p-nama').value = '';
+                document.getElementById('p-modal').value = ''; document.getElementById('p-jual').value = '';
+                document.getElementById('p-stok').value = '';
+                const kb = document.getElementById('p-komisi-barber'); if (kb) kb.value = '';
+                const kk = document.getElementById('p-komisi-kepster'); if (kk) kk.value = '';
+                const jn = document.getElementById('p-jenis'); if (jn) jn.value = '';
+            }
+        }
+
+        async function saveProduct() {
+            const p = {
+                id: document.getElementById('p-id').value, nama: document.getElementById('p-nama').value.toUpperCase(),
+                modal: Number(document.getElementById('p-modal').value), jual: Number(document.getElementById('p-jual').value),
+                stok: Number(document.getElementById('p-stok').value), cabang: config.branch, sync_status: 'pending',
+                komisi_barber: Number(document.getElementById('p-komisi-barber').value) || 0,
+                komisi_kepster: Number(document.getElementById('p-komisi-kepster').value) || 0,
+                jenis: (document.getElementById('p-jenis').value || '').toUpperCase()
+            };
+            if(!p.nama || !p.jual) return alert("Nama/Harga Jual wajib!");
+            await db.produk.put(p);
+            closeModal('modal-product'); await loadLocal(); processSync();
+        }
+
+        async function deleteProduct(id) {
+            if(!confirm("Hapus barang?")) return;
+            await db.produk.delete(id);
+            if(navigator.onLine && config.url) fetch(config.url,{method:'POST',mode:'no-cors',body:JSON.stringify({action:'deleteProduct',id})});
+            await loadLocal();
+        }
+
+        // --- TRANSAKSI & LAPORAN ---
+        async function renderTransaksi() {
+            const q = document.getElementById('filter-transaksi').value.toLowerCase();
+            const list = document.getElementById('transaksi-list');
+            const data = await db.transaksi.where('cabang').equals(config.branch).reverse().toArray();
+            const filtered = data.filter(t => {
+                const pay = t.metode === 'qris' ? 'qris' : 'cash';
+                return t.pelanggan.toLowerCase().includes(q) || pay.includes(q);
+            });
+            list.innerHTML = filtered.map(t => `
+                <tr onclick="showTrxDetail('${t.id_transaksi}')" class="border-b text-[10px] hover:bg-blue-50 cursor-pointer">
+                    <td class="p-3 text-gray-400 font-mono">${new Date(t.waktu).toLocaleString()}</td>
+                    <td class="p-3 font-mono">${t.id_transaksi}</td>
+                    <td class="p-3">${t.cabang || '-'}</td>
+                    <td class="p-3">${JSON.parse(t.items).length} item</td>
+                    <td class="p-3 font-black text-blue-600">Rp ${t.total.toLocaleString()}</td>
+                    <td class="p-3 uppercase">${t.metode==='qris'?'QRIS':'CASH'}</td>
+                    <td class="p-3 uppercase truncate max-w-[120px]">${t.pelanggan}</td>
+                    <td class="p-3 uppercase">${t.karyawan || '-'}</td>
+                    <td class="p-3 truncate max-w-[160px]">${t.keterangan || ''}</td>
+                    <td class="p-3 text-right uppercase font-black ${t.metode === 'qris' ? 'text-indigo-600':'text-green-600'}">${t.status || 'synced'}</td>
+                </tr>`).join('');
+        }
+
+        async function renderLaporan() {
+            const period = document.getElementById('filter-periode').value;
+            const trxs = await db.transaksi.where('cabang').equals(config.branch).toArray();
+            const now = new Date();
+            const filt = trxs.filter(t => {
+                const d = new Date(t.waktu);
+                if(period==='today') return d.toDateString() === now.toDateString();
+                if(period==='month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                return true;
+            });
+            
+            let o=0, l=0, k=0;
+            let reportRows = [];
+            
+            filt.forEach(t=>{
+                o += t.total; 
+                
+                const items = JSON.parse(t.items);
+                items.forEach(it => { 
+                    const komisiTotal = Number(it.komisi_barber || 0) * Number(it.qty || 0);
+                    const modalTotal = Number(it.modal || 0) * Number(it.qty || 0);
+                    
+                    k += komisiTotal;
+                    // Laba bersih adalah omzet dikurangi modal dan komisi
+                    l += (it.jual * it.qty) - modalTotal - komisiTotal;
+                    
+                    reportRows.push(`
+                        <tr class="border-b text-[10px]">
+                            <td class="p-3 text-gray-400 font-mono">${new Date(t.waktu).toLocaleDateString()}</td>
+                            <td class="p-3 uppercase">${t.karyawan || '-'}</td>
+                            <td class="p-3 font-bold text-blue-600">Rp ${komisiTotal.toLocaleString()}</td>
+                            <td class="p-3 uppercase text-slate-400">${it.jenis || 'BARBER'}</td>
+                            <td class="p-3">Rp ${(it.komisi_barber || 0).toLocaleString()}</td>
+                            <td class="p-3 font-mono text-gray-400 text-[9px]">${t.id_transaksi}</td>
+                        </tr>
+                    `);
+                });
+            });
+            
+            document.getElementById('rep-omzet').innerText = 'Rp ' + o.toLocaleString();
+            document.getElementById('rep-laba').innerText = 'Rp ' + l.toLocaleString();
+            document.getElementById('rep-komisi').innerText = 'Rp ' + k.toLocaleString();
+            document.getElementById('laporan-detail-list').innerHTML = reportRows.join('') || '<tr><td colspan="6" class="p-8 text-center text-gray-300 italic">Tidak ada data rincian</td></tr>';
+        }
+
+        async function showTrxDetail(id) {
+            const t = await db.transaksi.where('id_transaksi').equals(id).first();
+            const its = JSON.parse(t.items);
+            document.getElementById('detail-content').innerHTML = `
+                <div class="border-b pb-4 mb-4"><p class="font-black text-blue-600 text-lg uppercase tracking-tighter">Nota DesaPOS</p><p class="text-[9px] text-gray-400 uppercase font-mono">${t.id_transaksi}</p></div>
+                <p class="font-bold mb-2 uppercase text-xs">Pelanggan: ${t.pelanggan}</p>
+                <p class="text-[10px] mb-2 uppercase">Karyawan: ${t.karyawan || '-'}</p>
+                <div class="space-y-2 mb-4">${its.map(it=>`<div class="flex justify-between text-[11px] uppercase"><span>${it.nama} (x${it.qty})</span><span class="font-black">Rp ${(it.jual*it.qty).toLocaleString()}</span></div>`).join('')}</div>
+                <div class="mb-3">
+                  <label class="text-[10px] font-bold text-gray-400 uppercase">Keterangan</label>
+                  <textarea id="trx-note" class="w-full p-2 bg-slate-50 rounded-xl border outline-none text-sm" rows="3" placeholder="Catatan transaksi...">${t.keterangan || ''}</textarea>
+                </div>
+                <div class="flex justify-between items-center border-t-2 border-dashed pt-4">
+                  <span class="font-black text-lg text-blue-600">TOTAL</span>
+                  <span class="font-black text-lg text-blue-600">Rp ${t.total.toLocaleString()}</span>
+                </div>`;
+            document.getElementById('detail-actions').innerHTML = `
+              <div class="grid grid-cols-1 gap-2">
+                ${t.metode === 'debt' ? `<button onclick="markLunas('${t.id}')" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold uppercase text-xs">Ubah Status Lunas</button>` : ''}
+                <button onclick="saveKeterangan('${t.id}')" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold uppercase text-xs">Simpan Keterangan</button>
+              </div>`;
+            document.getElementById('modal-detail').classList.remove('hidden');
+        }
+
+        async function markLunas(id) {
+            await db.transaksi.update(Number(id), { metode: 'cash', status: 'pending' });
+            closeModal('modal-detail'); await renderTransaksi(); processSync();
+        }
+
+        async function saveKeterangan(id) {
+            const note = document.getElementById('trx-note').value;
+            await db.transaksi.update(Number(id), { keterangan: note, status: 'pending' });
+            closeModal('modal-detail'); await renderTransaksi(); processSync();
+        }
+
+        // --- SYSTEM ---
+        async function processSync() {
+            if(!navigator.onLine || !config.url) return;
+            const tps = await db.transaksi.where("status").equals("pending").toArray();
+            for(let t of tps) {
+                try { await fetch(config.url,{method:'POST',mode:'no-cors',body:JSON.stringify({action:'saveTransaction',...t})}); await db.transaksi.update(t.id,{status:'synced'}); } catch(e){}
+            }
+            const pps = await db.produk.where("sync_status").equals("pending").toArray();
+            for(let p of pps) {
+                try { await fetch(config.url,{method:'POST',mode:'no-cors',body:JSON.stringify({action:'upsertProduct',...p})}); await db.produk.update(p.id,{sync_status:'synced'}); } catch(e){}
+            }
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('nav button').forEach(b => { b.classList.remove('active-tab'); b.classList.add('opacity-70'); });
+            document.getElementById('sec-' + id).classList.remove('hidden');
+            document.getElementById('tab-' + id).classList.add('active-tab');
+            if(id === 'laporan') renderLaporan();
+            if(id === 'transaksi') renderTransaksi();
+        }
+
+        function saveConfig() { 
+          config = { 
+            url: document.getElementById('gas-url').value, 
+            branch: document.getElementById('branch-id').value,
+            employee: document.getElementById('employee-id').value
+          }; 
+          localStorage.setItem('pos_config', JSON.stringify(config)); 
+          location.reload(); 
+        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    </script>
+    
+</body>
+</html>
