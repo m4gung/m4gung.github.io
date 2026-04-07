@@ -12,8 +12,7 @@ function doPost(e) {
       const produk = getRows(ss, "Produk").filter(p => p.cabang == data.branch);
       const transaksi = getRows(ss, "Transaksi").filter(t => t.cabang == data.branch);
       const ads = getRows(ss, "SponsorAds");
-      const randomAd = ads.length > 0 ? ads[Math.floor(Math.random() * ads.length)] : null;
-      return res({ produk, transaksi, sponsorAd: randomAd });
+      return res({ produk, transaksi, sponsorAds: ads });
     }
 
     // 2. Simpan/Update Transaksi (upsert by id_transaksi) & Update Laporan Otomatis
