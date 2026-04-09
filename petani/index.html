@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TaniPintar Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#15803d">
+    <style>
+        .active-tab {
+            color: #15803d;
+            border-top: 3px solid #15803d;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 70px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <header class="bg-green-700 text-white p-4 shadow-lg sticky top-0 z-50 flex justify-between items-center">
+        <h1 class="text-lg font-bold">TaniPintar 🌾</h1>
+        <button onclick="syncData()" id="sync-btn" class="text-xs bg-green-800 px-3 py-1 rounded-full">Sync
+            Cloud</button>
+    </header>
+
+    <div id="app" class="max-w-md mx-auto">
+
+        <section id="sec-home" class="p-4 space-y-4">
+            <div class="flex gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+                <input type="date" id="filter-start" class="w-1/2 p-2 border rounded text-xs text-gray-600" onchange="refreshDashboard()">
+                <input type="date" id="filter-end" class="w-1/2 p-2 border rounded text-xs text-gray-600" onchange="refreshDashboard()">
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
+                <h3 class="text-gray-500 text-sm">Total Keuntungan</h3>
+                <p id="total-profit" class="text-2xl font-bold text-green-600">Rp 0</p>
+            </div>
+            <canvas id="profitChart" class="bg-white p-2 rounded-xl shadow-sm"></canvas>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="showSectionTransaksi('keluar')"
+                    class="bg-red-500 text-white p-4 rounded-xl shadow-md font-bold">📉 Catat Keluar</button>
+                <button onclick="showSectionTransaksi('masuk')"
+                    class="bg-green-600 text-white p-4 rounded-xl shadow-md font-bold">📈 Catat Masuk</button>
+            </div>
+        </section>
+
+        <section id="sec-lahan" class="hidden p-4">
+            <h2 class="font-bold mb-4">Manajemen Lahan</h2>
+            <form id="form-lahan" class="bg-white p-4 rounded-xl shadow-sm space-y-3 mb-4">
+                <input type="hidden" id="lahan-edit-id">
+                <input type="text" id="nama-lahan" placeholder="Nama Lahan (Sawah Barat)"
+                    class="w-full p-2 border rounded" required>
+                <input type="number" id="luas-lahan" placeholder="Luas Lahan (m²)" class="w-full p-2 border rounded" required>
+                <input type="text" id="lokasi-lahan" placeholder="Lokasi Lahan" class="w-full p-2 border rounded" required>
+                <select id="status-lahan" class="w-full p-2 border rounded">
+                    <option value="milik">Milik Sendiri</option>
+                    <option value="buruh">Garapan (Bagi Hasil)</option>
+                </select>
+                <div class="flex gap-2">
+                    <button type="submit" id="btn-save-lahan" class="flex-1 bg-green-600 text-white py-2 rounded-lg">Tambah Lahan</button>
+                    <button type="button" onclick="batalEditLahan()" id="btn-cancel-lahan" class="hidden flex-1 bg-gray-500 text-white py-2 rounded-lg">Batal Edit</button>
+                </div>
+            </form>
+            <div id="list-lahan" class="space-y-2"></div>
+        </section>
+
+        <section id="sec-transaksi" class="hidden p-4">
+            <h2 class="font-bold mb-4">Input Keuangan</h2>
+            <form id="form-transaksi" class="bg-white p-4 rounded-xl shadow-sm space-y-3">
+                <select id="lahan-id" class="w-full p-2 border rounded" required></select>
+                <input type="date" id="trans-date" class="w-full p-2 border rounded" required>
+                <input type="text" id="trans-desc" placeholder="Keterangan (Bibit, Jual Panen...)"
+                    class="w-full p-2 border rounded" required>
+                <input type="number" id="trans-amount" placeholder="Jumlah Rp" class="w-full p-2 border rounded"
+                    required>
+                <select id="trans-type" class="w-full p-2 border rounded">
+                    <option value="keluar">Pengeluaran (Modal)</option>
+                    <option value="masuk">Pemasukan (Hasil Tani)</option>
+                </select>
+                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg">Simpan Transaksi</button>
+            </form>
+            <div id="list-transaksi" class="space-y-2 mt-4"></div>
+        </section>
+
+        <section id="sec-bagi-hasil" class="hidden p-4">
+            <h2 class="font-bold mb-4">Kalkulator Bagi Hasil</h2>
+            <div class="bg-white p-4 rounded-xl shadow-sm space-y-4">
+                <select id="bagi-lahan-id" class="w-full p-2 border rounded"></select>
+                <div class="flex gap-2">
+                    <input type="date" id="bagi-start" class="w-1/2 p-2 border rounded text-xs" onchange="hitungBagiHasil()">
+                    <input type="date" id="bagi-end" class="w-1/2 p-2 border rounded text-xs" onchange="hitungBagiHasil()">
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" id="persen-pemilik" placeholder="% Pemilik" class="w-1/2 p-2 border rounded">
+                    <input type="number" id="persen-penggarap" placeholder="% Penggarap"
+                        class="w-1/2 p-2 border rounded">
+                </div>
+                <button onclick="hitungBagiHasil()" class="w-full bg-blue-600 text-white py-2 rounded-lg">Hitung
+                    Pembagian</button>
+                <div id="hasil-kalkulasi" class="p-3 bg-gray-100 rounded-lg hidden"></div>
+            </div>
+        </section>
+
+        <section id="sec-utang" class="hidden p-4">
+            <h2 class="font-bold mb-4">Daftar Utang / Kasbon</h2>
+            <form id="form-utang" class="bg-white p-4 rounded-xl shadow-sm space-y-3 mb-4">
+                <input type="hidden" id="utang-edit-id">
+                <input type="date" id="utang-date" class="w-full p-2 border rounded" required>
+                <input type="text" id="nama-orang" placeholder="Nama Pembeli/Buruh" class="w-full p-2 border rounded"
+                    required>
+                <input type="number" id="utang-amount" placeholder="Jumlah Utang Rp" class="w-full p-2 border rounded"
+                    required>
+                <input type="text" id="utang-type" placeholder="Jenis Utang" class="w-full p-2 border rounded" required>
+                <input type="text" id="utang-desc" placeholder="Keterangan" class="w-full p-2 border rounded">
+                <div class="flex gap-2">
+                    <button type="submit" id="btn-save-utang" class="flex-1 bg-orange-500 text-white py-2 rounded-lg">Catat Utang</button>
+                    <button type="button" onclick="batalEditUtang()" id="btn-cancel-utang" class="hidden flex-1 bg-gray-500 text-white py-2 rounded-lg">Batal Edit</button>
+                </div>
+            </form>
+            <div id="list-utang" class="space-y-2"></div>
+        </section>
+
+        <section id="sec-settings" class="hidden p-4">
+            <h2 class="font-bold mb-4">Pengaturan</h2>
+            <div class="bg-white p-4 rounded-xl shadow-sm space-y-3">
+                <input type="text" id="sheet-url" placeholder="Apps Script URL"
+                    class="w-full p-2 border rounded text-xs">
+                <button onclick="saveSettings()" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm">Simpan
+                    Konfigurasi</button>
+                <button onclick="forceDownload()"
+                    class="w-full bg-red-100 text-red-600 py-2 rounded-lg text-xs mt-10">Force Download (Overwrite
+                    Lokal)</button>
+            </div>
+        </section>
+
+    </div>
+
+    <nav
+        class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center h-16 max-w-md mx-auto z-50 text-[10px] uppercase text-gray-500">
+        <button onclick="showSection('home')" id="nav-home"
+            class="flex-1 flex flex-col items-center active-tab">🏠<span>Beranda</span></button>
+        <button onclick="showSection('lahan')" id="nav-lahan"
+            class="flex-1 flex flex-col items-center">🗺️<span>Lahan</span></button>
+        <button onclick="showSection('bagi-hasil')" id="nav-bagi-hasil"
+            class="flex-1 flex flex-col items-center">⚖️<span>Bagi Hasil</span></button>
+        <button onclick="showSection('utang')" id="nav-utang"
+            class="flex-1 flex flex-col items-center">📓<span>Utang</span></button>
+        <button onclick="showSection('settings')" id="nav-settings"
+            class="flex-1 flex flex-col items-center">⚙️<span>Set</span></button>
+    </nav>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+
+</html>

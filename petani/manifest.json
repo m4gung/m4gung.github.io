@@ -1,0 +1,15 @@
+{
+    "name": "TaniPintar",
+    "short_name": "TaniPintar",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#15803d",
+    "theme_color": "#15803d",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/2371/2371831.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
