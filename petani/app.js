@@ -17,7 +17,8 @@ function showSection(id) {
     document.getElementById('sec-' + id).classList.remove('hidden');
 
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-tab'));
-    document.getElementById('nav-' + id).classList.add('active-tab');
+    const activeBtn = document.getElementById('nav-' + id);
+    if (activeBtn) activeBtn.classList.add('active-tab');
 
     if (id === 'home') refreshDashboard();
     if (id === 'lahan') renderLahan();
