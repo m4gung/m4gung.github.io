@@ -55,6 +55,13 @@
                 <button onclick="showSectionTransaksi('masuk')"
                     class="bg-green-600 text-white p-4 rounded-xl shadow-md font-bold">📈 Catat Masuk</button>
             </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mt-4">
+                <h3 class="font-bold text-gray-700 mb-3">Riwayat Transaksi</h3>
+                <div id="list-transaksi-beranda" class="space-y-2">
+                    <p class="text-xs text-gray-500 italic">Belum ada transaksi</p>
+                </div>
+            </div>
         </section>
 
         <section id="sec-lahan" class="hidden p-4">
@@ -80,6 +87,7 @@
         <section id="sec-transaksi" class="hidden p-4">
             <h2 class="font-bold mb-4">Input Keuangan</h2>
             <form id="form-transaksi" class="bg-white p-4 rounded-xl shadow-sm space-y-3">
+                <input type="hidden" id="trans-edit-id">
                 <select id="lahan-id" class="w-full p-2 border rounded" required></select>
                 <input type="date" id="trans-date" class="w-full p-2 border rounded" required>
                 <input type="text" id="trans-desc" placeholder="Keterangan (Bibit, Jual Panen...)"
@@ -90,7 +98,10 @@
                     <option value="keluar">Pengeluaran (Modal)</option>
                     <option value="masuk">Pemasukan (Hasil Tani)</option>
                 </select>
-                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg">Simpan Transaksi</button>
+                <div class="flex gap-2">
+                    <button type="submit" id="btn-save-trans" class="flex-1 bg-green-600 text-white py-2 rounded-lg">Simpan Transaksi</button>
+                    <button type="button" onclick="batalEditTransaksi()" id="btn-cancel-trans" class="hidden flex-1 bg-gray-500 text-white py-2 rounded-lg">Batal Edit</button>
+                </div>
             </form>
             <div id="list-transaksi" class="space-y-2 mt-4"></div>
         </section>

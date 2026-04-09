@@ -114,27 +114,64 @@ async function updateLahanDropdown() {
 // --- Keuangan & Transaksi ---
 document.getElementById('form-transaksi').onsubmit = async (e) => {
     e.preventDefault();
-    await db.transaksi.add({
+    const id = document.getElementById('trans-edit-id').value;
+    const data = {
         lahanId: parseInt(document.getElementById('lahan-id').value),
         desc: document.getElementById('trans-desc').value,
         amount: parseInt(document.getElementById('trans-amount').value),
         type: document.getElementById('trans-type').value,
         date: document.getElementById('trans-date').value,
         syncStatus: 'pending'
-    });
-    alert("Transaksi tersimpan!");
+    };
+
+    if (id) {
+        await db.transaksi.update(parseInt(id), data);
+        batalEditTransaksi();
+        alert("Transaksi diperbarui!");
+    } else {
+        await db.transaksi.add(data);
+        alert("Transaksi tersimpan!");
+    }
+    
     if(e && e.target) e.target.reset();
     renderTransaksi();
+    refreshDashboard();
 };
+
+function batalEditTransaksi() {
+    document.getElementById('trans-edit-id').value = '';
+    document.getElementById('form-transaksi').reset();
+    document.getElementById('btn-save-trans').innerText = 'Simpan Transaksi';
+    document.getElementById('btn-cancel-trans').classList.add('hidden');
+}
+
+async function editTransaksi(id) {
+    showSection('transaksi');
+    const t = await db.transaksi.get(id);
+    document.getElementById('trans-edit-id').value = t.id;
+    document.getElementById('lahan-id').value = t.lahanId;
+    document.getElementById('trans-date').value = t.date;
+    document.getElementById('trans-desc').value = t.desc;
+    document.getElementById('trans-amount').value = t.amount;
+    document.getElementById('trans-type').value = t.type;
+    
+    document.getElementById('btn-save-trans').innerText = 'Simpan Edit';
+    document.getElementById('btn-cancel-trans').classList.remove('hidden');
+}
 
 async function renderTransaksi() {
     const data = await db.transaksi.toArray();
-    data.reverse(); // Urutkan terbaru di atas
+    data.sort((a, b) => new Date(b.date) - new Date(a.date)); // Urutkan terbaru di atas
     
     const lahanData = await db.lahan.toArray();
     const lahanMap = {};
     lahanData.forEach(l => lahanMap[l.id] = l.nama);
     
+    if (data.length === 0) {
+        document.getElementById('list-transaksi').innerHTML = '<p class="text-xs text-gray-500 italic">Belum ada transaksi</p>';
+        return;
+    }
+
     document.getElementById('list-transaksi').innerHTML = data.map(t => `
         <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 ${t.type === 'masuk' ? 'border-green-500' : 'border-red-500'}">
             <div class="flex justify-between items-center">
@@ -144,7 +181,10 @@ async function renderTransaksi() {
                 </div>
                 <div class="text-right">
                     <div class="font-bold ${t.type === 'masuk' ? 'text-green-600' : 'text-red-600'}">Rp ${t.amount.toLocaleString()}</div>
-                    <button type="button" onclick="hapusTransaksi(${t.id})" class="text-[10px] text-red-500 bg-red-50 px-2 py-0.5 rounded mt-1">Hapus</button>
+                    <div class="mt-1 flex justify-end gap-1">
+                        <button type="button" onclick="editTransaksi(${t.id})" class="text-[10px] text-blue-500 bg-blue-50 px-2 py-0.5 rounded">Edit</button>
+                        <button type="button" onclick="hapusTransaksi(${t.id})" class="text-[10px] text-red-500 bg-red-50 px-2 py-0.5 rounded">Hapus</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -155,6 +195,7 @@ async function hapusTransaksi(id) {
     if (confirm("Hapus transaksi ini?")) {
         await db.transaksi.delete(id);
         renderTransaksi();
+        refreshDashboard();
     }
 }
 
@@ -282,13 +323,19 @@ async function refreshDashboard() {
 
     let allTrans = await db.transaksi.toArray();
     let allUtang = await db.utang.toArray();
+    let lahanData = await db.lahan.toArray();
+    const lahanMap = {};
+    lahanData.forEach(l => lahanMap[l.id] = l.nama);
 
     let totalUntung = 0;
     const reportData = {};
+    let filteredTrans = [];
 
     allTrans.forEach(t => {
         if (startDate && t.date < startDate) return;
         if (endDate && t.date > endDate) return;
+
+        filteredTrans.push(t);
 
         if (t.type === 'masuk') totalUntung += t.amount;
         else totalUntung -= t.amount;
@@ -308,6 +355,31 @@ async function refreshDashboard() {
     });
 
     document.getElementById('total-profit').innerText = "Rp " + totalUntung.toLocaleString();
+
+    // Render list transaksi beranda
+    filteredTrans.sort((a, b) => new Date(b.date) - new Date(a.date)); // Terbaru di atas
+    const listBeranda = document.getElementById('list-transaksi-beranda');
+    if (filteredTrans.length === 0) {
+        listBeranda.innerHTML = '<p class="text-xs text-gray-500 italic">Belum ada transaksi</p>';
+    } else {
+        listBeranda.innerHTML = filteredTrans.map(t => `
+            <div class="bg-gray-50 p-2 rounded border-l-4 ${t.type === 'masuk' ? 'border-green-500' : 'border-red-500'}">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-xs">${t.desc}</div>
+                        <div class="text-[10px] text-gray-500">${t.date} • ${lahanMap[t.lahanId] || 'Lahan ?'}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-sm ${t.type === 'masuk' ? 'text-green-600' : 'text-red-600'}">Rp ${t.amount.toLocaleString()}</div>
+                        <div class="mt-1 flex justify-end gap-1">
+                            <button type="button" onclick="editTransaksi(${t.id})" class="text-[10px] text-blue-500 bg-blue-50 px-2 py-0.5 rounded">Edit</button>
+                            <button type="button" onclick="hapusTransaksi(${t.id})" class="text-[10px] text-red-500 bg-red-50 px-2 py-0.5 rounded">Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
 
     // Chart.js
     const ctx = document.getElementById('profitChart').getContext('2d');
