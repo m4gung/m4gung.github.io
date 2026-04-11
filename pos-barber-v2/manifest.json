@@ -1,0 +1,17 @@
+{
+  "name": "POS-Barber",
+  "short_name": "POS-Barber",
+  "description": "Aplikasi POS Offline-First untuk Barber Shop",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#2563eb",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
