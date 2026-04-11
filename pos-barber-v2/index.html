@@ -727,7 +727,7 @@
             document.getElementById('rep-omzet').innerText = 'Rp ' + omzet.toLocaleString();
             const labaEl = document.getElementById('rep-laba');
             if (labaEl) labaEl.innerText = ''; // Removed from HTML
-            document.getElementById('rep-komisi').innerText = 'Rp ' + (total_komisi_kepster + total_komisi_barber).toLocaleString();
+            document.getElementById('rep-komisi').innerText = 'Rp ' + total_komisi_kepster.toLocaleString();
             document.getElementById('rep-makan').innerText = 'Rp ' + totalUangMakan.toLocaleString();
             document.getElementById('rep-gaji').innerText = 'Rp ' + (total_komisi_kepster + totalUangMakan).toLocaleString();
             document.getElementById('rep-setoran').innerText = 'Rp ' + totalSetoran.toLocaleString();

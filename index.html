@@ -7,195 +7,190 @@
   <meta name="google-adsense-account" content="ca-pub-6643133281488885">
   <meta name="7bb5f34ecbca61246fb16df537699a41883a0268" content="7bb5f34ecbca61246fb16df537699a41883a0268" />
   <title>Portal Aplikasi & Kalkulator</title>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885"
-    crossorigin="anonymous"></script>
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Outfit', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      overflow-x: hidden;
     }
 
-    .menu-card {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .menu-card:hover {
-      transform: translateY(-5px);
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px -10px rgba(56, 189, 248, 0.15);
+    }
+
+    .bg-shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: -1;
+      animation: float 12s infinite ease-in-out alternate;
+    }
+
+    .delay-1 { animation-delay: -3s; }
+    .delay-2 { animation-delay: -7s; }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, 40px) scale(1.05); }
+      100% { transform: translate(-20px, 60px) scale(0.95); }
     }
   </style>
-
-
 </head>
 
-<body class="bg-slate-50 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col relative">
 
-  <!-- Header -->
-  <header class="bg-white border-b border-slate-200 py-8 mb-8">
+  <!-- Aesthetic Glowing Orbs Background -->
+  <div class="bg-shape bg-blue-600/30 w-[500px] h-[500px] top-[-10%] left-[-10%]"></div>
+  <div class="bg-shape bg-emerald-600/20 w-[400px] h-[400px] bottom-[10%] right-[-5%] delay-1"></div>
+  <div class="bg-shape bg-purple-600/20 w-[300px] h-[300px] top-[40%] left-[40%] delay-2"></div>
+
+  <!-- Header Section -->
+  <header class="pt-20 pb-12 relative z-10 w-full">
     <div class="container mx-auto px-4 text-center">
-      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">Pilih Menu</h1>
-      <p class="text-slate-500 font-medium uppercase tracking-widest text-xs">Portal Aplikasi & Kalkulator Pembukuan</p>
+      <div class="inline-block mb-6 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
+        <span class="text-[10px] font-bold tracking-widest uppercase text-blue-400 drop-shadow-md">Magung Ecosystem</span>
+      </div>
+      <h1 class="text-4xl md:text-6xl font-extrabold mb-4 pb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 leading-tight">
+        Aplikasi & Kalkulator
+      </h1>
+      <p class="text-slate-400 text-sm md:text-base font-medium max-w-xl mx-auto leading-relaxed">
+        Pusat kendali untuk berbagai aplikasi manajemen bisnis, kasir pintar, dan perhitungan otomatis secara profesional.
+      </p>
     </div>
   </header>
 
-  <main class="container mx-auto px-4 flex-grow mb-12">
-    <!-- Grid Menu -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+  <!-- Main Grid Content -->
+  <main class="container mx-auto px-4 flex-grow mb-16 relative z-10">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 max-w-7xl mx-auto">
 
-      <a href="./perhitungan-hasil-panen.html"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-amber-100 transition-colors">
-          🌾</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Pembagian Hasil Panen</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Kalkulator bagi hasil tani</p>
+      <!-- Array of Cards -->
+      <a href="./perhitungan-hasil-panen.html" class="glass-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group">
+        <div class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🌾</div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">Bagi Hasil Panen</h3>
+        <p class="text-slate-500 text-[10px] md:text-xs">Kalkulator bagi hasil tani</p>
       </a>
 
-      <a href="./hitung-hasil-2.html"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-blue-100 transition-colors">
-          🔄</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Hasil Panen Konversi</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Konversi bagi hasil otomatis</p>
+      <a href="./hitung-hasil-2.html" class="glass-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group">
+        <div class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🔄</div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">Hasil Panen Konversi</h3>
+        <p class="text-slate-500 text-[10px] md:text-xs">Konversi bagi hasil otomatis</p>
       </a>
 
-      <a href="./olshop.html"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-pink-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-pink-100 transition-colors">
-          🛍️</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Olshop</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Manajemen Toko Online</p>
+      <a href="./olshop.html" class="glass-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group">
+        <div class="w-14 h-14 bg-gradient-to-br from-pink-500/20 to-rose-500/10 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🛍️</div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">Olshop Manager</h3>
+        <p class="text-slate-500 text-[10px] md:text-xs">Manajemen Toko Online</p>
       </a>
 
-      <a href="./penjualan/index.html"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-green-100 transition-colors">
-          💰</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Penjualan</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Sistem Penjualan V1</p>
+      <a href="./penjualan/index.html" class="glass-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group">
+        <div class="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-green-500/10 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">💰</div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">Penjualan V1</h3>
+        <p class="text-slate-500 text-[10px] md:text-xs">Sistem Penjualan Klasik</p>
       </a>
 
-      <a href="./apl_penjualan/index.html"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-emerald-100 transition-colors">
-          📱</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Aplikasi Penjualan</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Sistem Penjualan V2</p>
+      <a href="./apl_penjualan/index.html" class="glass-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group">
+        <div class="w-14 h-14 bg-gradient-to-br from-teal-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">📱</div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">Penjualan V2</h3>
+        <p class="text-slate-500 text-[10px] md:text-xs">Aplikasi Kasir Mobile</p>
       </a>
 
-      <a href="./pembukuan"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-cyan-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-cyan-100 transition-colors">
-          💧</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Pompanisasi</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Pembukuan Usaha Pompa</p>
+      <a href="./pembukuan" class="glass-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group">
+        <div class="w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">💧</div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">Pompanisasi</h3>
+        <p class="text-slate-500 text-[10px] md:text-xs">Pembukuan Usaha Pompa</p>
       </a>
 
-      <a href="./mrbarbershop"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-indigo-100 transition-colors">
-          ✂️</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">MR Barbershop</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Manajemen Barbershop</p>
+      <a href="./mrbarbershop" class="glass-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group">
+        <div class="w-14 h-14 bg-gradient-to-br from-indigo-500/20 to-purple-500/10 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">✂️</div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">MR Barbershop</h3>
+        <p class="text-slate-500 text-[10px] md:text-xs">Manajemen Barbershop</p>
       </a>
 
-      <a href="./apl_input_data/index.html"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-slate-200 transition-colors">
-          📝</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">APL INPUT DATA</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Input data ke Cloud</p>
+      <a href="./apl_input_data/index.html" class="glass-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group">
+        <div class="w-14 h-14 bg-gradient-to-br from-slate-500/20 to-gray-500/10 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">📝</div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">APL Input Data</h3>
+        <p class="text-slate-500 text-[10px] md:text-xs">Entry data ke Cloud Server</p>
       </a>
 
-      <a href="./check-nama.html"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-purple-100 transition-colors">
-          ✅</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Check Nama</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Validasi nama pelanggan</p>
+      <a href="./check-nama.html" class="glass-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group">
+        <div class="w-14 h-14 bg-gradient-to-br from-fuchsia-500/20 to-pink-500/10 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">✅</div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">Check Nama</h3>
+        <p class="text-slate-500 text-[10px] md:text-xs">Validasi Nama Pelanggan</p>
       </a>
 
-      <a href="./pos/"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-lg shadow-blue-200">
-          🏪</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">POS System</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Point of Sale (Kasir)</p>
+      <a href="./pos/" class="glass-card bg-gradient-to-br from-blue-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-blue-500/30">
+        <div class="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:scale-110 transition-transform duration-300">🏪</div>
+        <h3 class="font-bold text-blue-300 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">POS System</h3>
+        <p class="text-slate-400 text-[10px] md:text-xs">Point of Sale (Kasir Utama)</p>
       </a>
 
-      <a href="./pos-barber/"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-lg shadow-blue-200">
-          💸</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">POS System</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Point of Sale (Barber)</p>
+      <a href="./pos-barber/" class="glass-card bg-gradient-to-br from-indigo-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-indigo-500/30">
+        <div class="w-14 h-14 bg-indigo-500/20 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-[0_0_15px_rgba(99,102,241,0.5)] group-hover:scale-110 transition-transform duration-300">💸</div>
+        <h3 class="font-bold text-indigo-300 group-hover:text-indigo-400 transition-colors text-sm mb-1 leading-tight">POS Barber V1</h3>
+        <p class="text-slate-400 text-[10px] md:text-xs">Point of Sale untuk Barber</p>
       </a>
 
-      <a href="./pos-barber-v2/"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-white-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-lg shadow-blue-200">
-          💈</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">POS Barber V2</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Point of Sale (Barber V2)</p>
+      <a href="./pos-barber-v2/" class="glass-card bg-gradient-to-br from-purple-900/60 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-purple-500/40 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-transparent"></div>
+        <div class="w-14 h-14 bg-purple-500/20 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform duration-300 relative z-10">💈</div>
+        <h3 class="font-extrabold text-purple-300 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight relative z-10">POS Barber V2</h3>
+        <p class="text-purple-200/60 text-[10px] md:text-xs relative z-10">Aplikasi Barber Mobile Lanjutan</p>
       </a>
 
-      <a href="./petani/"
-        class="menu-card bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-xl hover:border-blue-200 group">
-        <div
-          class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-green-100 transition-colors">
-          🌾</div>
-        <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">TaniPintar</h3>
-        <p class="text-slate-400 text-xs mt-2 font-medium">Aplikasi Pertanian</p>
+      <a href="./petani/" class="glass-card bg-gradient-to-br from-emerald-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-emerald-500/30">
+        <div class="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-[0_0_15px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform duration-300">🌾</div>
+        <h3 class="font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">TaniPintar</h3>
+        <p class="text-slate-400 text-[10px] md:text-xs">Sistem Aplikasi Pertanian</p>
       </a>
-
     </div>
 
-    <!-- Iklan Section -->
-    <div class="mt-12 max-w-4xl mx-auto bg-white p-4 rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-      <p class="text-[10px] font-black text-slate-300 uppercase mb-4 tracking-tighter text-center">Informasi Sponsor</p>
-      <ins class="adsbygoogle" style="display:block" data-ad-format="autorelaxed"
-        data-ad-client="ca-pub-6643133281488885" data-ad-slot="7072419853"></ins>
-      <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
+    <!-- Info Ads Section (Organized) -->
+    <div class="mt-20 max-w-4xl mx-auto glass-card p-6 rounded-3xl text-center">
+      <div class="mb-4">
+        <p class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Informasi Sponsor</p>
+        <p class="text-[10px] text-slate-500">Dukung operasional server dengan sponsor lokal.</p>
+      </div>
+      
+      <!-- AdSense Units -->
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885" crossorigin="anonymous"></script>
+      <div class="w-full bg-slate-900/50 rounded-2xl overflow-hidden min-h-[100px] flex items-center justify-center border border-white/5 mb-6">
+        <ins class="adsbygoogle w-full" style="display:block" data-ad-format="autorelaxed" data-ad-client="ca-pub-6643133281488885" data-ad-slot="7072419853"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+
+      <!-- Organized Links -->
+      <div class="flex flex-wrap justify-center gap-3">
+        <a href="iklan.html" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-wider text-slate-300 transition-colors border border-white/5">Halaman Iklan</a>
+        <a href="klik-iklan.html" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-wider text-slate-300 transition-colors border border-white/5">Halaman Klik Iklan</a>
+        <a target="_blank" href="https://www.profitablecpmratenetwork.com/shhht7quc?key=4700218af91dbe60e75731d77d14d18e" class="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-xl text-[10px] font-bold uppercase tracking-wider text-indigo-300 transition-colors border border-indigo-500/20">Akses CPM</a>
+        <a target="_blank" href="https://omg10.com/4/10845632" class="px-4 py-2 bg-pink-500/20 hover:bg-pink-500/30 rounded-xl text-[10px] font-bold uppercase tracking-wider text-pink-300 transition-colors border border-pink-500/20">Akses OMG</a>
+      </div>
     </div>
-
-
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885"
-      crossorigin="anonymous"></script>
-    <!-- ads01 -->
-    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6643133281488885" data-ad-slot="7190907148"
-      data-ad-format="auto" data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-
-    <a href="iklan.html">HALAMAN IKLAN</a>
-    <br>
-    <a href="klik-iklan.html">HALAMAN KLIK IKLAN</a>
-    <br>
-    <a target="_blank"
-      href="https://www.profitablecpmratenetwork.com/shhht7quc?key=4700218af91dbe60e75731d77d14d18e">klik iklan ini</a>
-    <br>
-    <a target="_blank" href="https://omg10.com/4/10845632">klik iklan ini</a>
-
   </main>
 
-  <!-- Footer -->
-  <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
-    <div class="container mx-auto px-4 text-center">
-      <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">&copy; 2026 Portal Aplikasi - Magung</p>
+  <!-- Footer Section -->
+  <footer class="py-8 border-t border-white/10 relative z-10 mt-auto bg-slate-900/50 backdrop-blur-md">
+    <div class="container mx-auto px-4 flex flex-col items-center">
+      <div class="w-10 h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent mb-6"></div>
+      <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest text-center">
+        &copy; 2026 Portal Aplikasi Terintegrasi &middot; Dikelola oleh Magung
+      </p>
     </div>
   </footer>
 
