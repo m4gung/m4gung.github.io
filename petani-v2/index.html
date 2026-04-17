@@ -42,11 +42,18 @@
     <div id="app" class="max-w-md mx-auto">
 
         <section id="sec-home" class="p-4 space-y-4">
-            <div class="flex gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-                <input type="date" id="filter-start" class="w-1/2 p-2 border rounded text-xs text-gray-600"
-                    onchange="refreshDashboard()">
-                <input type="date" id="filter-end" class="w-1/2 p-2 border rounded text-xs text-gray-600"
-                    onchange="refreshDashboard()">
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-500 mb-2">Filter Tanggal</p>
+                <div class="flex gap-2">
+                    <div class="w-1/2">
+                        <input type="date" id="filter-start" class="w-full p-2 border rounded text-xs text-gray-600"
+                            onchange="refreshDashboard()">
+                    </div>
+                    <div class="w-1/2">
+                        <input type="date" id="filter-end" class="w-full p-2 border rounded text-xs text-gray-600"
+                            onchange="refreshDashboard()">
+                    </div>
+                </div>
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
                 <h3 class="text-gray-500 text-sm">Total Keuntungan</h3>
@@ -73,16 +80,30 @@
             <h2 class="font-bold mb-4">Manajemen Lahan</h2>
             <form id="form-lahan" class="bg-white p-4 rounded-xl shadow-sm space-y-3 mb-4">
                 <input type="hidden" id="lahan-edit-id">
-                <input type="text" id="nama-lahan" placeholder="Nama Lahan (Sawah Barat)"
-                    class="w-full p-2 border rounded" required>
-                <input type="number" id="luas-lahan" placeholder="Luas Lahan (are)" class="w-full p-2 border rounded"
-                    required>
-                <input type="text" id="lokasi-lahan" placeholder="Lokasi Lahan" class="w-full p-2 border rounded"
-                    required>
-                <select id="status-lahan" class="w-full p-2 border rounded">
-                    <option value="milik">Milik Sendiri</option>
-                    <option value="buruh">Garapan (Bagi Hasil)</option>
-                </select>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Nama Lahan</label>
+                    <input type="text" id="nama-lahan" placeholder="Contoh: Sawah Barat"
+                        class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Luas Lahan (are)</label>
+                    <input type="text" id="luas-lahan" placeholder="Contoh: 50"
+                        class="w-full p-2 border rounded"
+                        oninput="formatRupiah(this)" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Lokasi Lahan</label>
+                    <input type="text" id="lokasi-lahan" placeholder="Contoh: Ds. Sukatani"
+                        class="w-full p-2 border rounded"
+                        required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Status</label>
+                    <select id="status-lahan" class="w-full p-2 border rounded">
+                        <option value="milik">Milik Sendiri</option>
+                        <option value="buruh">Garapan (Bagi Hasil)</option>
+                    </select>
+                </div>
                 <div class="flex gap-2">
                     <button type="submit" id="btn-save-lahan"
                         class="flex-1 bg-green-600 text-white py-2 rounded-lg">Tambah Lahan</button>
@@ -97,16 +118,32 @@
             <h2 class="font-bold mb-4">Input Keuangan</h2>
             <form id="form-transaksi" class="bg-white p-4 rounded-xl shadow-sm space-y-3">
                 <input type="hidden" id="trans-edit-id">
-                <select id="lahan-id" class="w-full p-2 border rounded"></select>
-                <input type="date" id="trans-date" class="w-full p-2 border rounded" required>
-                <input type="text" id="trans-desc" placeholder="Keterangan (Bibit, Jual Panen...)"
-                    class="w-full p-2 border rounded" required>
-                <input type="number" id="trans-amount" placeholder="Jumlah Rp" class="w-full p-2 border rounded"
-                    required>
-                <select id="trans-type" class="w-full p-2 border rounded">
-                    <option value="keluar">Pengeluaran (Modal)</option>
-                    <option value="masuk">Pemasukan (Hasil Tani)</option>
-                </select>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Pilih Lahan</label>
+                    <select id="lahan-id" class="w-full p-2 border rounded"></select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Tanggal</label>
+                    <input type="date" id="trans-date" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Keterangan</label>
+                    <input type="text" id="trans-desc" placeholder="Contoh: Beli Bibit, Jual Panen Padi"
+                        class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Jumlah (Rp)</label>
+                    <input type="text" id="trans-amount" placeholder="Contoh: 500.000"
+                        class="w-full p-2 border rounded"
+                        oninput="formatRupiah(this)" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Jenis Transaksi</label>
+                    <select id="trans-type" class="w-full p-2 border rounded">
+                        <option value="keluar">Pengeluaran (Modal)</option>
+                        <option value="masuk">Pemasukan (Hasil Tani)</option>
+                    </select>
+                </div>
                 <div class="flex gap-2">
                     <button type="submit" id="btn-save-trans"
                         class="flex-1 bg-green-600 text-white py-2 rounded-lg">Simpan Transaksi</button>
@@ -123,17 +160,31 @@
             <!-- Kalkulator Berbasis Data -->
             <div class="bg-white p-4 rounded-xl shadow-sm space-y-4 mb-8">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Berdasarkan Data Lahan</p>
-                <select id="bagi-lahan-id" class="w-full p-2 border rounded"></select>
-                <div class="flex gap-2">
-                    <input type="date" id="bagi-start" class="w-1/2 p-2 border rounded text-xs"
-                        onchange="hitungBagiHasil()">
-                    <input type="date" id="bagi-end" class="w-1/2 p-2 border rounded text-xs"
-                        onchange="hitungBagiHasil()">
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Pilih Lahan</label>
+                    <select id="bagi-lahan-id" class="w-full p-2 border rounded"></select>
                 </div>
                 <div class="flex gap-2">
-                    <input type="number" id="persen-pemilik" placeholder="% Pemilik" class="w-1/2 p-2 border rounded">
-                    <input type="number" id="persen-penggarap" placeholder="% Penggarap"
-                        class="w-1/2 p-2 border rounded">
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 block mb-1">Tanggal Mulai</label>
+                        <input type="date" id="bagi-start" class="w-full p-2 border rounded text-xs"
+                            onchange="hitungBagiHasil()">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 block mb-1">Tanggal Akhir</label>
+                        <input type="date" id="bagi-end" class="w-full p-2 border rounded text-xs"
+                            onchange="hitungBagiHasil()">
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 block mb-1">% Pemilik</label>
+                        <input type="number" id="persen-pemilik" placeholder="50" class="w-full p-2 border rounded">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 block mb-1">% Penggarap</label>
+                        <input type="number" id="persen-penggarap" placeholder="50" class="w-full p-2 border rounded">
+                    </div>
                 </div>
                 <button onclick="hitungBagiHasil()" class="w-full bg-blue-600 text-white py-2 rounded-lg">Hitung
                     Pembagian</button>
@@ -143,15 +194,27 @@
             <!-- Kalkulator Manual -->
             <div class="bg-white p-4 rounded-xl shadow-sm space-y-4">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kalkulator Manual (Cepat)</p>
-                <input type="number" id="manual-pemasukan" placeholder="Total Pemasukan Rp"
-                    class="w-full p-2 border rounded">
-                <input type="number" id="manual-pengeluaran" placeholder="Total Pengeluaran Rp"
-                    class="w-full p-2 border rounded">
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Total Pemasukan (Rp)</label>
+                    <input type="text" id="manual-pemasukan" placeholder="Contoh: 5.000.000"
+                        class="w-full p-2 border rounded" oninput="formatRupiah(this)">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Total Pengeluaran (Rp)</label>
+                    <input type="text" id="manual-pengeluaran" placeholder="Contoh: 2.000.000"
+                        class="w-full p-2 border rounded" oninput="formatRupiah(this)">
+                </div>
                 <div class="flex gap-2">
-                    <input type="number" id="manual-persen-pemilik" placeholder="% Pemilik"
-                        class="w-1/2 p-2 border rounded" value="50">
-                    <input type="number" id="manual-persen-penggarap" placeholder="% Penggarap"
-                        class="w-1/2 p-2 border rounded" value="50">
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 block mb-1">% Pemilik</label>
+                        <input type="number" id="manual-persen-pemilik" placeholder="50"
+                            class="w-full p-2 border rounded" value="50">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 block mb-1">% Penggarap</label>
+                        <input type="number" id="manual-persen-penggarap" placeholder="50"
+                            class="w-full p-2 border rounded" value="50">
+                    </div>
                 </div>
                 <button onclick="hitungBagiHasilManual()"
                     class="w-full bg-emerald-600 text-white py-2 rounded-lg font-bold">Hitung Cepat</button>
@@ -163,13 +226,28 @@
             <h2 class="font-bold mb-4">Daftar Utang / Kasbon</h2>
             <form id="form-utang" class="bg-white p-4 rounded-xl shadow-sm space-y-3 mb-4">
                 <input type="hidden" id="utang-edit-id">
-                <input type="date" id="utang-date" class="w-full p-2 border rounded" required>
-                <input type="text" id="nama-orang" placeholder="Nama Pembeli/Buruh" class="w-full p-2 border rounded"
-                    required>
-                <input type="number" id="utang-amount" placeholder="Jumlah Utang Rp" class="w-full p-2 border rounded"
-                    required>
-                <input type="text" id="utang-type" placeholder="Jenis Utang" class="w-full p-2 border rounded" required>
-                <input type="text" id="utang-desc" placeholder="Keterangan" class="w-full p-2 border rounded">
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Tanggal</label>
+                    <input type="date" id="utang-date" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Nama Pembeli/Buruh</label>
+                    <input type="text" id="nama-orang" placeholder="Contoh: Budi" class="w-full p-2 border rounded"
+                        required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Jumlah Utang (Rp)</label>
+                    <input type="text" id="utang-amount" placeholder="Contoh: 200.000" class="w-full p-2 border rounded"
+                        oninput="formatRupiah(this)" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Jenis Utang</label>
+                    <input type="text" id="utang-type" placeholder="Contoh: Beli Pupuk, Upah Kerja" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Keterangan</label>
+                    <input type="text" id="utang-desc" placeholder="Opsional" class="w-full p-2 border rounded">
+                </div>
                 <div class="flex gap-2">
                     <button type="submit" id="btn-save-utang"
                         class="flex-1 bg-orange-500 text-white py-2 rounded-lg">Catat Utang</button>
@@ -183,8 +261,11 @@
         <section id="sec-settings" class="hidden p-4">
             <h2 class="font-bold mb-4">Pengaturan</h2>
             <div class="bg-white p-4 rounded-xl shadow-sm space-y-3">
-                <input type="text" id="sheet-url" placeholder="Apps Script URL"
-                    class="w-full p-2 border rounded text-xs">
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Apps Script URL</label>
+                    <input type="text" id="sheet-url" placeholder="https://script.google.com/..."
+                        class="w-full p-2 border rounded text-xs">
+                </div>
                 <button onclick="saveSettings()" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm">Simpan
                     Konfigurasi</button>
                 <button onclick="forceDownload()"
@@ -211,6 +292,19 @@
 
     <script src="app.js"></script>
     <script>
+        // Format number with thousand separator for display
+        function formatRupiah(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            if (value) {
+                input.value = parseInt(value).toLocaleString('id-ID');
+            }
+        }
+
+        // Get numeric value from formatted input
+        function getNumericValue(input) {
+            return parseInt(input.value.replace(/[^\d]/g, '')) || 0;
+        }
+
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }

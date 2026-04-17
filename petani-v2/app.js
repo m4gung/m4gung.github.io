@@ -1,3 +1,15 @@
+// Helper functions for number formatting
+function formatRupiah(input) {
+    let value = input.value.replace(/[^\d]/g, '');
+    if (value) {
+        input.value = parseInt(value).toLocaleString('id-ID');
+    }
+}
+
+function getNumericValue(input) {
+    return parseInt(input.value.replace(/[^\d]/g, '')) || 0;
+}
+
 // Database Inisialisasi
 const db = new Dexie("TaniPintarDB");
 db.version(2).stores({
@@ -62,7 +74,7 @@ document.getElementById('form-lahan').onsubmit = async (e) => {
     const id = document.getElementById('lahan-edit-id').value;
     const data = {
         nama: document.getElementById('nama-lahan').value,
-        luas: document.getElementById('luas-lahan').value,
+        luas: getNumericValue(document.getElementById('luas-lahan')),
         lokasi: document.getElementById('lokasi-lahan').value,
         status: document.getElementById('status-lahan').value
     };
@@ -135,7 +147,7 @@ document.getElementById('form-transaksi').onsubmit = async (e) => {
     const data = {
         lahanId: lahanVal ? parseInt(lahanVal) : null,
         desc: document.getElementById('trans-desc').value,
-        amount: parseInt(document.getElementById('trans-amount').value),
+        amount: getNumericValue(document.getElementById('trans-amount')),
         type: document.getElementById('trans-type').value,
         date: document.getElementById('trans-date').value,
         syncStatus: 'pending'
@@ -169,7 +181,7 @@ async function editTransaksi(id) {
     document.getElementById('lahan-id').value = t.lahanId;
     document.getElementById('trans-date').value = t.date;
     document.getElementById('trans-desc').value = t.desc;
-    document.getElementById('trans-amount').value = t.amount;
+    document.getElementById('trans-amount').value = t.amount.toLocaleString('id-ID');
     document.getElementById('trans-type').value = t.type;
     
     document.getElementById('btn-save-trans').innerText = 'Simpan Edit';
@@ -250,8 +262,8 @@ async function hitungBagiHasil() {
 }
 
 function hitungBagiHasilManual() {
-    const pemasukan = parseInt(document.getElementById('manual-pemasukan').value) || 0;
-    const pengeluaran = parseInt(document.getElementById('manual-pengeluaran').value) || 0;
+    const pemasukan = getNumericValue(document.getElementById('manual-pemasukan'));
+    const pengeluaran = getNumericValue(document.getElementById('manual-pengeluaran'));
     const pPemilik = (parseInt(document.getElementById('manual-persen-pemilik').value) || 0) / 100;
     const pPenggarap = (parseInt(document.getElementById('manual-persen-penggarap').value) || 0) / 100;
 
@@ -275,7 +287,7 @@ document.getElementById('form-utang').onsubmit = async (e) => {
     const id = document.getElementById('utang-edit-id').value;
     const data = {
         nama: document.getElementById('nama-orang').value,
-        amount: parseInt(document.getElementById('utang-amount').value),
+        amount: getNumericValue(document.getElementById('utang-amount')),
         type: document.getElementById('utang-type').value,
         desc: document.getElementById('utang-desc').value,
         date: document.getElementById('utang-date').value,
@@ -304,7 +316,7 @@ async function editUtang(id) {
     const u = await db.utang.get(id);
     document.getElementById('utang-edit-id').value = u.id;
     document.getElementById('nama-orang').value = u.nama;
-    document.getElementById('utang-amount').value = u.amount;
+    document.getElementById('utang-amount').value = u.amount.toLocaleString('id-ID');
     document.getElementById('utang-type').value = u.type;
     document.getElementById('utang-desc').value = u.desc || '';
     document.getElementById('utang-date').value = u.date || '';
