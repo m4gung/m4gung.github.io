@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern RegEx Tester</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>/.*/ RegEx Tester</h1>
+        </div>
+        <div class="header-right">
+            <div class="match-status" id="matchStatus">0 Matches</div>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <div class="regex-builder">
+            <span class="slash">/</span>
+            <input type="text" id="regexPattern" placeholder="Ketik pola regex di sini... (misal: [a-z]+)"
+                value="[a-zA-Z]+">
+            <span class="slash">/</span>
+            <input type="text" id="regexFlags" placeholder="gmi" value="g" maxlength="5">
+        </div>
+
+        <div id="errorMsg" class="error-msg"></div>
+
+        <div class="split-layout">
+            <div class="pane">
+                <div class="pane-toolbar">Teks Pengujian</div>
+                <textarea id="testString" spellcheck="false"
+                    placeholder="Masukkan teks untuk diuji di sini...">Halo! RegEx ini sangat keren. Angka 12345 juga bisa ditangkap jika polanya benar.</textarea>
+            </div>
+
+            <div class="pane">
+                <div class="pane-toolbar">Hasil Highlight</div>
+                <div id="matchOutput" class="output-display"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

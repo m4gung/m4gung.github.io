@@ -1,0 +1,218 @@
+/* === TEMA GELAP (DEFAULT) === */
+:root {
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --accent: #3b82f6;
+    --success: #10b981;
+}
+
+/* === TEMA TERANG === */
+[data-theme="light"] {
+    --bg-main: #f1f5f9;
+    --bg-panel: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #cbd5e1;
+    --accent: #2563eb;
+    --success: #059669;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+/* Header Standar */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 24px;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+}
+
+.logo h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+/* Tombol */
+.btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    transition: 0.2s;
+    font-family: inherit;
+}
+
+.btn:hover {
+    background-color: var(--border);
+}
+
+.btn.primary {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.btn.primary:hover {
+    filter: brightness(1.1);
+}
+
+.btn.success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border-color: var(--success);
+}
+
+.btn.success:hover {
+    background-color: var(--success);
+    color: white;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+/* Live Bar */
+.live-bar {
+    background-color: var(--accent);
+    color: white;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.live-number {
+    font-family: 'Fira Code', monospace;
+    font-weight: bold;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+}
+
+/* Grid Layout Workspace */
+.grid-layout {
+    padding: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    overflow-y: auto;
+}
+
+/* Cards */
+.card {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    padding: 15px 20px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Inputs */
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.input-group input,
+.select-input {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Fira Code', monospace;
+    font-size: 1rem;
+    outline: none;
+}
+
+.input-group input:focus,
+.select-input:focus {
+    border-color: var(--accent);
+}
+
+.help-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: -10px;
+}
+
+/* Result Box */
+.result-box {
+    background-color: var(--bg-main);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.result-row {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+}
+
+.result-row strong {
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.result-row span {
+    font-size: 1rem;
+}
+
+.code-font {
+    font-family: 'Fira Code', monospace;
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.hidden {
+    display: none !important;
+}

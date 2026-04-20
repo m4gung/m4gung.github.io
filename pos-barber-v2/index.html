@@ -82,11 +82,10 @@
                         <input type="text" id="customer-name"
                             class="w-full p-3 bg-slate-50 rounded-xl mb-3 text-xs uppercase font-bold border outline-none"
                             placeholder="NAMA PELANGGAN">
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="checkout('cash')"
-                                class="bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md text-[11px] uppercase active:scale-95 transition">CASH</button>
-                            <button onclick="checkout('qris')"
-                                class="bg-indigo-50 text-indigo-600 py-3 rounded-xl font-bold text-[11px] border border-indigo-100 uppercase active:scale-95 transition">QRIS</button>
+                        <div class="grid grid-cols-1">
+                            <button onclick="openCheckoutModal()"
+                                class="bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md text-[12px] uppercase active:scale-95 transition tracking-wider">BAYAR
+                                SEKARANG</button>
                         </div>
                     </div>
 
@@ -151,7 +150,9 @@
                             <tr class="text-gray-400 border-b text-[9px] uppercase font-bold bg-slate-50">
                                 <th class="p-3">Waktu</th>
                                 <th class="p-3">Pelanggan</th>
-                                <th class="p-3">Total</th>
+                                <th class="p-3">Tagihan</th>
+                                <th class="p-3">Tip</th>
+                                <th class="p-3 text-right">Metode</th>
                                 <th class="p-3 text-right">Status</th>
                             </tr>
                         </thead>
@@ -185,9 +186,13 @@
                             <p class="text-[9px] text-gray-400 uppercase font-bold">Total QRIS</p>
                             <h3 id="rep-qris" class="text-lg font-black mt-1">Rp 0</h3>
                         </div>
-                        <div class="col-span-2 bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
                             <p class="text-[9px] text-gray-400 uppercase font-bold">Total Omzet</p>
-                            <h3 id="rep-omzet" class="text-xl font-black mt-1 text-slate-700">Rp 0</h3>
+                            <h3 id="rep-omzet" class="text-lg font-black mt-1 text-slate-700">Rp 0</h3>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-3xl shadow-sm border border-emerald-100">
+                            <p class="text-[9px] text-emerald-600 uppercase font-bold">Total Tip</p>
+                            <h3 id="rep-tip" class="text-lg font-black text-emerald-700 mt-1">Rp 0</h3>
                         </div>
                         <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
                             <p class="text-[9px] text-gray-400 uppercase font-bold">Total Komisi</p>
@@ -202,7 +207,7 @@
                             class="col-span-2 bg-blue-600 p-4 rounded-3xl shadow-md text-white flex justify-between items-center">
                             <div>
                                 <p class="text-[10px] text-blue-200 uppercase font-bold">Total Gaji Kepster</p>
-                                <p class="text-[8px] text-blue-300">Total akumulasi komisi + uang makan</p>
+                                <p class="text-[8px] text-blue-300">Akumulasi komisi + uang makan + tip</p>
                             </div>
                             <h3 id="rep-gaji" class="text-2xl font-black">Rp 0</h3>
                         </div>
@@ -210,7 +215,7 @@
                             class="col-span-2 bg-emerald-600 p-4 rounded-3xl shadow-md text-white flex justify-between items-center">
                             <div>
                                 <p class="text-[10px] text-emerald-200 uppercase font-bold">Total Setoran Cash</p>
-                                <p class="text-[8px] text-emerald-200">Sisa cash laci setelah potong gaji & makan</p>
+                                <p class="text-[8px] text-emerald-200">Sisa cash laci dikurangi gaji, makan, & tip</p>
                             </div>
                             <h3 id="rep-setoran" class="text-2xl font-black">Rp 0</h3>
                         </div>
@@ -364,18 +369,58 @@
         </div>
     </div>
 
+    <div id="modal-checkout"
+        class="hidden fixed inset-0 bg-black/50 backdrop-blur flex items-center justify-center p-4 z-[80]">
+        <div class="bg-white p-6 rounded-3xl w-full max-w-sm shadow-2xl animate-fadeIn">
+            <h3 class="font-black text-blue-600 mb-4 uppercase text-center border-b pb-2">Pembayaran</h3>
+            <div class="space-y-4 text-sm">
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-gray-500 uppercase text-[10px]">Total Tagihan</span>
+                    <span id="checkout-total" class="font-black text-xl text-blue-600 leading-none">Rp 0</span>
+                </div>
+
+                <div>
+                    <label class="text-[9px] font-bold text-blue-600 ml-2">CASH (Diterima)</label>
+                    <input type="number" id="pay-cash" oninput="calcKembalian()"
+                        class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm font-bold" placeholder="0">
+                </div>
+                <div>
+                    <label class="text-[9px] font-bold text-indigo-600 ml-2">QRIS (Diterima)</label>
+                    <input type="number" id="pay-qris" oninput="calcKembalian()"
+                        class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm font-bold" placeholder="0">
+                </div>
+                <div>
+                    <label class="text-[9px] font-bold text-emerald-600 ml-2">TIP (Opsional)</label>
+                    <input type="number" id="pay-tip" oninput="calcKembalian()"
+                        class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm font-bold" placeholder="0">
+                </div>
+
+                <div class="pt-4 border-t border-dashed flex justify-between items-center">
+                    <span class="font-bold text-gray-500 uppercase text-[10px]">Kembalian Cash</span>
+                    <span id="checkout-kembalian" class="font-black text-xl text-slate-700 leading-none">Rp 0</span>
+                </div>
+            </div>
+
+            <button onclick="processCheckout()"
+                class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold uppercase text-sm mt-6 shadow-md transition active:scale-95">Selesai
+                Pembayaran</button>
+            <button onclick="closeModal('modal-checkout')"
+                class="w-full py-3 text-gray-400 font-bold uppercase text-[10px]">Batal</button>
+        </div>
+    </div>
+
     <script>
         const db = new Dexie("POS_BARBER");
-        db.version(1).stores({
+        db.version(2).stores({
             produk: 'id, nama, jual, modal, stok, sync_status, cabang, komisi_barber, komisi_kepster, jenis',
-            transaksi: '++id, id_transaksi, metode, pelanggan, total, waktu, status, cabang, karyawan, keterangan'
+            transaksi: '++id, id_transaksi, metode, pelanggan, total, cash, qris, tip, waktu, status, cabang, karyawan, keterangan'
         });
 
         let products = [], cart = [], config = JSON.parse(localStorage.getItem('pos_config')) || { url: '', branch: '', employee: '', uang_makan: 0 };
 
         window.onload = async () => {
             if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-            document.getElementById('gas-url').value = config.url || '';
+            document.getElementById('gas-url').value = config.url || 'https://script.google.com/macros/s/AKfycbxx_Hzy5IhLj_ZVlc3nlMnc1Ptyr7ICTPyhNu-9xWH4oymymBU1aPUnajh5k_5MZmHuBQ/exec';
             document.getElementById('branch-id').value = config.branch || '';
 
             const empEl = document.getElementById('employee-id');
@@ -537,13 +582,58 @@
             updateCart();
         }
 
-        async function checkout(m) {
+        function openCheckoutModal() {
+            if (!cart.length) return alert("Keranjang belanja kosong!");
+            let total = cart.reduce((a, b) => a + (b.jual * b.qty), 0);
+            document.getElementById('checkout-total').innerText = 'Rp ' + total.toLocaleString();
+            document.getElementById('pay-cash').value = '';
+            document.getElementById('pay-qris').value = '';
+            document.getElementById('pay-tip').value = '';
+            document.getElementById('checkout-kembalian').innerText = 'Rp 0';
+            document.getElementById('checkout-kembalian').classList.replace('text-red-500', 'text-slate-700');
+            document.getElementById('modal-checkout').classList.remove('hidden');
+        }
+
+        function calcKembalian() {
+            let total = cart.reduce((a, b) => a + (b.jual * b.qty), 0);
+            let cash = Number(document.getElementById('pay-cash').value) || 0;
+            let qris = Number(document.getElementById('pay-qris').value) || 0;
+            let tip = Number(document.getElementById('pay-tip').value) || 0;
+            let paid = cash + qris;
+            let kembalian = paid - (total + tip);
+
+            let kEl = document.getElementById('checkout-kembalian');
+            if (kembalian < 0) {
+                kEl.innerText = 'KURANG: Rp ' + Math.abs(kembalian).toLocaleString();
+                kEl.classList.replace('text-slate-700', 'text-red-500');
+            } else {
+                kEl.innerText = 'Rp ' + kembalian.toLocaleString();
+                kEl.classList.replace('text-red-500', 'text-slate-700');
+            }
+        }
+
+        async function processCheckout() {
             if (!cart.length) return;
+            let total = cart.reduce((a, b) => a + (b.jual * b.qty), 0);
+            let cash = Number(document.getElementById('pay-cash').value) || 0;
+            let qris = Number(document.getElementById('pay-qris').value) || 0;
+            let tip = Number(document.getElementById('pay-tip').value) || 0;
+
+            if (cash + qris < total + tip) {
+                return alert("Pembayaran masih kurang!");
+            }
+
+            let kembalian = (cash + qris) - (total + tip);
+
             const trx = {
                 id_transaksi: 'TRX-' + Date.now(),
                 items: JSON.stringify(cart),
-                total: cart.reduce((a, b) => a + (b.jual * b.qty), 0),
-                metode: m,
+                total: total,
+                cash: cash,
+                qris: qris,
+                tip: tip,
+                kembalian: kembalian,
+                metode: qris > 0 && cash > 0 ? 'mix' : (qris > 0 ? 'qris' : 'cash'),
                 pelanggan: document.getElementById('customer-name').value.toUpperCase() || 'UMUM',
                 waktu: new Date().toISOString(),
                 status: 'pending',
@@ -557,7 +647,10 @@
                 await db.produk.update(it.id, { stok: p.stok - it.qty, sync_status: 'pending' });
             }
             cart = []; document.getElementById('customer-name').value = '';
-            updateCart(); await loadLocal(); processSync();
+            updateCart();
+            closeModal('modal-checkout');
+            await loadLocal();
+            processSync();
             alert("Berhasil!");
         }
 
@@ -648,7 +741,9 @@
                     <td class="p-3 text-gray-400 font-mono">${new Date(t.waktu).toLocaleDateString()}</td>
                     <td class="p-3 uppercase font-bold truncate max-w-[80px]">${t.pelanggan}</td>
                     <td class="p-3 font-black text-blue-600">Rp ${t.total.toLocaleString()}</td>
-                    <td class="p-3 text-right text-[8px] uppercase font-black ${t.metode === 'qris' ? 'text-indigo-600' : 'text-green-600'}">${t.status || 'synced'}</td>
+                    <td class="p-3 font-bold text-emerald-600">Rp ${(t.tip || 0).toLocaleString()}</td>
+                    <td class="p-3 text-right text-[8px] uppercase font-bold text-slate-500">${t.metode}</td>
+                    <td class="p-3 text-right text-[8px] uppercase font-black ${t.status === 'pending' ? 'text-amber-500' : 'text-green-600'}">${t.status || 'synced'}</td>
                 </tr>`).join('');
         }
 
@@ -685,7 +780,7 @@
                 return isEmployee && inRange;
             });
 
-            let total_cash = 0, total_qris = 0, omzet = 0;
+            let total_cash = 0, total_qris = 0, omzet = 0, total_tip = 0;
             let total_komisi_kepster = 0, total_komisi_barber = 0;
             let rincian = {};
             let uniqueDays = new Set();
@@ -695,8 +790,24 @@
                 uniqueDays.add(d);
                 omzet += t.total;
 
-                if (t.metode === 'cash') total_cash += t.total;
-                if (t.metode === 'qris') total_qris += t.total;
+                let realCash = 0;
+                let realQris = 0;
+                let t_tip = Number(t.tip || 0);
+
+                if (t.cash !== undefined || t.qris !== undefined) {
+                    let tCash = Number(t.cash || 0);
+                    let tQris = Number(t.qris || 0);
+                    let tKembalian = Number(t.kembalian || 0);
+                    realCash = tCash - tKembalian;
+                    realQris = tQris;
+                } else {
+                    if (t.metode === 'cash') realCash = t.total;
+                    if (t.metode === 'qris') realQris = t.total;
+                }
+
+                total_cash += realCash;
+                total_qris += realQris;
+                total_tip += t_tip;
 
                 const items = JSON.parse(t.items);
                 items.forEach(it => {
@@ -720,16 +831,15 @@
             const uangMakanHarian = Number(config.uang_makan) || 0;
             const totalUangMakan = uniqueDays.size * uangMakanHarian;
 
-            const totalSetoran = Math.max(0, total_cash - total_komisi_kepster - totalUangMakan);
+            const totalSetoran = Math.max(0, total_cash - total_komisi_kepster - totalUangMakan - total_tip);
 
             document.getElementById('rep-cash').innerText = 'Rp ' + total_cash.toLocaleString();
             document.getElementById('rep-qris').innerText = 'Rp ' + total_qris.toLocaleString();
             document.getElementById('rep-omzet').innerText = 'Rp ' + omzet.toLocaleString();
-            const labaEl = document.getElementById('rep-laba');
-            if (labaEl) labaEl.innerText = ''; // Removed from HTML
+            document.getElementById('rep-tip').innerText = 'Rp ' + total_tip.toLocaleString();
             document.getElementById('rep-komisi').innerText = 'Rp ' + total_komisi_kepster.toLocaleString();
             document.getElementById('rep-makan').innerText = 'Rp ' + totalUangMakan.toLocaleString();
-            document.getElementById('rep-gaji').innerText = 'Rp ' + (total_komisi_kepster + totalUangMakan).toLocaleString();
+            document.getElementById('rep-gaji').innerText = 'Rp ' + (total_komisi_kepster + totalUangMakan + total_tip).toLocaleString();
             document.getElementById('rep-setoran').innerText = 'Rp ' + totalSetoran.toLocaleString();
 
             const reportRows = Object.keys(rincian).map(nama => {
@@ -751,19 +861,37 @@
         async function showTrxDetail(id) {
             const t = await db.transaksi.where('id_transaksi').equals(id).first();
             const its = JSON.parse(t.items);
+
+            let paymentDetailHtml = '';
+            if (t.cash !== undefined || t.qris !== undefined) {
+                paymentDetailHtml = `
+                    <div class="mt-3 bg-slate-50 p-3 rounded-xl border space-y-1">
+                        <div class="flex justify-between text-[10px]"><span>Metode Pembayaran</span><span class="font-bold uppercase">${t.metode}</span></div>
+                        <div class="flex justify-between text-[10px]"><span>Jml Cash</span><span class="font-bold">Rp ${(t.cash || 0).toLocaleString()}</span></div>
+                        <div class="flex justify-between text-[10px]"><span>Jml QRIS</span><span class="font-bold text-indigo-600">Rp ${(t.qris || 0).toLocaleString()}</span></div>
+                        <div class="flex justify-between text-[10px]"><span>Tip Kepster</span><span class="font-bold text-emerald-600">Rp ${(t.tip || 0).toLocaleString()}</span></div>
+                        <div class="flex justify-between text-[10px] pt-1 border-t border-dashed"><span>Kembalian</span><span class="font-bold text-red-500">Rp ${(t.kembalian || 0).toLocaleString()}</span></div>
+                    </div>
+                `;
+            } else {
+                paymentDetailHtml = `<div class="mt-3 bg-slate-50 p-2 rounded-xl border text-[10px] text-center font-bold uppercase">Metode: ${t.metode}</div>`;
+            }
+
             document.getElementById('detail-content').innerHTML = `
-                <div class="border-b pb-4 mb-4"><p class="font-black text-blue-600 text-lg uppercase tracking-tighter">Nota DesaPOS</p><p class="text-[9px] text-gray-400 uppercase font-mono">${t.id_transaksi}</p></div>
+                <div class="border-b pb-4 mb-4"><p class="font-black text-blue-600 text-lg uppercase tracking-tighter">Nota Belanja</p><p class="text-[9px] text-gray-400 uppercase font-mono">${t.id_transaksi}</p></div>
                 <p class="font-bold mb-2 uppercase text-xs">Pelanggan: ${t.pelanggan}</p>
                 <p class="text-[10px] mb-2 uppercase">Karyawan: ${t.karyawan || '-'}</p>
                 <div class="space-y-2 mb-4">${its.map(it => `<div class="flex justify-between text-[11px] uppercase"><span>${it.nama} (x${it.qty})</span><span class="font-black">Rp ${(it.jual * it.qty).toLocaleString()}</span></div>`).join('')}</div>
-                <div class="mb-3">
-                  <label class="text-[10px] font-bold text-gray-400 uppercase">Keterangan</label>
-                  <textarea id="trx-note" class="w-full p-2 bg-slate-50 rounded-xl border outline-none text-sm" rows="3" placeholder="Catatan transaksi...">${t.keterangan || ''}</textarea>
-                </div>
                 <div class="flex justify-between items-center border-t-2 border-dashed pt-4">
-                  <span class="font-black text-lg text-blue-600">TOTAL</span>
+                  <span class="font-black text-lg text-blue-600">TOTAL BILL</span>
                   <span class="font-black text-lg text-blue-600">Rp ${t.total.toLocaleString()}</span>
-                </div>`;
+                </div>
+                ${paymentDetailHtml}
+                <div class="mt-4 mb-2">
+                  <label class="text-[10px] font-bold text-gray-400 uppercase">Keterangan Tambahan</label>
+                  <textarea id="trx-note" class="w-full p-2 bg-slate-50 rounded-xl border outline-none text-sm" rows="2" placeholder="Catatan transaksi...">${t.keterangan || ''}</textarea>
+                </div>
+                `;
             document.getElementById('detail-actions').innerHTML = `
               <div class="grid grid-cols-1 gap-2">
                 ${t.metode === 'debt' ? `<button onclick="markLunas('${t.id}')" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold uppercase text-xs">Ubah Status Lunas</button>` : ''}

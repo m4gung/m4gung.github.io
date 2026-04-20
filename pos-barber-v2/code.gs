@@ -20,10 +20,24 @@ function doPost(e) {
       const sheet = ss.getSheetByName("Transaksi");
       const values = sheet.getDataRange().getValues();
       let headers = values[0] || [];
-      if (headers.length === 0) {
-        headers = ['waktu','id_transaksi','cabang','items','total','metode','pelanggan','karyawan','keterangan','status'];
+      const newCols = ['cash', 'qris', 'tip', 'kembalian'];
+      
+      if (headers.length > 0) {
+        let headerChanged = false;
+        newCols.forEach(col => {
+          if (!headers.includes(col)) {
+             headers.push(col);
+             headerChanged = true;
+          }
+        });
+        if (headerChanged) {
+           sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+        }
+      } else {
+        headers = ['waktu','id_transaksi','cabang','items','total','cash','qris','tip','kembalian','metode','pelanggan','karyawan','keterangan','status'];
         sheet.getRange(1,1,1,headers.length).setValues([headers]);
       }
+      
       let rowIndex = -1;
       for (let i = 1; i < values.length; i++) {
         if (values[i][headers.indexOf('id_transaksi')] == data.id_transaksi) { rowIndex = i + 1; break; }

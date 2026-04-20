@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Modern PlantUML Reader</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.5/split.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>🌿 PlantUML Reader</h1>
+        </div>
+        <div class="header-actions">
+            <button id="downloadSvg" class="btn primary">⬇️ Unduh SVG</button>
+            <button id="downloadPng" class="btn">⬇️ Unduh PNG</button>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <div id="input-pane" class="pane">
+            <div class="pane-header">Kode Sumber (.puml)</div>
+            <textarea id="pumlInput" spellcheck="false" placeholder="Ketik kode @startuml di sini..."></textarea>
+        </div>
+
+        <div id="output-pane" class="pane">
+            <div class="pane-header">Live Preview</div>
+            <div id="renderOutput" class="preview-container">
+                <div class="placeholder">Memuat diagram...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

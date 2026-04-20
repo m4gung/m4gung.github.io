@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Diff Checker</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>± Diff Checker</h1>
+        </div>
+        <div class="header-actions">
+            <button id="actionBtn" class="btn primary">🔍 Bandingkan Teks</button>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <div class="pane">
+            <div class="pane-header">Teks Asli (Original)</div>
+            <textarea id="leftInput" spellcheck="false" placeholder="Paste teks lama di sini..."></textarea>
+            <div id="leftOutput" class="diff-view hidden"></div>
+        </div>
+
+        <div class="pane">
+            <div class="pane-header">Teks Baru (Modified)</div>
+            <textarea id="rightInput" spellcheck="false" placeholder="Paste teks baru di sini..."></textarea>
+            <div id="rightOutput" class="diff-view hidden"></div>
+        </div>
+
+        <div id="minimap" class="minimap hidden"></div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

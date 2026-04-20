@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏱️ Modern Epoch Converter</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>⏱️ Epoch Converter</h1>
+        </div>
+        <div class="header-actions">
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <div class="live-bar">
+        <div class="live-text">
+            <span>Unix Time Saat Ini:</span>
+            <span id="liveEpoch" class="live-number">Memuat...</span>
+        </div>
+        <button id="copyLiveBtn" class="btn success btn-sm">Salin</button>
+    </div>
+
+    <main class="workspace grid-layout">
+        <div class="card">
+            <div class="card-header">Angka ke Tanggal (Timestamp to Date)</div>
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="number" id="epochInput" placeholder="Contoh: 1713657600" autocomplete="off">
+                    <button id="btnEpochToDate" class="btn primary">Konversi</button>
+                </div>
+                <div class="help-text">Mendukung detik (10 digit) atau milidetik (13 digit)</div>
+
+                <div id="epochResult" class="result-box hidden">
+                    <div class="result-row"><strong>GMT / UTC:</strong> <span id="resUtc"></span></div>
+                    <div class="result-row"><strong>Waktu Lokal:</strong> <span id="resLocal"></span></div>
+                    <div class="result-row"><strong>Relatif:</strong> <span id="resRelative"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Tanggal ke Angka (Date to Timestamp)</div>
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="datetime-local" id="dateInput" step="1">
+                    <select id="tzSelect" class="select-input">
+                        <option value="local">Lokal</option>
+                        <option value="utc">UTC</option>
+                    </select>
+                    <button id="btnDateToEpoch" class="btn primary">Konversi</button>
+                </div>
+
+                <div id="dateResult" class="result-box hidden">
+                    <div class="result-row"><strong>Detik (Sec):</strong> <span id="resSec" class="code-font"></span>
+                    </div>
+                    <div class="result-row"><strong>Milidetik (Ms):</strong> <span id="resMs" class="code-font"></span>
+                    </div>
+                    <div class="result-row"><strong>Format ISO:</strong> <span id="resIso"></span></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

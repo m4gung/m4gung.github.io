@@ -1,0 +1,206 @@
+/* === TEMA GELAP (DEFAULT) === */
+:root {
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --accent: #10b981;
+    /* Hijau Emerald */
+}
+
+/* === TEMA TERANG === */
+[data-theme="light"] {
+    --bg-main: #f8fafc;
+    --bg-panel: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #cbd5e1;
+    --accent: #059669;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* === HEADER === */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+}
+
+.logo h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background-color: var(--border);
+}
+
+.btn.primary {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.icon-btn {
+    font-size: 1.2rem;
+    padding: 6px 12px;
+}
+
+/* === WORKSPACE === */
+.workspace {
+    display: flex;
+    flex: 1;
+    /* Biarkan workspace memenuhi sisa layar bawah */
+    overflow: hidden;
+    height: calc(100vh - 61px);
+    /* Kurangi dengan tinggi header */
+}
+
+
+.pane {
+    /* flex: 1; Dihapus karena Split.js yang akan mengurus width-nya */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-panel);
+    overflow: hidden;
+}
+
+.pane-header {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    background-color: var(--bg-main);
+}
+
+/* === EDITOR TEXTAREA === */
+textarea {
+    flex: 1;
+    width: 100%;
+    padding: 20px;
+    background-color: transparent;
+    color: var(--text-main);
+    border: none;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    white-space: pre;
+    /* Jangan wrap kode agar rapi */
+    overflow: auto;
+}
+
+/* === PREVIEW CONTAINER (DOT GRID EFFECT) === */
+.preview-container {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+
+    /* Warna latar wajib terang agar tulisan hitam di SVG PlantUML terlihat jelas */
+    background-color: #f8fafc;
+
+    /* Efek Kertas Titik (Dot Grid) */
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.preview-container img {
+    max-width: none;
+    /* Biarkan gambar membentang asli dan bisa di-scroll */
+    background-color: transparent;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+}
+
+.placeholder {
+    color: #64748b;
+    font-style: italic;
+    background: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.error-msg {
+    color: #ef4444;
+    background: #fee2e2;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #fca5a5;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 5px;
+}
+
+
+
+
+/* === PEMBATAS DRAG (GUTTER) DARI SPLIT.JS === */
+.gutter {
+    background-color: var(--border);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    cursor: col-resize;
+    transition: background-color 0.2s;
+    /* Membuat indikator garis tiga (grip) */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="20" viewBox="0 0 4 20"><circle cx="2" cy="2" r="1.5" fill="%2394a3b8"/><circle cx="2" cy="10" r="1.5" fill="%2394a3b8"/><circle cx="2" cy="18" r="1.5" fill="%2394a3b8"/></svg>');
+}
+
+.gutter:hover {
+    background-color: var(--accent);
+}

@@ -1,0 +1,206 @@
+/* === TEMA GELAP (DEFAULT) === */
+:root {
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --accent: #3b82f6;
+
+    /* Warna Diff & Minimap */
+    --diff-del-bg: rgba(239, 68, 68, 0.25);
+    --diff-del-text: #fca5a5;
+    --diff-add-bg: rgba(16, 185, 129, 0.25);
+    --diff-add-text: #6ee7b7;
+}
+
+/* === TEMA TERANG === */
+[data-theme="light"] {
+    --bg-main: #f8fafc;
+    --bg-panel: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #cbd5e1;
+    --accent: #2563eb;
+
+    /* Warna Diff & Minimap */
+    --diff-del-bg: #fee2e2;
+    --diff-del-text: #b91c1c;
+    --diff-add-bg: #dcfce7;
+    --diff-add-text: #15803d;
+}
+
+/* === RESET & BASE === */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* === HEADER === */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+}
+
+.logo h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background-color: var(--border);
+}
+
+.btn.primary {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.icon-btn {
+    font-size: 1.2rem;
+    padding: 6px 12px;
+}
+
+/* === WORKSPACE === */
+.workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    background-color: var(--bg-panel);
+}
+
+.pane-header {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    background-color: var(--bg-main);
+}
+
+textarea,
+.diff-view {
+    flex: 1;
+    width: 100%;
+    padding: 20px;
+    background-color: transparent;
+    color: var(--text-main);
+    border: none;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* WAJIB agar javascript minimap offsetTop bekerja dengan benar */
+.diff-view {
+    position: relative;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* === HIGHLIGHT DIFF === */
+.diff-del {
+    background-color: var(--diff-del-bg);
+    color: var(--diff-del-text);
+    text-decoration: line-through;
+    border-radius: 2px;
+}
+
+.diff-add {
+    background-color: var(--diff-add-bg);
+    color: var(--diff-add-text);
+    border-radius: 2px;
+}
+
+/* === MINIMAP === */
+.minimap {
+    width: 24px;
+    background-color: var(--bg-main);
+    border-left: 1px solid var(--border);
+    position: relative;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.minimap:hover {
+    filter: brightness(1.2);
+}
+
+.minimap-marker {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    opacity: 0.9;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.minimap-marker.add {
+    background-color: var(--diff-add-text);
+}
+
+.minimap-marker.del {
+    background-color: var(--diff-del-text);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 5px;
+}

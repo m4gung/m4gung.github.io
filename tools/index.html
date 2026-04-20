@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevTools Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>🛠️ My DevTools</h1>
+        </div>
+        <div class="header-actions">
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="hero-section">
+            <h2>Selamat Datang di DevTools</h2>
+            <p>Kumpulan utilitas frontend ringan, cepat, dan 100% berjalan di browser tanpa backend.</p>
+        </div>
+
+        <div class="tools-grid">
+            <a href="./json-formatter/index.html" class="tool-card">
+                <div class="tool-icon">{ }</div>
+                <h3 class="tool-title">JSON Formatter</h3>
+                <p class="tool-desc">Format, validasi, dan percantik data JSON mentah dengan fitur copy/paste cerdas.
+                </p>
+            </a>
+
+            <a href="./markdown-previewer/index.html" class="tool-card">
+                <div class="tool-icon">📝</div>
+                <h3 class="tool-title">Markdown Previewer</h3>
+                <p class="tool-desc">Editor Markdown real-time dengan split-pane, syntax highlighting, dan export PDF.
+                </p>
+            </a>
+
+            <a href="./regex-tester/index.html" class="tool-card">
+                <div class="tool-icon">/.*/</div>
+                <h3 class="tool-title">RegEx Tester</h3>
+                <p class="tool-desc">Uji pola Regular Expression kamu secara langsung dengan fitur highlight yang
+                    presisi.</p>
+            </a>
+
+            <a href="./diff-checker/index.html" class="tool-card">
+                <div class="tool-icon">±</div>
+                <h3 class="tool-title">Diff Checker</h3>
+                <p class="tool-desc">Bandingkan dua teks atau kode untuk melihat perubahannya (tambah/hapus) lengkap
+                    dengan minimap.</p>
+            </a>
+
+            <a href="./PlantUML-Reader-Editor/index.html" class="tool-card">
+                <div class="tool-icon">🌿</div>
+                <h3 class="tool-title">PlantUML Editor</h3>
+                <p class="tool-desc">Tulis kode arsitektur sistem dan render menjadi diagram visual secara real-time.
+                </p>
+            </a>
+
+            <a href="./EpochConverter/index.html" class="tool-card">
+                <div class="tool-icon">⏱️</div>
+                <h3 class="tool-title">Epoch Converter</h3>
+                <p class="tool-desc">Konversi angka Unix Timestamp ke tanggal yang bisa dibaca manusia, dan sebaliknya.
+                </p>
+            </a>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
