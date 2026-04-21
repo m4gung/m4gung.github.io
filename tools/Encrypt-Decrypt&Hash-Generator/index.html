@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Encrypt & Hash Tool</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>🔐 Crypto Suite</h1>
+        </div>
+        <div class="header-right">
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace grid-layout">
+        <div class="card">
+            <div class="card-header">Kriptografi Dua Arah (AES)</div>
+            <div class="card-body">
+                <div class="input-group-vertical">
+                    <label>Teks / Cipher (Pesan)</label>
+                    <textarea id="aesInput" class="code-input" rows="3"
+                        placeholder="Masukkan teks rahasia atau kode enkripsi di sini..."></textarea>
+                </div>
+
+                <div class="input-group-vertical">
+                    <label>Kunci Rahasia (Secret Key)</label>
+                    <input type="password" id="aesKey" class="code-input" placeholder="Masukkan password pengunci...">
+                </div>
+
+                <div class="btn-group-full">
+                    <button id="btnEncrypt" class="btn primary">🔒 Enkripsi (Encrypt)</button>
+                    <button id="btnDecrypt" class="btn warning">🔓 Dekripsi (Decrypt)</button>
+                </div>
+
+                <div class="generator-output">
+                    <label>Hasil:</label>
+                    <div class="hash-box">
+                        <span id="aesOutput" class="code-font hash-text">-</span>
+                    </div>
+                    <button id="copyAesBtn" class="btn success btn-full" style="margin-top: 10px;">📋 Salin
+                        Hasil</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Pembuat Hash (Satu Arah)</div>
+            <div class="card-body">
+                <div class="input-group-vertical">
+                    <label>Teks Mentah (Plain Text)</label>
+                    <textarea id="hashInput" class="code-input" rows="3"
+                        placeholder="Masukkan teks untuk di-hash..."></textarea>
+                </div>
+
+                <div class="input-group-vertical">
+                    <label>Algoritma Hashing</label>
+                    <select id="hashAlgo" class="code-input select-input">
+                        <option value="SHA256" selected>SHA-256 (Standar Industri)</option>
+                        <option value="SHA512">SHA-512 (Paling Aman)</option>
+                        <option value="SHA1">SHA-1 (Legacy)</option>
+                        <option value="MD5">MD5 (Cepat, Rentan)</option>
+                    </select>
+                </div>
+
+                <button id="btnHash" class="btn primary btn-full">⚡ Generate Hash</button>
+
+                <div class="generator-output">
+                    <label>Hasil Hash:</label>
+                    <div class="hash-box">
+                        <span id="hashOutput" class="code-font hash-text" style="word-break: break-all;">-</span>
+                    </div>
+                    <button id="copyHashBtn" class="btn success btn-full" style="margin-top: 10px;">📋 Salin
+                        Hash</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

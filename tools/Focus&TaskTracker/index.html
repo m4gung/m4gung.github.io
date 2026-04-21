@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍅 Focus & Task Tracker</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="icon.svg">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>🍅 Focus & Tasks</h1>
+        </div>
+        <div class="header-right">
+            <button id="installPwaBtn" class="btn success" style="display: none;">⬇️ Install App</button>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace grid-layout">
+        <div class="card">
+            <div class="card-header">Pomodoro Timer</div>
+            <div class="card-body timer-container">
+                <div class="timer-mode">
+                    <span id="modeText" class="badge-mode work-mode">🎯 Waktu Fokus</span>
+                </div>
+
+                <div class="timer-display">
+                    <div id="activeTaskDisplay" class="active-task-text">Pilih tugas untuk difokuskan...</div>
+                    <span id="timeDisplay" class="code-font" style="font-size: 5rem;">25:00</span>
+                </div>
+
+                <div class="size-control">
+                    <label>Ukuran Jam:</label>
+                    <input type="range" id="clockSizeSlider" min="3" max="30" step="0.5" value="5">
+                </div>
+
+                <div class="timer-controls">
+                    <button id="startTimerBtn" class="btn primary btn-large">▶️ Mulai</button>
+                    <button id="pauseTimerBtn" class="btn warning btn-large" style="display: none;">⏸️ Jeda</button>
+                    <button id="resetTimerBtn" class="btn danger btn-large">🔄 Reset</button>
+                </div>
+
+                <div class="timer-settings">
+                    <div class="setting-item">
+                        <label>Fokus (menit)</label>
+                        <input type="number" id="workInput" value="25" min="1" max="60" class="code-input">
+                    </div>
+                    <div class="setting-item">
+                        <label>Istirahat (menit)</label>
+                        <input type="number" id="breakInput" value="5" min="1" max="30" class="code-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Task Tracker Lokal (Bisa di-Drag)</div>
+            <div class="card-body">
+                <form id="taskForm" class="task-form">
+                    <input type="text" id="taskInput" class="code-input" placeholder="Tugas baru (Tekan Enter)..."
+                        required autocomplete="off">
+                    <button type="submit" class="btn primary">Tambah</button>
+                </form>
+
+                <div class="task-stats">
+                    <span id="taskCount">0 Tugas Tersisa</span>
+                    <button id="clearCompletedBtn" class="btn-text">Bersihkan Selesai</button>
+                </div>
+
+                <ul id="taskList" class="task-list">
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

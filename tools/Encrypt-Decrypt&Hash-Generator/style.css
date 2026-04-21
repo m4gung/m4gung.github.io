@@ -1,0 +1,241 @@
+/* === TEMA GELAP (DEFAULT) === */
+:root {
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --bg-input: #0b1121;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --accent: #3b82f6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
+
+/* === TEMA TERANG === */
+[data-theme="light"] {
+    --bg-main: #f1f5f9;
+    --bg-panel: #ffffff;
+    --bg-input: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #cbd5e1;
+    --accent: #2563eb;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 24px;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+}
+
+.logo h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+/* Layout Grid */
+.grid-layout {
+    padding: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    overflow-y: auto;
+}
+
+.card {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    padding: 15px 20px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    background-color: rgba(0, 0, 0, 0.02);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+
+.card-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Inputs & Buttons */
+.input-group-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group-vertical label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.code-input {
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-input);
+    color: var(--text-main);
+    font-family: 'Fira Code', monospace;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.2s;
+    width: 100%;
+    resize: vertical;
+}
+
+.code-input:focus {
+    border-color: var(--accent);
+}
+
+.select-input {
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+}
+
+.btn-group-full {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-group-full .btn {
+    flex: 1;
+}
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+    transition: 0.2s;
+    font-family: inherit;
+}
+
+.btn:hover {
+    filter: brightness(1.1);
+    background-color: var(--border);
+}
+
+.btn.primary {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.btn.warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+    border-color: var(--warning);
+}
+
+.btn.warning:hover {
+    background-color: var(--warning);
+    color: white;
+}
+
+.btn.success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border-color: var(--success);
+}
+
+.btn.success:hover {
+    background-color: var(--success);
+    color: white;
+}
+
+.btn-full {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.icon-btn {
+    font-size: 1.2rem;
+    padding: 6px 12px;
+}
+
+/* Outputs */
+.generator-output {
+    background-color: var(--bg-input);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hash-box {
+    background-color: var(--bg-panel);
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    min-height: 50px;
+}
+
+.hash-text {
+    color: var(--accent);
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    word-break: break-all;
+}
+
+.code-font {
+    font-family: 'Fira Code', monospace;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}

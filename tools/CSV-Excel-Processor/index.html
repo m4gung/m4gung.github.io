@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Excel & CSV Processor</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>📊 Data Processor</h1>
+        </div>
+        <div class="header-right">
+            <span id="rowCount" class="status-badge">0 Baris</span>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace-full">
+        <div class="control-toolbar">
+            <div class="toolbar-group">
+                <button id="uploadBtn" class="btn warning">📂 Buka File (.csv / .xlsx)</button>
+                <input type="file" id="fileInput"
+                    accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                    style="display: none;">
+                <button id="clearBtn" class="btn danger">Bersihkan</button>
+            </div>
+
+            <div class="toolbar-group">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cari data di semua kolom...">
+            </div>
+
+            <div class="toolbar-group">
+                <button id="exportCsvBtn" class="btn primary">Export CSV</button>
+                <button id="exportExcelBtn" class="btn success">Export Excel</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="dataTable">
+                <thead id="tableHead">
+                    <tr>
+                        <th>Menunggu File...</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td class="empty-state">Silakan klik "Buka File" atau Drag & Drop file CSV/Excel ke halaman ini.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

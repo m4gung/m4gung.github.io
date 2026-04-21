@@ -1,12 +1,12 @@
 // === TRANSLATIONS ===
 const translations = {
     en: {
-        welcomeTitle: "Welcome to DevTools",
+        welcomeTitle: "Welcome to Tools",
         welcomeDesc: "A collection of lightweight, fast frontend utilities that run 100% in the browser without backend. All developer tools are free to use and require no installation. Perfect for web developers, programmers, and anyone needing coding assistance.",
         toolsTitle: "Available Developer Tools",
         toolsDesc: "We provide various web development tools frequently needed in software development workflows. Each tool is designed with an intuitive and responsive user interface.",
-        aboutTitle: "About DevTools",
-        aboutDesc: "My DevTools is a collection of web development tools that run entirely in the browser. No software installation or backend server required. These tools are designed to help developers with everyday tasks like formatting JSON, testing regular expressions, comparing code, and various other web development tasks.",
+        aboutTitle: "About Tools",
+        aboutDesc: "My Tools is a collection of web development tools that run entirely in the browser. No software installation or backend server required. These tools are designed to help developers with everyday tasks like formatting JSON, testing regular expressions, comparing code, and various other web development tasks.",
         jsonFormatter: "JSON Formatter",
         jsonFormatterDesc: "Format, validate, and beautify raw JSON data with smart copy/paste features.",
         markdownPreviewer: "Markdown Previewer",
@@ -32,15 +32,23 @@ const translations = {
         bcryptGenerator: "BCrypt Hash Generator & Matcher",
         bcryptGeneratorDesc: "Generate and compare BCrypt hashes with ease.",
         jsonToJavaPojo: "JSON to Java POJO (Lombok & Jackson) Converter",
-        jsonToJavaPojoDesc: "Convert JSON to Java POJO (Lombok & Jackson) with ease."
+        jsonToJavaPojoDesc: "Convert JSON to Java POJO (Lombok & Jackson) with ease.",
+        jwtDecoderValidator: "JWT Decoder & Validator",
+        jwtDecoderValidatorDesc: "Decode and validate JWT with ease.",
+        csvExcelProcessor: "CSV/Excel Processor",
+        csvExcelProcessorDesc: "Open, search, filter, sort, and export data from CSV or Excel files with ease.",
+        encryptDecryptHash: "Encrypt-Decrypt & Hash Generator",
+        encryptDecryptHashDesc: "Encrypt and decrypt text with ease.",
+        focusTaskTracker: "Focus & Task Tracker",
+        focusTaskTrackerDesc: "Pomodoro and To-Do List that can be installed on mobile and PC."
     },
     id: {
-        welcomeTitle: "Selamat Datang di DevTools",
+        welcomeTitle: "Selamat Datang di Tools",
         welcomeDesc: "Kumpulan utilitas frontend ringan, cepat, dan 100% berjalan di browser tanpa backend. Semua alat developer ini gratis untuk digunakan dan tidak memerlukan instalasiapun. Cocok untuk developer web, programmer, dan siapa saja yang membutuhkan alat bantu coding sehari-hari.",
         toolsTitle: "Alat Developer Tersedia",
         toolsDesc: "Kami menyediakan berbagai alat pengembangan web yang sering diperlukan dalam workflow pengembangan software. Setiap alat dirancang dengan antarmuka pengguna yang intuitif dan responsif.",
-        aboutTitle: "Tentang DevTools",
-        aboutDesc: "My DevTools adalah kumpulan alat pengembangan web yang berjalan sepenuhnya di browser. Tidak diperlukan instalasi software atau server backend. Alat-alat ini dirancang untuk membantu developer dalam pekerjaan sehari-hari seperti memformat JSON, menguji regular expression, membandingkan kode, dan berbagai tugas pengembangan web lainnya.",
+        aboutTitle: "Tentang Tools",
+        aboutDesc: "My Tools adalah kumpulan alat pengembangan web yang berjalan sepenuhnya di browser. Tidak diperlukan instalasi software atau server backend. Alat-alat ini dirancang untuk membantu developer dalam pekerjaan sehari-hari seperti memformat JSON, menguji regular expression, membandingkan kode, dan berbagai tugas pengembangan web lainnya.",
         jsonFormatter: "JSON Formatter",
         jsonFormatterDesc: "Format, validasi, dan percantik data JSON mentah dengan fitur copy/paste cerdas.",
         markdownPreviewer: "Markdown Previewer",
@@ -66,7 +74,15 @@ const translations = {
         bcryptGenerator: "BCrypt Hash Generator & Matcher",
         bcryptGeneratorDesc: "Generate dan bandingkan hash BCrypt dengan mudah.",
         jsonToJavaPojo: "JSON to Java POJO (Lombok & Jackson) Converter",
-        jsonToJavaPojoDesc: "Konversi JSON ke Java POJO (Lombok & Jackson) dengan mudah."
+        jsonToJavaPojoDesc: "Konversi JSON ke Java POJO (Lombok & Jackson) dengan mudah.",
+        jwtDecoderValidator: "JWT Decoder & Validator",
+        jwtDecoderValidatorDesc: "Decode dan validasi JWT dengan mudah.",
+        csvExcelProcessor: "CSV/Excel Processor",
+        csvExcelProcessorDesc: "Buka, cari, filter, urutkan, dan export data dari file CSV atau Excel dengan mudah.",
+        encryptDecryptHash: "Encrypt-Decrypt & Hash Generator",
+        encryptDecryptHashDesc: "Encrypt dan decrypt teks dengan mudah.",
+        focusTaskTracker: "Focus & Task Tracker",
+        focusTaskTrackerDesc: "Aplikasi Pomodoro dan To-Do List yang bisa di-install di HP dan PC."
     }
 };
 
@@ -113,7 +129,11 @@ const translations = {
             'tool-spring': t.springFormatter,
             'tool-java-spring-stack-trace': t.javaSpringStackTraceBeautifier,
             'tool-bcrypt': t.bcryptGenerator,
-            'tool-json-to-java-pojo': t.jsonToJavaPojo
+            'tool-json-to-java-pojo': t.jsonToJavaPojo,
+            'tool-jwt': t.jwtDecoderValidator,
+            'tool-csv-excel': t.csvExcelProcessor,
+            'tool-encrypt-decrypt-hash': t.encryptDecryptHash,
+            'tool-focus-task': t.focusTaskTracker
         };
 
         const toolDescs = {
@@ -129,7 +149,11 @@ const translations = {
             'tool-spring': t.springFormatterDesc,
             'tool-java-spring-stack-trace': t.javaSpringStackTraceBeautifierDesc,
             'tool-bcrypt': t.bcryptGeneratorDesc,
-            'tool-json-to-java-pojo': t.jsonToJavaPojoDesc
+            'tool-json-to-java-pojo': t.jsonToJavaPojoDesc,
+            'tool-jwt': t.jwtDecoderValidatorDesc,
+            'tool-csv-excel': t.csvExcelProcessorDesc,
+            'tool-encrypt-decrypt-hash': t.encryptDecryptHashDesc,
+            'tool-focus-task': t.focusTaskTrackerDesc
         };
 
         for (const [id, title] of Object.entries(toolTitles)) {

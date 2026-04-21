@@ -1,0 +1,354 @@
+/* === TEMA GELAP (DEFAULT) === */
+:root {
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --bg-toolbar: #334155;
+    --bg-input: #0b1121;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --accent: #3b82f6;
+    --success: #10b981;
+    --danger: #ef4444;
+    --border: #475569;
+
+    /* JWT Colors (Dark) */
+    --jwt-header: #fb2c36;
+    --jwt-payload: #d63aff;
+    --jwt-signature: #00b9f1;
+}
+
+/* === TEMA TERANG === */
+[data-theme="light"] {
+    --bg-main: #f8fafc;
+    --bg-panel: #ffffff;
+    --bg-toolbar: #f1f5f9;
+    --bg-input: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --accent: #2563eb;
+    --success: #059669;
+    --danger: #dc2626;
+    --border: #cbd5e1;
+
+    /* JWT Colors (Light) */
+    --jwt-header: #d61f28;
+    --jwt-payload: #a41ce0;
+    --jwt-signature: #008ebf;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+/* Header & Status */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+}
+
+.logo h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background-color: var(--bg-toolbar);
+    color: var(--text-muted);
+}
+
+.status-badge.valid {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+.status-badge.invalid {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+.status-badge.warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+/* Orange untuk Expired */
+
+/* Workspace & Toolbars */
+.workspace {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 61px);
+}
+
+.pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    background-color: var(--bg-panel);
+}
+
+.pane:last-child {
+    border-right: none;
+}
+
+.pane-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background-color: var(--bg-toolbar);
+    border-bottom: 1px solid var(--border);
+}
+
+.pane-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Buttons */
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background-color: var(--border);
+}
+
+.btn.danger {
+    color: var(--danger);
+    border-color: transparent;
+}
+
+.btn.danger:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: var(--danger);
+}
+
+.icon-btn {
+    font-size: 1.2rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+/* Panel Kiri: Input JWT */
+.input-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+    gap: 20px;
+    background-color: var(--bg-input);
+}
+
+textarea#jwtInput {
+    flex: 1;
+    width: 100%;
+    background-color: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+}
+
+textarea#jwtInput:focus {
+    border-color: var(--accent);
+}
+
+.raw-breakdown {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.breakdown-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.break-text {
+    word-break: break-all;
+    line-height: 1.6;
+}
+
+/* Panel Kanan: Decoded Output */
+.output-container {
+    padding: 20px;
+    overflow-y: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: var(--bg-input);
+}
+
+.jwt-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.section-header {
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+/* JWT Colors applied */
+.color-header {
+    color: var(--jwt-header);
+}
+
+.color-payload {
+    color: var(--jwt-payload);
+}
+
+.color-signature {
+    color: var(--jwt-signature);
+}
+
+.text-header {
+    color: var(--jwt-header);
+    font-weight: bold;
+}
+
+.text-payload {
+    color: var(--jwt-payload);
+    font-weight: bold;
+}
+
+.text-signature {
+    color: var(--jwt-signature);
+    font-weight: bold;
+}
+
+.decoded-box {
+    width: 100%;
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 15px;
+    resize: none;
+    outline: none;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.decoded-box.payload-box {
+    min-height: 200px;
+}
+
+.readonly-div {
+    color: var(--text-muted);
+}
+
+.code-font {
+    font-family: 'Fira Code', monospace;
+}
+
+/* Time Info Section */
+.info-section {
+    background-color: var(--bg-panel);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.time-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.time-item {
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 4px;
+}
+
+.time-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.time-expired {
+    color: var(--danger);
+    font-weight: bold;
+}
+
+.time-active {
+    color: var(--success);
+    font-weight: bold;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔑 JWT Decoder & Validator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>🔑 JWT Decoder</h1>
+        </div>
+        <div class="header-right">
+            <span id="tokenStatus" class="status-badge">Menunggu Token...</span>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <div class="pane">
+            <div class="pane-toolbar">
+                <span class="pane-title">Input Token (Encoded)</span>
+                <div class="btn-group">
+                    <button id="exampleBtn" class="btn">Contoh Token</button>
+                    <button id="clearBtn" class="btn danger">Clear</button>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <textarea id="jwtInput" spellcheck="false"
+                    placeholder="Paste JSON Web Token (JWT) kamu di sini...&#10;&#10;Contoh:&#10;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM..."></textarea>
+
+                <div class="raw-breakdown">
+                    <div class="breakdown-title">Anatomi Token:</div>
+                    <div id="coloredRaw" class="code-font break-text">Mulai ketik untuk melihat anatomi...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pane">
+            <div class="pane-toolbar">
+                <span class="pane-title">Decoded Output</span>
+            </div>
+
+            <div class="output-container">
+                <div class="jwt-section info-section">
+                    <div class="section-header">⏱️ Timestamp Info</div>
+                    <div id="timeInfo" class="time-grid">
+                        <div class="time-item"><span class="time-label">Dibuat (iat):</span> <span id="iatText">-</span>
+                        </div>
+                        <div class="time-item"><span class="time-label">Berlaku Dari (nbf):</span> <span
+                                id="nbfText">-</span></div>
+                        <div class="time-item"><span class="time-label">Kedaluwarsa (exp):</span> <span
+                                id="expText">-</span></div>
+                    </div>
+                </div>
+
+                <div class="jwt-section header-section">
+                    <div class="section-header color-header">HEADER: Algorithm & Token Type</div>
+                    <textarea id="headerOutput" class="decoded-box code-font" readonly
+                        placeholder="Header JSON..."></textarea>
+                </div>
+
+                <div class="jwt-section payload-section">
+                    <div class="section-header color-payload">PAYLOAD: Data / Claims</div>
+                    <textarea id="payloadOutput" class="decoded-box code-font payload-box" readonly
+                        placeholder="Payload JSON..."></textarea>
+                </div>
+
+                <div class="jwt-section signature-section">
+                    <div class="section-header color-signature">VERIFY SIGNATURE</div>
+                    <div id="signatureOutput" class="decoded-box code-font break-text readonly-div">Signature...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
