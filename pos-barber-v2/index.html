@@ -892,34 +892,96 @@
             const trxs = await db.transaksi.where('cabang').equals(config.branch).toArray();
             const filt = trxs.filter(t => {
                 const d = t.waktu.split('T')[0];
+                const isEmployee = t.karyawan === config.employee;
                 const inRange = d >= start && d <= end;
-                return inRange;
+                return isEmployee && inRange;
             });
 
             if (filt.length === 0) return alert("Tidak ada data pada periode tersebut!");
 
-            let rows = [["Tanggal", "ID Transaksi", "Pelanggan", "Items", "Total", "Cash", "QRIS", "Tip", "Metode"]];
+            let total_cash = 0, total_qris = 0, omzet = 0, total_tip = 0;
+            let total_komisi_kepster = 0, total_komisi_barber = 0;
+            let total_keuntungan_haircut = 0, total_keuntungan_produk = 0;
+            let rincian = {};
+            let uniqueDays = new Set();
+
             filt.forEach(t => {
-                const items = JSON.parse(t.items).map(it => `${it.nama} x${it.qty}`).join(", ");
-                rows.push([
-                    t.waktu.split('T')[0],
-                    t.id_transaksi,
-                    t.pelanggan,
-                    items,
-                    t.total,
-                    t.cash || 0,
-                    t.qris || 0,
-                    t.tip || 0,
-                    t.metode
-                ]);
+                const d = t.waktu.split('T')[0];
+                uniqueDays.add(d);
+                omzet += t.total;
+                let realCash = 0, realQris = 0, t_tip = Number(t.tip || 0);
+                if (t.cash !== undefined || t.qris !== undefined) {
+                    realCash = Number(t.cash || 0) - Number(t.kembalian || 0);
+                    realQris = Number(t.qris || 0);
+                } else {
+                    if (t.metode === 'cash') realCash = t.total;
+                    if (t.metode === 'qris') realQris = t.total;
+                }
+                total_cash += realCash;
+                total_qris += realQris;
+                total_tip += t_tip;
+                const items = JSON.parse(t.items);
+                items.forEach(it => {
+                    const k_kepster = Number(it.komisi_kepster || 0) * Number(it.qty || 0);
+                    const k_barber = Number(it.komisi_barber || 0) * Number(it.qty || 0);
+                    const gross = Number(it.jual || 0) * Number(it.qty || 0);
+                    const jenis = (it.jenis || '').toUpperCase();
+                    total_komisi_kepster += k_kepster;
+                    total_komisi_barber += k_barber;
+                    if (jenis === 'HAIRCUT') total_keuntungan_haircut += k_barber;
+                    else if (jenis === 'PRODUK') total_keuntungan_produk += k_barber;
+                    if (!rincian[it.nama]) rincian[it.nama] = { qty: 0, total: 0, kepster: 0, barber: 0 };
+                    rincian[it.nama].qty += Number(it.qty || 0);
+                    rincian[it.nama].total += gross;
+                    rincian[it.nama].kepster += k_kepster;
+                    rincian[it.nama].barber += k_barber;
+                });
+            });
+
+            const uangMakanHarian = Number(config.uang_makan) || 0;
+            const totalUangMakan = uniqueDays.size * uangMakanHarian;
+            const totalSetoran = omzet - total_komisi_kepster - totalUangMakan - total_tip - total_qris;
+
+            let rows = [
+                ["LAPORAN LABA"],
+                ["Periode:", start, "s/d", end],
+                ["Karyawan:", config.employee || '-'],
+                [],
+                ["RINGKASAN"],
+                ["Total Cash", total_cash],
+                ["Total QRIS", total_qris],
+                ["Total Omzet", omzet],
+                // ["Total Tip", total_tip],
+                ["Total Komisi Kepster", total_komisi_kepster],
+                ["Total Keuntungan HAIRCUT", total_keuntungan_haircut],
+                ["Total Keuntungan PRODUK", total_keuntungan_produk],
+                ["Potongan Makan", totalUangMakan],
+                ["Total Gaji", total_komisi_kepster + totalUangMakan + total_tip],
+                ["Total Setoran Cash", totalSetoran],
+                [],
+                ["RINCIAN KOMISI"],
+                ["Nama", "QTY", "Total", "Komisi Kepster", "Komisi Owner"]
+            ];
+            Object.keys(rincian).forEach(nama => {
+                const r = rincian[nama];
+                rows.push([nama, r.qty, r.total, r.kepster, r.barber]);
             });
 
             const csv = rows.map(r => r.join("\t")).join("\n");
-            navigator.clipboard.writeText(csv).then(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = csv;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
                 alert("Data berhasil disalin! Pastekan ke Google Sheets.");
-            }).catch(() => {
+            } catch (e) {
+                document.body.removeChild(textarea);
                 alert("Gagal menyalin. Coba lagi.");
-            });
+            };
         }
 
         async function showTrxDetail(id) {
