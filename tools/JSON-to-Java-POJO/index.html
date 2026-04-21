@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ JSON to Java POJO Converter</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>☕ JSON ➡️ Java POJO</h1>
+        </div>
+        <div class="header-right">
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <div class="pane">
+            <div class="pane-toolbar">
+                <span class="pane-title">Input JSON Mentah</span>
+                <div class="btn-group">
+                    <button id="formatJsonBtn" class="btn">Rapikan JSON</button>
+                    <button id="clearBtn" class="btn danger">Clear</button>
+                </div>
+            </div>
+            <textarea id="jsonInput" spellcheck="false"
+                placeholder="Paste JSON response API di sini...&#10;&#10;Contoh:&#10;{&#10;  &#34;user_id&#34;: 101,&#10;  &#34;full_name&#34;: &#34;Budi Santoso&#34;,&#10;  &#34;is_active&#34;: true,&#10;  &#34;roles&#34;: [&#34;ADMIN&#34;, &#34;USER&#34;],&#10;  &#34;address&#34;: {&#10;    &#34;city&#34;: &#34;Jakarta&#34;,&#10;    &#34;zip_code&#34;: &#34;12345&#34;&#10;  }&#10;}"></textarea>
+        </div>
+
+        <div class="pane">
+            <div class="pane-toolbar">
+                <div class="toolbar-left">
+                    <span class="pane-title">Generated Java Class</span>
+                    <input type="text" id="rootClassName" class="code-input-small" value="RootResponse"
+                        title="Nama Class Utama">
+                </div>
+                <div class="btn-group">
+                    <button id="copyBtn" class="btn success">📋 Salin Java</button>
+                </div>
+            </div>
+            <textarea id="javaOutput" spellcheck="false" readonly
+                placeholder="Kode Java POJO (Lombok & Jackson) akan muncul di sini..."></textarea>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

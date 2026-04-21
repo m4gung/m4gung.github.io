@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ Spring Log Analyzer & Trace Beautifier</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>☕ Spring Log Analyzer & Trace Beautifier</h1>
+        </div>
+        <div class="header-right">
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <div class="pane">
+            <div class="pane-toolbar">
+                <span class="pane-title">Input Log File</span>
+                <div class="btn-group">
+                    <button id="uploadBtn" class="btn warning">📂 Upload File</button>
+                    <input type="file" id="fileInput" accept=".log,.json,.txt,.log2" style="display: none;">
+                    <button id="exampleBtn" class="btn">Contoh</button>
+                    <button id="clearBtn" class="btn danger">Clear</button>
+                </div>
+            </div>
+            <textarea id="traceInput" spellcheck="false"
+                placeholder="Paste log error / Drag & Drop file log (.log, .json, .txt) di sini...&#10;&#10;Contoh:&#10;2026-04-21 10:15:30 INFO  [main] c.a.Service : App started&#10;2026-04-21 10:15:35 WARN  [main] c.a.Auth : User not found&#10;2026-04-21 10:15:36 ERROR [main] c.a.Payment : Failed!&#10;java.lang.NullPointerException..."></textarea>
+        </div>
+
+        <div class="pane">
+            <div class="pane-toolbar">
+                <span class="pane-title">Filter & Analisis</span>
+                <div class="filter-group">
+                    <label class="toggle-btn debug-btn"><input type="checkbox" id="filterDebug" checked> DEBUG</label>
+                    <label class="toggle-btn info-btn"><input type="checkbox" id="filterInfo" checked> INFO</label>
+                    <label class="toggle-btn warning-btn"><input type="checkbox" id="filterWarn" checked> WARN</label>
+                    <label class="toggle-btn error-btn"><input type="checkbox" id="filterError" checked> ERROR</label>
+                    <div class="divider"></div>
+                    <label class="toggle-btn"><input type="checkbox" id="hideFrameworksToggle"> 🙈 Sembunyikan
+                        Framework</label>
+                </div>
+            </div>
+            <div id="traceOutput" class="output-display code-font">Menunggu input log error...</div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

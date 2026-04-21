@@ -24,7 +24,15 @@ const translations = {
         sqlFormatter: "SQL Formatter",
         sqlFormatterDesc: "Format, beautify, and tidy up your SQL queries to make them easy to read and understand.",
         iso8583Formatter: "ISO8583 Formatter",
-        iso8583FormatterDesc: "Format, percantik, dan rapikan pesan ISO8583 kamu agar mudah dibaca dan dipahami."
+        iso8583FormatterDesc: "Format, beautify, and tidy up your ISO8583 messages to make them easy to read and understand.",
+        springFormatter: "Spring Properties YAML Converter",
+        springFormatterDesc: "Convert Spring Properties files to YAML and vice versa.",
+        javaSpringStackTraceBeautifier: "Spring Log Analyzer & Trace Beautifier",
+        javaSpringStackTraceBeautifierDesc: "Format, beautify, and tidy up your Java Spring stack traces to make them easy to read and understand.",
+        bcryptGenerator: "BCrypt Hash Generator & Matcher",
+        bcryptGeneratorDesc: "Generate and compare BCrypt hashes with ease.",
+        jsonToJavaPojo: "JSON to Java POJO (Lombok & Jackson) Converter",
+        jsonToJavaPojoDesc: "Convert JSON to Java POJO (Lombok & Jackson) with ease."
     },
     id: {
         welcomeTitle: "Selamat Datang di DevTools",
@@ -50,7 +58,15 @@ const translations = {
         sqlFormatter: "SQL Formatter",
         sqlFormatterDesc: "Format, percantik, dan rapikan query SQL kamu agar mudah dibaca dan dipahami.",
         iso8583Formatter: "ISO8583 Formatter",
-        iso8583FormatterDesc: "Format, percantik, dan rapikan pesan ISO8583 kamu agar mudah dibaca dan dipahami."
+        iso8583FormatterDesc: "Format, percantik, dan rapikan pesan ISO8583 kamu agar mudah dibaca dan dipahami.",
+        springFormatter: "Spring Properties YAML Converter",
+        springFormatterDesc: "Konversi file properties ke YAML dan sebaliknya.",
+        javaSpringStackTraceBeautifier: "Spring Log Analyzer & Trace Beautifier",
+        javaSpringStackTraceBeautifierDesc: "Format, percantik, dan rapikan stack trace Java Spring kamu agar mudah dibaca dan dipahami.",
+        bcryptGenerator: "BCrypt Hash Generator & Matcher",
+        bcryptGeneratorDesc: "Generate dan bandingkan hash BCrypt dengan mudah.",
+        jsonToJavaPojo: "JSON to Java POJO (Lombok & Jackson) Converter",
+        jsonToJavaPojoDesc: "Konversi JSON ke Java POJO (Lombok & Jackson) dengan mudah."
     }
 };
 
@@ -93,7 +109,11 @@ const translations = {
             'tool-epoch': t.epochConverter,
             'tool-cron': t.cronGenerator,
             'tool-sql': t.sqlFormatter,
-            'tool-iso': t.iso8583Formatter
+            'tool-iso': t.iso8583Formatter,
+            'tool-spring': t.springFormatter,
+            'tool-java-spring-stack-trace': t.javaSpringStackTraceBeautifier,
+            'tool-bcrypt': t.bcryptGenerator,
+            'tool-json-to-java-pojo': t.jsonToJavaPojo
         };
 
         const toolDescs = {
@@ -105,7 +125,11 @@ const translations = {
             'tool-epoch': t.epochConverterDesc,
             'tool-cron': t.cronGeneratorDesc,
             'tool-sql': t.sqlFormatterDesc,
-            'tool-iso': t.iso8583FormatterDesc
+            'tool-iso': t.iso8583FormatterDesc,
+            'tool-spring': t.springFormatterDesc,
+            'tool-java-spring-stack-trace': t.javaSpringStackTraceBeautifierDesc,
+            'tool-bcrypt': t.bcryptGeneratorDesc,
+            'tool-json-to-java-pojo': t.jsonToJavaPojoDesc
         };
 
         for (const [id, title] of Object.entries(toolTitles)) {

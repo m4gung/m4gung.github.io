@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 BCrypt Generator & Matcher</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>🔐 BCrypt Hash Tool</h1>
+        </div>
+        <div class="header-right">
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace grid-layout">
+        <div class="card">
+            <div class="card-header">Pembuat Hash (Generator)</div>
+            <div class="card-body">
+                <div class="input-group-vertical">
+                    <label>Teks Mentah (Plain Text)</label>
+                    <input type="text" id="genInput" class="code-input"
+                        placeholder="Masukkan password (contoh: rahasia123)">
+                </div>
+
+                <div class="input-group-vertical">
+                    <label>Salt Rounds (Cost)</label>
+                    <div class="input-row">
+                        <input type="number" id="genRounds" class="code-input" value="10" min="4" max="20"
+                            style="width: 100px;">
+                        <span class="help-text">Default Spring Security adalah 10. Angka lebih besar = lebih aman tapi
+                            lebih lambat.</span>
+                    </div>
+                </div>
+
+                <button id="btnGenerate" class="btn primary btn-full">Generate BCrypt Hash</button>
+
+                <div class="generator-output">
+                    <label>Hasil Hash:</label>
+                    <div class="hash-box">
+                        <span id="genOutput" class="code-font hash-text">-</span>
+                    </div>
+                    <button id="copyGenBtn" class="btn success btn-full" style="margin-top: 10px;" disabled>📋 Salin
+                        Hash</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Pencocok Hash (Matcher / Verifier)</div>
+            <div class="card-body">
+                <div class="input-group-vertical">
+                    <label>Teks Mentah (Plain Text)</label>
+                    <input type="text" id="matchInput" class="code-input" placeholder="Contoh: rahasia123">
+                </div>
+
+                <div class="input-group-vertical">
+                    <label>BCrypt Hash dari Database</label>
+                    <input type="text" id="matchHash" class="code-input" placeholder="Contoh: $2a$10$...">
+                </div>
+
+                <button id="btnMatch" class="btn primary btn-full">Bandingkan (Verify)</button>
+
+                <div id="matchResult" class="result-box hidden">
+                    <div class="result-icon" id="matchIcon">❓</div>
+                    <div id="matchText" class="human-text">Menunggu input...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

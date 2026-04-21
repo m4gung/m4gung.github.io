@@ -1,0 +1,356 @@
+/* === TEMA GELAP (DEFAULT) === */
+:root {
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --bg-toolbar: #334155;
+    --bg-textarea: #0f172a;
+    --bg-output: #0b1121;
+    --text-main: #f8fafc;
+    --text-muted: #64748b;
+    --accent: #3b82f6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --danger-bg: rgba(239, 68, 68, 0.1);
+    --border: #475569;
+    --user-code-bg: rgba(59, 130, 246, 0.15);
+    --user-code-border: #3b82f6;
+    --debug-color: #8b5cf6;
+}
+
+/* === TEMA TERANG === */
+[data-theme="light"] {
+    --bg-main: #f8fafc;
+    --bg-panel: #ffffff;
+    --bg-toolbar: #f1f5f9;
+    --bg-textarea: #ffffff;
+    --bg-output: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #94a3b8;
+    --accent: #2563eb;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --danger-bg: #fee2e2;
+    --border: #cbd5e1;
+    --user-code-bg: #eff6ff;
+    --user-code-border: #2563eb;
+    --debug-color: #a78bfa;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+/* Header & Layout */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+}
+
+.logo h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--danger);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.workspace {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 61px);
+}
+
+.pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    background-color: var(--bg-panel);
+}
+
+.pane:last-child {
+    border-right: none;
+}
+
+.pane-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background-color: var(--bg-toolbar);
+    border-bottom: 1px solid var(--border);
+}
+
+.pane-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Buttons & Toggles */
+.btn-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.divider {
+    width: 1px;
+    height: 20px;
+    background-color: var(--border);
+    margin: 0 4px;
+}
+
+.btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background-color: var(--border);
+}
+
+.btn.danger {
+    color: var(--danger);
+    border-color: transparent;
+}
+
+.btn.danger:hover {
+    background-color: var(--danger-bg);
+    border-color: var(--danger);
+}
+
+.btn.warning {
+    color: var(--warning);
+    border-color: transparent;
+}
+
+.btn.warning:hover {
+    background-color: rgba(245, 158, 11, 0.1);
+    border-color: var(--warning);
+}
+
+.icon-btn {
+    font-size: 1.2rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: 0.2s;
+    border: 1px solid var(--border);
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+}
+
+.toggle-btn:hover {
+    background-color: var(--border);
+}
+
+.toggle-btn input {
+    cursor: pointer;
+}
+
+.debug-btn input {
+    accent-color: var(--debug-color);
+}
+
+.info-btn input {
+    accent-color: var(--accent);
+}
+
+
+.warning-btn input {
+    accent-color: var(--warning);
+}
+
+.error-btn input {
+    accent-color: var(--danger);
+}
+
+/* Textareas & Output */
+textarea,
+.output-display {
+    flex: 1;
+    width: 100%;
+    padding: 20px;
+    border: none;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    overflow-y: auto;
+}
+
+textarea {
+    background-color: var(--bg-textarea);
+    color: var(--text-main);
+    font-family: 'Fira Code', monospace;
+    white-space: pre;
+}
+
+.output-display {
+    background-color: var(--bg-output);
+    color: var(--text-main);
+}
+
+.code-font {
+    font-family: 'Fira Code', monospace;
+}
+
+/* === STYLING UNTUK STACK TRACE & LOG LEVEL === */
+.trace-line {
+    padding: 2px 0;
+    word-break: break-all;
+    white-space: pre-wrap;
+    margin-bottom: 2px;
+}
+
+/* Warna Log Level Text */
+.log-lvl-debug {
+    color: var(--debug-color);
+    font-weight: bold;
+}
+
+.log-lvl-info {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.log-lvl-warn {
+    color: var(--warning);
+    font-weight: bold;
+}
+
+.log-lvl-error {
+    color: var(--danger);
+    font-weight: bold;
+}
+
+/* Exception & Code Line */
+.trace-line.exception {
+    color: var(--danger);
+    font-weight: 700;
+    margin-top: 15px;
+    background-color: var(--danger-bg);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.trace-line.exception:first-child {
+    margin-top: 0;
+}
+
+.trace-line.framework {
+    color: var(--text-muted);
+    opacity: 0.7;
+    padding-left: 20px;
+}
+
+.trace-line.user-code {
+    background-color: var(--user-code-bg);
+    border-left: 3px solid var(--user-code-border);
+    padding: 6px 10px;
+    margin: 4px 0 4px 17px;
+    border-radius: 0 4px 4px 0;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.user-code .method {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.user-code .line-num {
+    color: var(--success);
+    font-weight: bold;
+}
+
+/* === MAGIC FILTERING: CSS STATE DRIVEN === */
+.hide-frameworks .trace-line.framework {
+    display: none;
+}
+
+.hide-frameworks .trace-line.user-code {
+    margin-left: 0;
+}
+
+/* Filter per level */
+.hide-debug .trace-line[data-level="DEBUG"],
+.hide-debug .trace-line[data-level="TRACE"] {
+    display: none;
+}
+
+.hide-info .trace-line[data-level="INFO"] {
+    display: none;
+}
+
+.hide-warn .trace-line[data-level="WARN"] {
+    display: none;
+}
+
+.hide-error .trace-line[data-level="ERROR"] {
+    display: none;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 5px;
+}

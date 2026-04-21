@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Properties ↔ YAML Converter</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>🍃 Spring Config Converter</h1>
+        </div>
+        <div class="header-right">
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <div class="pane">
+            <div class="pane-toolbar">
+                <div class="toolbar-left">
+                    <span class="pane-title">Input</span>
+                    <select id="conversionMode" class="select-input">
+                        <option value="prop2yaml">Properties ➡️ YAML</option>
+                        <option value="yaml2prop">YAML ➡️ Properties</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button id="clearBtn" class="btn danger">Clear</button>
+                </div>
+            </div>
+            <textarea id="configInput" spellcheck="false"
+                placeholder="Paste application.properties atau application.yml kamu di sini...&#10;&#10;Contoh Properties:&#10;spring.application.name=my-app&#10;spring.datasource.url=jdbc:mysql://localhost:3306/db&#10;spring.datasource.username=root"></textarea>
+        </div>
+
+        <div class="pane">
+            <div class="pane-toolbar">
+                <span class="pane-title">Output Hasil Konversi</span>
+                <div class="btn-group">
+                    <button id="convertBtn" class="btn primary">Konversi</button>
+                    <button id="copyBtn" class="btn success">Copy Hasil</button>
+                </div>
+            </div>
+            <textarea id="configOutput" spellcheck="false" readonly
+                placeholder="Hasil konversi akan muncul di sini..."></textarea>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

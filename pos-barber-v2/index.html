@@ -215,7 +215,8 @@
                             class="col-span-2 bg-emerald-600 p-4 rounded-3xl shadow-md text-white flex justify-between items-center">
                             <div>
                                 <p class="text-[10px] text-emerald-200 uppercase font-bold">Total Setoran Cash</p>
-                                <p class="text-[8px] text-emerald-200">Sisa cash laci dikurangi gaji, makan, & tip</p>
+                                <p class="text-[8px] text-emerald-200">Sisa cash laci dikurangi gaji, makan, qris, & tip
+                                </p>
                             </div>
                             <h3 id="rep-setoran" class="text-2xl font-black">Rp 0</h3>
                         </div>
@@ -831,7 +832,7 @@
             const uangMakanHarian = Number(config.uang_makan) || 0;
             const totalUangMakan = uniqueDays.size * uangMakanHarian;
 
-            const totalSetoran = Math.max(0, total_cash - total_komisi_kepster - totalUangMakan - total_tip);
+            const totalSetoran = omzet - total_komisi_kepster - totalUangMakan - total_tip - total_qris;
 
             document.getElementById('rep-cash').innerText = 'Rp ' + total_cash.toLocaleString();
             document.getElementById('rep-qris').innerText = 'Rp ' + total_qris.toLocaleString();
