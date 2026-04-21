@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS BARBER v2.0 - Mobile </title>
+    <title>Mr Barbershop</title>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885"
         crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -54,7 +54,7 @@
 
         <nav class="bg-blue-600 p-4 text-white shadow-md sticky top-0 z-50">
             <div class="flex justify-between items-center">
-                <h1 class="font-bold flex items-center gap-2 text-sm"><span>💈</span> POS BARBER</h1>
+                <h1 class="font-bold flex items-center gap-2 text-sm"><span>💈</span> MR Barbershop</h1>
                 <div id="top-employee-name" class="text-[10px] font-bold bg-white/20 px-3 py-1 rounded-full uppercase">
                     KASIR</div>
             </div>
@@ -190,9 +190,19 @@
                             <p class="text-[9px] text-gray-400 uppercase font-bold">Total Omzet</p>
                             <h3 id="rep-omzet" class="text-lg font-black mt-1 text-slate-700">Rp 0</h3>
                         </div>
-                        <div class="bg-emerald-50 p-4 rounded-3xl shadow-sm border border-emerald-100">
+                        <div class="bg-emerald-50 p-4 rounded-3xl shadow-sm border border-emerald-100 hidden">
                             <p class="text-[9px] text-emerald-600 uppercase font-bold">Total Tip</p>
                             <h3 id="rep-tip" class="text-lg font-black text-emerald-700 mt-1">Rp 0</h3>
+                        </div>
+                        <!-- Total Keuntungan HAIRCUT -->
+                        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                            <p class="text-[9px] text-gray-400 uppercase font-bold">Total Keuntungan HAIRCUT</p>
+                            <h3 id="rep-keuntungan" class="text-lg font-black mt-1 text-slate-700">Rp 0</h3>
+                        </div>
+                        <!-- Total Keuntungan PRODUK -->
+                        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                            <p class="text-[9px] text-gray-400 uppercase font-bold">Total Keuntungan PRODUK</p>
+                            <h3 id="rep-keuntungan-produk" class="text-lg font-black mt-1 text-slate-700">Rp 0</h3>
                         </div>
                         <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
                             <p class="text-[9px] text-gray-400 uppercase font-bold">Total Komisi</p>
@@ -241,6 +251,9 @@
                             </table>
                         </div>
                     </div>
+                    <button onclick="renderLaporan().then(() => exportLaporan())"
+                        class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold uppercase text-[10px] mt-4 shadow-md transition active:scale-95">Copy
+                        Data Untuk Google Sheets</button>
                 </div>
             </section>
 
@@ -358,9 +371,11 @@
                             type="number" id="p-komisi-kepster"
                             class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm"></div>
                 </div>
-                <div><label class="text-[9px] font-bold text-gray-400 ml-2">JENIS</label><input type="text" id="p-jenis"
-                        placeholder="BARBER/KEPSTER/PRODUK"
-                        class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm uppercase"></div>
+                <div><label class="text-[9px] font-bold text-gray-400 ml-2">JENIS</label><select id="p-jenis"
+                        class="w-full p-3 bg-slate-50 rounded-xl border outline-none text-sm uppercase">
+                        <option value="HAIRCUT">HAIRCUT</option>
+                        <option value="PRODUK">PRODUK</option>
+                    </select></div>
             </div>
             <button onclick="saveProduct()"
                 class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold uppercase text-sm mt-6 shadow-md transition active:scale-95">Simpan
@@ -783,6 +798,7 @@
 
             let total_cash = 0, total_qris = 0, omzet = 0, total_tip = 0;
             let total_komisi_kepster = 0, total_komisi_barber = 0;
+            let total_keuntungan_haircut = 0, total_keuntungan_produk = 0;
             let rincian = {};
             let uniqueDays = new Set();
 
@@ -815,9 +831,16 @@
                     const k_kepster = Number(it.komisi_kepster || 0) * Number(it.qty || 0);
                     const k_barber = Number(it.komisi_barber || 0) * Number(it.qty || 0);
                     const gross = Number(it.jual || 0) * Number(it.qty || 0);
+                    const jenis = (it.jenis || '').toUpperCase();
 
                     total_komisi_kepster += k_kepster;
                     total_komisi_barber += k_barber;
+
+                    if (jenis === 'HAIRCUT') {
+                        total_keuntungan_haircut += k_barber;
+                    } else if (jenis === 'PRODUK') {
+                        total_keuntungan_produk += k_barber;
+                    }
 
                     if (!rincian[it.nama]) {
                         rincian[it.nama] = { qty: 0, total: 0, kepster: 0, barber: 0 };
@@ -839,6 +862,8 @@
             document.getElementById('rep-omzet').innerText = 'Rp ' + omzet.toLocaleString();
             document.getElementById('rep-tip').innerText = 'Rp ' + total_tip.toLocaleString();
             document.getElementById('rep-komisi').innerText = 'Rp ' + total_komisi_kepster.toLocaleString();
+            document.getElementById('rep-keuntungan').innerText = 'Rp ' + (total_keuntungan_haircut - totalUangMakan).toLocaleString();
+            document.getElementById('rep-keuntungan-produk').innerText = 'Rp ' + total_keuntungan_produk.toLocaleString();
             document.getElementById('rep-makan').innerText = 'Rp ' + totalUangMakan.toLocaleString();
             document.getElementById('rep-gaji').innerText = 'Rp ' + (total_komisi_kepster + totalUangMakan + total_tip).toLocaleString();
             document.getElementById('rep-setoran').innerText = 'Rp ' + totalSetoran.toLocaleString();
@@ -857,6 +882,44 @@
             });
 
             document.getElementById('laporan-detail-list').innerHTML = reportRows.join('') || '<tr><td colspan="5" class="p-6 text-center text-gray-300 italic">Tidak ada rincian</td></tr>';
+        }
+
+        async function exportLaporan() {
+            const start = document.getElementById('report-start').value;
+            const end = document.getElementById('report-end').value;
+            if (!start || !end) return alert("Pilih tanggal terlebih dahulu!");
+
+            const trxs = await db.transaksi.where('cabang').equals(config.branch).toArray();
+            const filt = trxs.filter(t => {
+                const d = t.waktu.split('T')[0];
+                const inRange = d >= start && d <= end;
+                return inRange;
+            });
+
+            if (filt.length === 0) return alert("Tidak ada data pada periode tersebut!");
+
+            let rows = [["Tanggal", "ID Transaksi", "Pelanggan", "Items", "Total", "Cash", "QRIS", "Tip", "Metode"]];
+            filt.forEach(t => {
+                const items = JSON.parse(t.items).map(it => `${it.nama} x${it.qty}`).join(", ");
+                rows.push([
+                    t.waktu.split('T')[0],
+                    t.id_transaksi,
+                    t.pelanggan,
+                    items,
+                    t.total,
+                    t.cash || 0,
+                    t.qris || 0,
+                    t.tip || 0,
+                    t.metode
+                ]);
+            });
+
+            const csv = rows.map(r => r.join("\t")).join("\n");
+            navigator.clipboard.writeText(csv).then(() => {
+                alert("Data berhasil disalin! Pastekan ke Google Sheets.");
+            }).catch(() => {
+                alert("Gagal menyalin. Coba lagi.");
+            });
         }
 
         async function showTrxDetail(id) {
