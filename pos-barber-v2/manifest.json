@@ -1,7 +1,7 @@
 {
-  "name": "POS-Barber",
-  "short_name": "POS-Barber",
-  "description": "Aplikasi POS Offline-First untuk Barber Shop",
+  "name": "MR Barbershop",
+  "short_name": "MR Barber",
+  "description": "Aplikasi POS MR Barber",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#2563eb",
