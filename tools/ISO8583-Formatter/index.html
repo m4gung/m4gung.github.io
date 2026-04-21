@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💳 Modern ISO8583 Formatter</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>💳 ISO8583 Formatter</h1>
+        </div>
+        <div class="header-right">
+            <span id="specBadge" class="status-badge valid">Spec: Wikipedia (Standard)</span>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <div class="pane">
+            <div class="pane-toolbar">
+                <span class="pane-title">Input ISO8583 Mentah</span>
+                <div class="btn-group">
+                    <button id="uploadSpecBtn" class="btn warning">📂 Load .xml Spec</button>
+                    <button id="clearBtn" class="btn danger">Clear</button>
+                </div>
+                <input type="file" id="specFile" accept=".xml" style="display: none;">
+            </div>
+            <textarea id="isoInput" spellcheck="false"
+                placeholder="Paste string ISO8583 (Hex Bitmap, ASCII Data) di sini...&#10;&#10;Contoh:&#10;02007024048008c000001640000000000000010000000000001511223344123456..."></textarea>
+        </div>
+
+        <div class="pane">
+            <div class="pane-toolbar">
+                <span class="pane-title">Hasil Parsing (Data Elements)</span>
+                <div class="btn-group">
+                    <button id="parseBtn" class="btn primary">Parse Message</button>
+                    <button id="copyBtn" class="btn success">Copy JSON</button>
+                </div>
+            </div>
+            <div id="isoOutput" class="output-display code-font">Menunggu input...</div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

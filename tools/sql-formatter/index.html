@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗄️ Modern SQL Formatter</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/sql-formatter@12.2.1/dist/sql-formatter.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>🗄️ SQL Formatter</h1>
+        </div>
+        <div class="header-right">
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <div class="pane">
+            <div class="pane-toolbar">
+                <div class="toolbar-left">
+                    <span class="pane-title">Query Mentah</span>
+                    <select id="sqlDialect" class="select-input">
+                        <option value="sql">Standar SQL</option>
+                        <option value="postgresql">PostgreSQL</option>
+                        <option value="mysql">MySQL</option>
+                        <option value="mariadb">MariaDB</option>
+                        <option value="sqlite">SQLite</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button id="clearBtn" class="btn danger">Bersihkan</button>
+                </div>
+            </div>
+            <textarea id="sqlInput" spellcheck="false"
+                placeholder="Paste query SQL kamu yang berantakan di sini...&#10;&#10;Contoh:&#10;select id, name, email from users join orders on users.id = orders.user_id where status = 'active' order by created_at desc;"></textarea>
+        </div>
+
+        <div class="pane">
+            <div class="pane-toolbar">
+                <span class="pane-title">Hasil Format</span>
+                <div class="btn-group">
+                    <button id="formatBtn" class="btn primary">Format SQL</button>
+                    <button id="minifyBtn" class="btn">Minify (1 Baris)</button>
+                    <button id="copyBtn" class="btn success">Salin Kode</button>
+                </div>
+            </div>
+            <textarea id="sqlOutput" spellcheck="false" readonly
+                placeholder="Query SQL yang sudah dirapikan akan muncul di sini..."></textarea>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

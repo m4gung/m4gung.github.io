@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cron Generator & Translator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <script src="https://unpkg.com/cronstrue@2.47.0/dist/cronstrue-i18n.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>⏰ Cron Generator & Translator</h1>
+        </div>
+        <div class="header-actions">
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace grid-layout">
+        <div class="card">
+            <div class="card-header">Penerjemah Cron (Translator)</div>
+            <div class="card-body">
+                <div class="input-group-vertical">
+                    <label>Masukkan Sintaks Cron:</label>
+                    <input type="text" id="cronInput" class="code-input" value="0 8 * * 1-5" placeholder="* * * * *">
+                </div>
+
+                <div class="presets">
+                    <span class="preset-label">Contoh Cepat:</span>
+                    <button class="preset-btn" data-cron="* * * * *">Tiap Menit</button>
+                    <button class="preset-btn" data-cron="0 * * * *">Tiap Jam</button>
+                    <button class="preset-btn" data-cron="0 0 * * *">Tengah Malam</button>
+                    <button class="preset-btn" data-cron="0 8 * * 1">Senin 08:00</button>
+                </div>
+
+                <div id="translateResult" class="result-box success">
+                    <div class="result-icon">✨</div>
+                    <div id="humanReadable" class="human-text">Memuat...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Pembuat Cron (Generator)</div>
+            <div class="card-body generator-form">
+
+                <div class="form-row">
+                    <label>Menit</label>
+                    <select id="genMin" class="gen-select">
+                        <option value="*">Setiap Menit (*)</option>
+                        <option value="*/5">Setiap 5 Menit (*/5)</option>
+                        <option value="*/15">Setiap 15 Menit (*/15)</option>
+                        <option value="0" selected>Menit ke-0 (0)</option>
+                        <option value="30">Menit ke-30 (30)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>Jam</label>
+                    <select id="genHour" class="gen-select">
+                        <option value="*">Setiap Jam (*)</option>
+                        <option value="*/2">Setiap 2 Jam (*/2)</option>
+                        <option value="0">Tengah Malam (0)</option>
+                        <option value="8" selected>Jam 08:00 (8)</option>
+                        <option value="12">Jam 12:00 Siang (12)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>Tanggal</label>
+                    <select id="genDom" class="gen-select">
+                        <option value="*" selected>Setiap Tanggal (*)</option>
+                        <option value="1">Tanggal 1 (1)</option>
+                        <option value="15">Pertengahan Bulan (15)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>Bulan</label>
+                    <select id="genMonth" class="gen-select">
+                        <option value="*" selected>Setiap Bulan (*)</option>
+                        <option value="*/3">Setiap Kuartal (*/3)</option>
+                        <option value="1">Januari (1)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>Hari</label>
+                    <select id="genDow" class="gen-select">
+                        <option value="*" selected>Setiap Hari (*)</option>
+                        <option value="1-5">Senin - Jumat (1-5)</option>
+                        <option value="0,6">Akhir Pekan (0,6)</option>
+                        <option value="1">Senin (1)</option>
+                    </select>
+                </div>
+
+                <div class="generator-output">
+                    <div id="generatedCron" class="code-font highlight-cron">0 8 * * *</div>
+                    <div id="genReadable" class="help-text">Setiap jam 08:00</div>
+                    <button id="copyGenBtn" class="btn primary btn-full">📋 Salin Cron</button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

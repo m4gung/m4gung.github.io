@@ -1,0 +1,273 @@
+/* === TEMA GELAP (DEFAULT) === */
+:root {
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --accent: #3b82f6;
+    --success: #10b981;
+    --success-bg: rgba(16, 185, 129, 0.1);
+    --danger: #ef4444;
+    --danger-bg: rgba(239, 68, 68, 0.1);
+}
+
+/* === TEMA TERANG === */
+[data-theme="light"] {
+    --bg-main: #f1f5f9;
+    --bg-panel: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #cbd5e1;
+    --accent: #2563eb;
+    --success: #059669;
+    --success-bg: #dcfce7;
+    --danger: #dc2626;
+    --danger-bg: #fee2e2;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+/* Header Standar */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 24px;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+}
+
+.logo h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-weight: 500;
+    cursor: pointer;
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+    transition: 0.2s;
+    font-family: inherit;
+}
+
+.btn:hover {
+    background-color: var(--border);
+}
+
+.btn.primary {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.btn.primary:hover {
+    filter: brightness(1.1);
+}
+
+.icon-btn {
+    font-size: 1.2rem;
+    padding: 6px 12px;
+}
+
+.btn-full {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Grid Layout Workspace */
+.grid-layout {
+    padding: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    overflow-y: auto;
+}
+
+/* Cards */
+.card {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    padding: 15px 20px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.card-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Inputs & Form */
+.input-group-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group-vertical label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.code-input,
+.gen-select {
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Fira Code', monospace;
+    font-size: 1.1rem;
+    outline: none;
+    transition: 0.2s;
+}
+
+.code-input:focus,
+.gen-select:focus {
+    border-color: var(--accent);
+}
+
+.gen-select {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+/* Presets */
+.presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.preset-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-right: 4px;
+}
+
+.preset-btn {
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--bg-main);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.preset-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+/* Result Box */
+.result-box {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: 0.3s;
+}
+
+.result-box.success {
+    background-color: var(--success-bg);
+    border-color: var(--success);
+}
+
+.result-box.error {
+    background-color: var(--danger-bg);
+    border-color: var(--danger);
+}
+
+.result-icon {
+    font-size: 1.5rem;
+}
+
+.human-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* Generator Form */
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+}
+
+.form-row:last-of-type {
+    border-bottom: none;
+}
+
+.form-row label {
+    font-weight: 500;
+    width: 80px;
+}
+
+.form-row select {
+    flex: 1;
+}
+
+.generator-output {
+    background-color: var(--bg-main);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.highlight-cron {
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+}
+
+.help-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}

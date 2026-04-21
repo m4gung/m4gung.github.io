@@ -4,7 +4,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevTools Dashboard</title>
+    <title>My DevTools - Free Online Developer Utilities</title>
+    <meta name="description"
+        content="Free online developer tools including JSON formatter, Markdown previewer, RegEx tester, Diff checker, PlantUML editor, and Epoch converter. All running 100% in browser.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://m4gung.github.io/tools/">
+
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="My DevTools - Free Online Developer Utilities">
+    <meta property="og:description"
+        content="Free online developer tools including JSON formatter, Markdown previewer, RegEx tester, Diff checker, PlantUML editor, and Epoch converter.">
+    <meta property="og:image" content="https://m4gung.github.io/og-image.png">
+    <meta property="og:url" content="https://m4gung.github.io/tools/">
+    <meta property="og:type" content="website">
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "My DevTools",
+        "description": "A collection of free online developer utilities including JSON formatter, Markdown previewer, RegEx tester, Diff checker, PlantUML editor, and Epoch converter.",
+        "url": "https://m4gung.github.io/tools/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "creator": {
+            "@type": "Person",
+            "name": "Magung"
+        }
+    }
+    </script>
+
     <link
         href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet">
@@ -17,58 +52,116 @@
             <h1>🛠️ My DevTools</h1>
         </div>
         <div class="header-actions">
-            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+            <button id="lang-en" class="btn lang-btn" aria-label="English">EN</button>
+            <button id="lang-id" class="btn lang-btn" aria-label="Bahasa Indonesia">ID</button>
+            <button id="themeToggle" class="btn icon-btn" aria-label="Switch theme">🌙</button>
         </div>
     </header>
 
     <main class="container">
         <div class="hero-section">
-            <h2>Selamat Datang di DevTools</h2>
-            <p>Kumpulan utilitas frontend ringan, cepat, dan 100% berjalan di browser tanpa backend.</p>
+            <h2 id="welcome-title">Selamat Datang di DevTools</h2>
+            <p id="welcome-desc">Kumpulan utilitas frontend ringan, cepat, dan 100% berjalan di browser tanpa backend.
+                Semua alat developer ini gratis untuk digunakan dan tidak memerlukan instalasiapun. Cocok untuk
+                developer web, programmer, dan siapa saja yang membutuhkan alat bantu coding sehari-hari.</p>
         </div>
 
+        <h2 id="tools-title" class="text-xl font-bold text-white mb-6 text-center">Alat Developer Tersedia</h2>
+        <p id="tools-desc" class="text-slate-400 text-center mb-8 max-w-2xl mx-auto">
+            Kami menyediakan berbagai alat pengembangan web yang sering diperlukan dalam workflow pengembangan software.
+            Setiap alat dirancang dengan antarmuka pengguna yang intuitif dan responsif.
+        </p>
+
         <div class="tools-grid">
-            <a href="./json-formatter/index.html" class="tool-card">
+            <a href="./json-formatter/index.html" class="tool-card" id="tool-json">
                 <div class="tool-icon">{ }</div>
-                <h3 class="tool-title">JSON Formatter</h3>
-                <p class="tool-desc">Format, validasi, dan percantik data JSON mentah dengan fitur copy/paste cerdas.
-                </p>
+                <div class="tool-content">
+                    <h3 class="tool-title">JSON Formatter</h3>
+                    <p class="tool-desc">Format, validasi, dan percantik data JSON mentah dengan fitur copy/paste
+                        cerdas.</p>
+                </div>
             </a>
 
-            <a href="./markdown-previewer/index.html" class="tool-card">
+            <a href="./markdown-previewer/" class="tool-card" id="tool-markdown">
                 <div class="tool-icon">📝</div>
-                <h3 class="tool-title">Markdown Previewer</h3>
-                <p class="tool-desc">Editor Markdown real-time dengan split-pane, syntax highlighting, dan export PDF.
-                </p>
+                <div class="tool-content">
+                    <h3 class="tool-title">Markdown Previewer</h3>
+                    <p class="tool-desc">Editor Markdown real-time dengan split-pane, syntax highlighting, dan export
+                        PDF.</p>
+                </div>
             </a>
 
-            <a href="./regex-tester/index.html" class="tool-card">
+            <a href="./regex-tester/" class="tool-card" id="tool-regex">
                 <div class="tool-icon">/.*/</div>
-                <h3 class="tool-title">RegEx Tester</h3>
-                <p class="tool-desc">Uji pola Regular Expression kamu secara langsung dengan fitur highlight yang
-                    presisi.</p>
+                <div class="tool-content">
+                    <h3 class="tool-title">RegEx Tester</h3>
+                    <p class="tool-desc">Uji pola Regular Expression kamu secara langsung dengan fitur highlight yang
+                        presisi.</p>
+                </div>
             </a>
 
-            <a href="./diff-checker/index.html" class="tool-card">
+            <a href="./diff-checker/" class="tool-card" id="tool-diff">
                 <div class="tool-icon">±</div>
-                <h3 class="tool-title">Diff Checker</h3>
-                <p class="tool-desc">Bandingkan dua teks atau kode untuk melihat perubahannya (tambah/hapus) lengkap
-                    dengan minimap.</p>
+                <div class="tool-content">
+                    <h3 class="tool-title">Diff Checker</h3>
+                    <p class="tool-desc">Bandingkan dua teks atau kode untuk melihat perubahannya (tambah/hapus) lengkap
+                        dengan minimap.</p>
+                </div>
             </a>
 
-            <a href="./PlantUML-Reader-Editor/index.html" class="tool-card">
+            <a href="./PlantUML-Reader-Editor/" class="tool-card" id="tool-plant">
                 <div class="tool-icon">🌿</div>
-                <h3 class="tool-title">PlantUML Editor</h3>
-                <p class="tool-desc">Tulis kode arsitektur sistem dan render menjadi diagram visual secara real-time.
-                </p>
+                <div class="tool-content">
+                    <h3 class="tool-title">PlantUML Editor</h3>
+                    <p class="tool-desc">Tulis kode arsitektur sistem dan render menjadi diagram visual secara
+                        real-time.</p>
+                </div>
             </a>
 
-            <a href="./EpochConverter/index.html" class="tool-card">
+            <a href="./EpochConverter/" class="tool-card" id="tool-epoch">
                 <div class="tool-icon">⏱️</div>
-                <h3 class="tool-title">Epoch Converter</h3>
-                <p class="tool-desc">Konversi angka Unix Timestamp ke tanggal yang bisa dibaca manusia, dan sebaliknya.
-                </p>
+                <div class="tool-content">
+                    <h3 class="tool-title">Epoch Converter</h3>
+                    <p class="tool-desc">Konversi angka Unix Timestamp ke tanggal yang bisa dibaca manusia, dan
+                        sebaliknya.</p>
+                </div>
             </a>
+
+            <a href="./cron-generator/" class="tool-card" id="tool-cron">
+                <div class="tool-icon">⏰</div>
+                <div class="tool-content">
+                    <h3 class="tool-title">Cron Generator</h3>
+                    <p class="tool-desc">Konversi angka Unix Timestamp ke tanggal yang bisa dibaca manusia, dan
+                        sebaliknya.</p>
+                </div>
+            </a>
+
+            <a href="./sql-formatter/" class="tool-card" id="tool-sql">
+                <div class="tool-icon">SQL</div>
+                <div class="tool-content">
+                    <h3 class="tool-title">SQL Formatter</h3>
+                    <p class="tool-desc">Format, percantik, dan rapikan query SQL kamu agar mudah dibaca dan dipahami.
+                    </p>
+                </div>
+            </a>
+
+            <a href="./ISO8583-Formatter/" class="tool-card" id="tool-iso">
+                <div class="tool-icon">ISO</div>
+                <div class="tool-content">
+                    <h3 class="tool-title">ISO8583 Formatter</h3>
+                    <p class="tool-desc">Format, percantik, dan rapikan pesan ISO8583 kamu agar mudah dibaca dan
+                        dipahami.
+                    </p>
+                </div>
+            </a>
+        </div>
+
+        <div class="mt-12 p-6 rounded-3xl glass-card">
+            <h3 id="about-title" class="font-bold text-blue-400 text-lg mb-2">Tentang DevTools</h3>
+            <p id="about-desc" class="text-slate-400 text-sm">My DevTools adalah kumpulan alat pengembangan web yang
+                berjalan sepenuhnya di browser. Tidak diperlukan instalasi software atau server backend. Alat-alat ini
+                dirancang untuk membantu developer dalam pekerjaan sehari-hari seperti memformat JSON, menguji regular
+                expression, membandingkan kode, dan berbagai tugas pengembangan web lainnya.</p>
         </div>
     </main>
 

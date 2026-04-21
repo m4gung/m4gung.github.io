@@ -32,12 +32,18 @@
     padding: 0;
 }
 
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg-main);
     color: var(--text-main);
     min-height: 100vh;
     transition: background-color 0.3s, color 0.3s;
+    line-height: 1.5;
 }
 
 /* === HEADER === */
@@ -45,17 +51,25 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 5%;
+    gap: 12px;
+    padding: 12px 16px;
     background-color: var(--bg-panel);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 100;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .logo h1 {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--text-main);
     letter-spacing: -0.5px;
@@ -74,45 +88,99 @@ body {
     background-color: var(--border);
 }
 
+.lang-btn {
+    font-size: 0.875rem;
+    padding: 8px 12px;
+    min-width: 44px;
+    min-height: 44px;
+    font-weight: 600;
+}
+
+.lang-btn.active {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
 .icon-btn {
     font-size: 1.2rem;
-    padding: 8px 12px;
+    padding: 10px 14px;
+    min-width: 44px;
+    min-height: 44px;
 }
 
 /* === MAIN CONTAINER === */
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 40px 5%;
+    padding: 24px 16px 40px;
 }
 
 /* Hero Section */
 .hero-section {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
 }
 
 .hero-section h2 {
-    font-size: 2.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     color: var(--text-main);
+    padding: 0 8px;
 }
 
 .hero-section p {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--text-muted);
     max-width: 600px;
     margin: 0 auto;
     line-height: 1.6;
 }
 
+/* === SECTION HEADINGS === */
+.text-xl {
+    font-size: 1.25rem;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.text-white {
+    color: var(--text-main);
+}
+
+.mb-6 {
+    margin-bottom: 24px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-slate-400 {
+    color: var(--text-muted);
+}
+
+.mb-8 {
+    margin-bottom: 32px;
+}
+
+.max-w-2xl {
+    max-width: 672px;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* === TOOLS GRID === */
 .tools-grid {
     display: grid;
-    /* Lebar minimum kartu 300px, akan otomatis mengisi layar */
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
+    grid-template-columns: 1fr;
+    gap: 16px;
 }
 
 /* Tool Card */
@@ -120,14 +188,50 @@ body {
     background-color: var(--bg-panel);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 24px;
+    padding: 16px;
     text-decoration: none;
     color: var(--text-main);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    min-height: 72px;
+}
+
+.tool-card .tool-icon {
+    font-family: 'Fira Code', monospace;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--accent);
+    background-color: rgba(59, 130, 246, 0.1);
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.tool-card .tool-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.tool-card .tool-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+    color: var(--text-main);
+}
+
+.tool-card .tool-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
 }
 
 /* Garis aksen di atas kartu */
@@ -137,7 +241,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 3px;
     background-color: var(--accent);
     transform: scaleX(0);
     transform-origin: left;
@@ -146,42 +250,160 @@ body {
 
 /* Efek Hover */
 .tool-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
     background-color: var(--card-hover-bg);
     border-color: var(--accent);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
 .tool-card:hover::before {
     transform: scaleX(1);
 }
 
-/* Isi Kartu */
-.tool-icon {
-    font-family: 'Fira Code', monospace;
-    font-size: 2rem;
-    font-weight: bold;
+/* === ADDITIONAL SECTION === */
+.mt-12 {
+    margin-top: 48px;
+}
+
+.p-6 {
+    padding: 24px;
+}
+
+.rounded-3xl {
+    border-radius: 16px;
+}
+
+.glass-card {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border);
+}
+
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.mb-2 {
+    margin-bottom: 8px;
+}
+
+.text-blue-400 {
     color: var(--accent);
-    margin-bottom: 16px;
-    background-color: rgba(59, 130, 246, 0.1);
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
 }
 
-.tool-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 10px;
+.text-sm {
+    font-size: 0.875rem;
 }
 
-.tool-desc {
-    font-size: 0.95rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-    flex-grow: 1;
-    /* Mendorong deskripsi untuk mengisi ruang */
+/* === MEDIA QUERIES === */
+
+/* Tablet: 640px and up */
+@media (min-width: 640px) {
+    .header {
+        padding: 14px 24px;
+    }
+
+    .logo h1 {
+        font-size: 1.4rem;
+    }
+
+    .container {
+        padding: 32px 24px 48px;
+    }
+
+    .hero-section h2 {
+        font-size: 2rem;
+    }
+
+    .hero-section p {
+        font-size: 1.05rem;
+    }
+
+    .tools-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .tool-card {
+        padding: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: auto;
+    }
+
+    .tool-card .tool-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.5rem;
+    }
+
+    .tool-card .tool-title {
+        font-size: 1.1rem;
+    }
+
+    .tool-card .tool-desc {
+        font-size: 0.875rem;
+    }
+}
+
+/* Desktop: 1024px and up */
+@media (min-width: 1024px) {
+    .header {
+        padding: 16px 5%;
+    }
+
+    .container {
+        padding: 40px 5% 60px;
+    }
+
+    .hero-section {
+        margin-bottom: 50px;
+    }
+
+    .hero-section h2 {
+        font-size: 2.25rem;
+    }
+
+    .hero-section p {
+        max-width: 700px;
+    }
+
+    .tools-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+}
+
+/* Large Desktop: 1280px and up */
+@media (min-width: 1280px) {
+    .tools-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+}
+
+/* === TOUCH IMPROVEMENTS === */
+@media (hover: none) and (pointer: coarse) {
+    .tool-card {
+        padding: 18px;
+    }
+
+    .icon-btn {
+        padding: 12px 16px;
+    }
+
+    .btn {
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+/* === REDUCE MOTION === */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
