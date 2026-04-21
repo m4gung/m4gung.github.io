@@ -20,6 +20,21 @@
             color: #2563eb;
         }
 
+        .sidebar-btn.active-nav {
+            color: #60a5fa;
+            background: #1e3a5f;
+        }
+
+        .sidebar-btn.active-nav svg {
+            color: #60a5fa;
+        }
+
+        @media (min-width: 1024px) {
+            #app-container > div:first-of-type {
+                width: 16rem;
+            }
+        }
+
         .hide-scroll::-webkit-scrollbar {
             display: none;
         }
@@ -47,20 +62,48 @@
 
 </head>
 
-<body class="bg-gray-200 font-sans text-slate-800 flex justify-center">
+<body class="bg-gray-200 font-sans text-slate-800">
 
-    <div
-        class="w-full max-w-md bg-slate-50 min-h-screen shadow-2xl relative border-x border-gray-300 pb-20 flex flex-col">
-
-        <nav class="bg-blue-600 p-4 text-white shadow-md sticky top-0 z-50">
-            <div class="flex justify-between items-center">
-                <h1 class="font-bold flex items-center gap-2 text-sm"><span>💈</span> MR Barbershop</h1>
-                <div id="top-employee-name" class="text-[10px] font-bold bg-white/20 px-3 py-1 rounded-full uppercase">
-                    KASIR</div>
+    <div id="app-container" class="flex h-screen">
+        <nav id="sidebar" class="hidden lg:flex flex-col w-64 bg-slate-800 text-white fixed lg:static h-full z-50">
+            <div class="p-6 border-b border-slate-700">
+                <h1 class="font-black text-lg flex items-center gap-2"><span>💈</span> POS BARBER</h1>
+                <div id="top-employee-name" class="text-[10px] font-bold bg-white/20 px-3 py-1 rounded-full uppercase mt-2 w-fit">KASIR</div>
+            </div>
+            <div class="flex-1 py-4 space-y-1 px-2">
+                <button onclick="showSection('kasir')" id="tab-kasir-sidebar" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold uppercase flex items-center gap-3 hover:bg-slate-700 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Kasir
+                </button>
+                <button onclick="showSection('inventori')" id="tab-inventori-sidebar" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold uppercase flex items-center gap-3 hover:bg-slate-700 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    Stok
+                </button>
+                <button onclick="showSection('transaksi')" id="tab-transaksi-sidebar" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold uppercase flex items-center gap-3 hover:bg-slate-700 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    Riwayat
+                </button>
+                <button onclick="showSection('laporan')" id="tab-laporan-sidebar" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold uppercase flex items-center gap-3 hover:bg-slate-700 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Laba
+                </button>
+                <button onclick="showSection('settings')" id="tab-settings-sidebar" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold uppercase flex items-center gap-3 hover:bg-slate-700 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Setelan
+                </button>
             </div>
         </nav>
 
-        <div class="p-4 flex-1">
+        <div class="flex-1 lg:ml-0 flex flex-col">
+            <nav class="lg:hidden bg-blue-600 p-4 text-white shadow-md sticky top-0 z-50">
+                <div class="flex justify-between items-center">
+                    <button onclick="toggleMobileMenu()" class="text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+                    <h1 class="font-bold flex items-center gap-2 text-sm"><span>💈</span> POS BARBER</h1>
+                    <div id="top-employee-name" class="text-[10px] font-bold bg-white/20 px-3 py-1 rounded-full uppercase">KASIR</div>
+                </div>
+            </nav>
+
+            <div class="flex-1 p-4 md:p-6 overflow-auto">
             <section id="sec-kasir" class="animate-fadeIn">
                 <input type="text" id="search-kasir" placeholder="CARI BARANG..."
                     class="w-full p-4 mb-4 rounded-2xl shadow-sm border outline-none focus:ring-2 focus:ring-blue-400 uppercase text-xs font-bold"
@@ -288,7 +331,7 @@
         </div>
 
         <div
-            class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 z-50 flex justify-around items-center px-1 text-[9px] uppercase font-bold text-gray-400 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            class="lg:hidden fixed bottom-0 left-0 right-0 mx-auto bg-white border-t border-gray-200 z-50 flex justify-around items-center px-1 text-[9px] uppercase font-bold text-gray-400 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] max-w-lg">
             <button onclick="showSection('kasir')" id="tab-kasir"
                 class="flex flex-col items-center gap-1 active-nav w-1/5 py-2">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -340,7 +383,7 @@
 
     <div id="modal-detail"
         class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[70]">
-        <div class="bg-white p-6 rounded-3xl w-full max-w-sm shadow-2xl animate-fadeIn">
+        <div class="bg-white p-6 rounded-3xl w-full max-w-xs sm:max-w-sm shadow-2xl animate-fadeIn">
             <div id="detail-content" class="text-sm"></div>
             <div id="detail-actions" class="mt-4 border-t pt-4"></div>
             <button onclick="closeModal('modal-detail')"
@@ -350,7 +393,7 @@
 
     <div id="modal-product"
         class="hidden fixed inset-0 bg-black/50 backdrop-blur flex items-center justify-center p-4 z-[60]">
-        <div class="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl animate-fadeIn text-center">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-xs sm:max-w-sm shadow-2xl animate-fadeIn text-center">
             <h3 id="modal-title" class="text-lg font-black mb-6 uppercase text-blue-600">Form Jasa / Produk</h3>
             <div class="space-y-4 text-left">
                 <input type="hidden" id="p-id">
@@ -387,7 +430,7 @@
 
     <div id="modal-checkout"
         class="hidden fixed inset-0 bg-black/50 backdrop-blur flex items-center justify-center p-4 z-[80]">
-        <div class="bg-white p-6 rounded-3xl w-full max-w-sm shadow-2xl animate-fadeIn">
+        <div class="bg-white p-6 rounded-3xl w-full max-w-xs sm:max-w-sm shadow-2xl animate-fadeIn">
             <h3 class="font-black text-blue-600 mb-4 uppercase text-center border-b pb-2">Pembayaran</h3>
             <div class="space-y-4 text-sm">
                 <div class="flex justify-between items-center">
@@ -1061,8 +1104,17 @@
                 tabbtn.classList.add('active-nav');
                 tabbtn.classList.remove('text-gray-400');
             }
+            const sidebarbtn = document.getElementById('tab-' + id + '-sidebar');
+            if (sidebarbtn) {
+                sidebarbtn.classList.add('active-nav');
+            }
             if (id === 'laporan') renderLaporan();
             if (id === 'transaksi') renderTransaksi();
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('sidebar').classList.toggle('hidden');
+            document.getElementById('sidebar').classList.toggle('fixed');
         }
 
         function saveConfig() {
