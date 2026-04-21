@@ -3,8 +3,30 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mr Barbershop</title>
+    <style>
+        * {
+            touch-action: manipulation;
+        }
+
+        input,
+        select,
+        textarea,
+        button {
+            font-size: 16px !important;
+        }
+
+        @media (min-width: 1024px) {
+
+            input,
+            select,
+            textarea,
+            button {
+                font-size: 14px !important;
+            }
+        }
+    </style>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885"
         crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -130,7 +152,7 @@
                                 d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg></button>
                     <h1 class="font-bold flex items-center gap-2 text-sm"><span>💈</span> MR Barbershop</h1>
-                    <div id="top-employee-name"
+                    <div id="top-employee-name-2"
                         class="text-[10px] font-bold bg-white/20 px-3 py-1 rounded-full uppercase">KASIR</div>
                 </div>
             </nav>
@@ -329,9 +351,12 @@
                                 </table>
                             </div>
                         </div>
+
                         <button onclick="renderLaporan().then(() => exportLaporan())"
-                            class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold uppercase text-[10px] mt-4 shadow-md transition active:scale-95">Copy
+                            class=" w-full bg-emerald-600 text-white py-3 rounded-xl font-bold uppercase text-[10px] mt-4 shadow-md transition active:scale-95">Copy
                             Data Untuk Google Sheets</button>
+                        <br><br><br><br><br>
+
                     </div>
                 </section>
 
@@ -530,6 +555,9 @@
 
                 const topEmp = document.getElementById('top-employee-name');
                 if (topEmp) topEmp.innerText = config.employee || 'KASIR';
+
+                const topEmp2 = document.getElementById('top-employee-name-2');
+                if (topEmp2) topEmp2.innerText = config.employee || 'KASIR';
 
                 await loadLocal();
                 syncCloud();
