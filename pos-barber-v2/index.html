@@ -1054,45 +1054,78 @@
                 const totalSetoran = omzet - total_komisi_kepster - totalUangMakan - total_tip - total_qris;
 
                 let rows = [
-                    ["LAPORAN LABA"],
-                    ["Periode:", start, "s/d", end],
-                    ["Karyawan:", config.employee || '-'],
-                    [],
-                    ["RINGKASAN"],
-                    ["Total Cash", total_cash],
-                    ["Total QRIS", total_qris],
-                    ["Total Omzet", omzet],
-                    // ["Total Tip", total_tip],
-                    ["Total Komisi Kepster", total_komisi_kepster],
-                    ["Total Keuntungan HAIRCUT", total_keuntungan_haircut],
-                    ["Total Keuntungan PRODUK", total_keuntungan_produk],
-                    ["Potongan Makan", totalUangMakan],
-                    ["Total Gaji", total_komisi_kepster + totalUangMakan + total_tip],
-                    ["Total Setoran Cash", totalSetoran],
-                    [],
-                    ["RINCIAN KOMISI"],
+                    ["LAPORAN LABA", "", "", "", ""],
+                    ["Periode", start, "s/d", end, ""],
+                    ["Karyawan", config.employee || '-', "", "", ""],
+                    ["", "", "", "", ""],
+                    ["RINGKASAN", "", "", "", ""],
+                    ["Total Cash", "Rp " + total_cash.toLocaleString(), "", "", ""],
+                    ["Total QRIS", "Rp " + total_qris.toLocaleString(), "", "", ""],
+                    ["Total Omzet", "Rp " + omzet.toLocaleString(), "", "", ""],
+                    ["Total Komisi Kepster", "Rp " + total_komisi_kepster.toLocaleString(), "", "", ""],
+                    ["Total Keuntungan HAIRCUT", "Rp " + total_keuntungan_haircut.toLocaleString(), "", "", ""],
+                    ["Total Keuntungan PRODUK", "Rp " + total_keuntungan_produk.toLocaleString(), "", "", ""],
+                    ["Potongan Makan", "Rp " + totalUangMakan.toLocaleString(), "", "", ""],
+                    ["Total Gaji", "Rp " + (total_komisi_kepster + totalUangMakan + total_tip).toLocaleString(), "", "", ""],
+                    ["Total Setoran Cash", "Rp " + totalSetoran.toLocaleString(), "", "", ""],
+                    ["", "", "", "", ""],
+                    ["RINCIAN KOMISI", "", "", "", ""],
                     ["Nama", "QTY", "Total", "Komisi Kepster", "Komisi Owner"]
                 ];
                 Object.keys(rincian).forEach(nama => {
                     const r = rincian[nama];
-                    rows.push([nama, r.qty, r.total, r.kepster, r.barber]);
+                    rows.push([nama, r.qty, "Rp " + r.total.toLocaleString(), "Rp " + r.kepster.toLocaleString(), "Rp " + r.barber.toLocaleString()]);
                 });
 
                 const csv = rows.map(r => r.join("\t")).join("\n");
-                const textarea = document.createElement('textarea');
-                textarea.value = csv;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
+                showCopyModal(csv);
+            }
+
+            function showCopyModal(text) {
+                const existing = document.getElementById('copy-modal-overlay');
+                if (existing) document.body.removeChild(existing);
+                const modal = document.createElement('div');
+                modal.id = 'copy-modal-overlay';
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+                modal.innerHTML = `
+                    <div style="background:white;border-radius:16px;padding:24px;width:100%;max-width:500px;max-height:80vh;overflow:auto">
+                        <h3 style="font-weight:bold;margin-bottom:12px;text-align:center">SALIN DATA UNTUK GOOGLE SHEETS</h3>
+                        <textarea id="copy-data" readonly style="width:100%;height:250px;padding:12px;border:1px solid #ccc;border-radius:8px;font-family:monospace;font-size:11px;resize:none;box-sizing:border-box">${text}</textarea>
+                        <button id="btn-copy-salin" style="width:100%;background:#2563eb;color:white;padding:14px;border-radius:8px;font-weight:bold;margin-top:12px;font-size:16px">SALIN</button>
+                        <button onclick="document.body.removeChild(document.getElementById('copy-modal-overlay'))" style="width:100%;background:#f1f5f9;padding:12px;border-radius:8px;font-weight:bold;margin-top:8px;color:#64748b">TUTUP</button>
+                    </div>`;
+                document.body.appendChild(modal);
+                document.getElementById('btn-copy-salin').onclick = function() {
+                    const data = document.getElementById('copy-data').value;
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(data).then(() => {
+                            document.body.removeChild(modal);
+                            alert("Data berhasil disalin! Pastekan ke Google Sheets.");
+                        }).catch(() => fallbackCopy(data));
+                    } else {
+                        fallbackCopy(data);
+                    }
+                };
+            }
+
+            function fallbackCopy(text) {
+                const el = document.createElement('div');
+                el.contentEditable = true;
+                el.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden';
+                el.innerText = text;
+                document.body.appendChild(el);
+                const range = document.createRange();
+                range.selectNodeContents(el);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
                 try {
                     document.execCommand('copy');
-                    document.body.removeChild(textarea);
+                    document.body.removeChild(el);
                     alert("Data berhasil disalin! Pastekan ke Google Sheets.");
                 } catch (e) {
-                    document.body.removeChild(textarea);
-                    alert("Gagal menyalin. Coba lagi.");
-                };
+                    prompt("Salin manual:", text);
+                    document.body.removeChild(el);
+                }
             }
 
             async function showTrxDetail(id) {
