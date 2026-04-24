@@ -76,18 +76,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadTimeSlotsFromFirestore() {
-        db.collection('settings').doc('timeSlots').onSnapshot((doc) => {
+        function updateSlots() {
+            const selectedDate = dateInput.value;
+            db.collection('settings').doc('timeSlots').get().then(doc => {
+                if (!doc.exists) {
+                    timeSelect.innerHTML = '<option value="">-- Pilih Waktu --</option>';
+                    return;
+                }
+                let slots = doc.data().slots.sort((a, b) => a.time.localeCompare(b.time));
+                
+                if (selectedDate) {
+                    db.collection('bookings')
+                        .where('date', '==', selectedDate)
+                        .where('status', '==', 'confirmed')
+                        .get()
+                        .then(snapshot => {
+                            const bookedTimes = snapshot.docs.map(d => d.data().time);
+                            slots = slots.filter(s => !bookedTimes.includes(s.time));
+                            renderTimeSlots(slots);
+                        });
+                } else {
+                    renderTimeSlots(slots);
+                }
+            });
+        }
+        
+        function renderTimeSlots(slots) {
             timeSelect.innerHTML = '<option value="">-- Pilih Waktu --</option>';
-            if (doc.exists) {
-                const slots = doc.data().slots.sort((a, b) => a.time.localeCompare(b.time));
-                slots.forEach(slot => {
-                    const option = document.createElement('option');
-                    option.value = slot.time;
-                    option.textContent = slot.time;
-                    timeSelect.appendChild(option);
-                });
-            }
-        });
+            slots.forEach(slot => {
+                const option = document.createElement('option');
+                option.value = slot.time;
+                option.textContent = slot.time;
+                timeSelect.appendChild(option);
+            });
+        }
+        
+        db.collection('settings').doc('timeSlots').onSnapshot(() => { updateSlots(); });
+        dateInput.addEventListener('change', updateSlots);
     }
 
     initializeBookingData();
