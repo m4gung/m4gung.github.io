@@ -1,0 +1,17 @@
+{
+    "name": "Barbershop Admin",
+    "short_name": "Admin",
+    "description": "Barbershop Booking Admin Dashboard",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#1e293b",
+    "theme_color": "#1e293b",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

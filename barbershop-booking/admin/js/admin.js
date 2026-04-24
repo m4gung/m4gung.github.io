@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isAdminAuthenticated = false;
     let lastBookingTime = 0;
+    let notificationEnabled = false;
 
     adminYearSpan.textContent = new Date().getFullYear();
 
@@ -22,19 +23,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const adminUserInfo = document.getElementById('adminUserInfo');
 
+    function checkNotificationPermission() {
+        if ('Notification' in window) {
+            if (Notification.permission === 'granted') {
+                notificationEnabled = true;
+                return true;
+            } else if (Notification.permission === 'denied') {
+                return false;
+            }
+        }
+        return null;
+    }
+
     function requestNotificationPermission() {
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
+        if ('Notification' in window) {
+            Notification.requestPermission().then(permission => {
+                notificationEnabled = permission === 'granted';
+                if (notificationEnabled) {
+                    console.log('Notification permission granted');
+                }
+            }).catch(err => {
+                console.log('Notification permission denied:', err);
+            });
         }
     }
 
     function showNotification(title, body) {
+        console.log('Attempting to show notification:', title, body);
         if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(title, {
-                body: body,
-                icon: 'icon-192.png',
-                badge: 'icon-192.png'
-            });
+            try {
+                new Notification(title, {
+                    body: body,
+                    icon: 'icon-192.png',
+                    badge: 'icon-192.png',
+                    vibrate: [200, 100, 200]
+                });
+                console.log('Notification shown successfully');
+            } catch (e) {
+                console.error('Error showing notification:', e);
+            }
+        } else {
+            console.log('Notification not available, permission:', Notification.permission);
         }
     }
 
@@ -68,15 +97,40 @@ document.addEventListener('DOMContentLoaded', () => {
         adminUserInfo.innerHTML = `
             <div class="flex items-center gap-3">
                 <span class="text-sm font-medium">Admin</span>
+                <button id="enableNotifBtn" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded-lg text-xs transition-colors" title="Aktifkan Notifikasi">
+                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                </button>
                 <button id="adminLogout" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-sm transition-colors">
                     Logout
                 </button>
             </div>
         `;
+        
+        const enableNotifBtn = document.getElementById('enableNotifBtn');
+        const notifPerm = checkNotificationPermission();
+        
+        if (notifPerm === true) {
+            enableNotifBtn.classList.add('hidden');
+        } else if (notifPerm === false) {
+            enableNotifBtn.title = 'Notifikasi diblokir - ubah di browser settings';
+            enableNotifBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        }
+        
+        enableNotifBtn.addEventListener('click', () => {
+            if (Notification.permission === 'default') {
+                requestNotificationPermission();
+            } else if (Notification.permission === 'denied') {
+                alert('Notifikasi diblokir oleh browser. Silakan ubah di pengaturan browser: Settings > Notifications > Allow');
+            }
+        });
+
         document.getElementById('adminLogout').addEventListener('click', () => {
             isAdminAuthenticated = false;
             showLoginForm();
         });
+        
         requestNotificationPermission();
         initializeData();
         loadAllBookings();
@@ -89,11 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
             .orderBy('createdAt', 'desc')
             .limit(1)
             .onSnapshot((snapshot) => {
+                console.log('Listening for new bookings...');
                 if (!snapshot.empty) {
                     const latestBooking = snapshot.docs[0].data();
                     const createdAt = latestBooking.createdAt ? latestBooking.createdAt.toMillis() : 0;
                     
+                    console.log('Latest booking time:', createdAt, 'Last time:', lastBookingTime);
+                    
                     if (lastBookingTime > 0 && createdAt > lastBookingTime) {
+                        console.log('New booking detected!');
                         db.collection('settings').doc('services').get().then((servicesDoc) => {
                             let serviceName = latestBooking.service;
                             if (servicesDoc.exists) {
@@ -102,10 +160,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (found) serviceName = found.name;
                             }
                             
-                            showNotification(
-                                'Booking Baru!',
-                                `${latestBooking.customerName} - ${serviceName}\n${latestBooking.date} jam ${latestBooking.time}`
-                            );
+                            const message = `${latestBooking.customerName} - ${serviceName}\n${latestBooking.date} jam ${latestBooking.time}`;
+                            
+                            showNotification('Booking Baru!', message);
+                            
+                            alert(`🔔 Booking Baru!\n\n${message}`);
                         });
                     }
                     
@@ -164,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     serviceCard.innerHTML = `
                         <div>
                             <h4 class="font-semibold text-gray-800">${service.name}</h4>
-                            <p class="text-sm text-gray-500">Rp ${service.price.toLocaleString('id-ID')} • ${service.duration} menit</p>
+                            <p class="text-sm text-gray-500">Rp ${service.price.toLocaleString('id-ID')} - ${service.duration} menit</p>
                         </div>
                         <button class="delete-service text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors" data-id="${service.id}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

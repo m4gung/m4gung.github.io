@@ -99,15 +99,11 @@ document.addEventListener('DOMContentLoaded', () => {
             .then((result) => {
                 const user = result.user;
                 updateUserInfo(user);
-                authStatus.textContent = `Login berhasil sebagai ${user.displayName}`;
-                authStatus.className = 'status success';
-                authStatus.style.display = 'block';
+                authStatus.innerHTML = `<div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl">Login berhasil sebagai ${user.displayName}</div>`;
                 showBookingSection();
             })
             .catch((error) => {
-                authStatus.textContent = `Login gagal: ${error.message}`;
-                authStatus.className = 'status error';
-                authStatus.style.display = 'block';
+                authStatus.innerHTML = `<div class="bg-red-50 text-red-700 px-4 py-3 rounded-xl">Login gagal: ${error.message}</div>`;
             });
     });
 
@@ -119,28 +115,27 @@ document.addEventListener('DOMContentLoaded', () => {
             loadMyBookings(user.uid);
         } else {
             hideAppSections();
-            authStatus.textContent = '';
-            authStatus.style.display = 'none';
+            authStatus.innerHTML = '';
             userInfo.innerHTML = '';
         }
     });
 
     function updateUserInfo(user) {
         userInfo.innerHTML = `
-            <img src="${user.photoURL}" alt="${user.displayName}" class="user-avatar">
-            <span>${user.displayName}</span>
+            <div class="flex items-center gap-3">
+                <img src="${user.photoURL}" alt="${user.displayName}" class="w-8 h-8 rounded-full">
+                <span class="text-sm font-medium">${user.displayName}</span>
+                <button id="logoutBtn" class="ml-2 text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg transition-colors">
+                    Logout
+                </button>
+            </div>
         `;
-        // Add sign out button
-        const signOutBtn = document.createElement('button');
-        signOutBtn.textContent = 'Logout';
-        signOutBtn.className = 'btn btn-secondary';
-        signOutBtn.addEventListener('click', () => {
+        document.getElementById('logoutBtn').addEventListener('click', () => {
             auth.signOut().then(() => {
                 hideAppSections();
                 userInfo.innerHTML = '';
             });
         });
-        userInfo.appendChild(signOutBtn);
     }
 
     function showBookingSection() {
@@ -174,25 +169,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Basic validation
         if (!bookingData.customerName || !bookingData.phoneNumber || !bookingData.service || !bookingData.date || !bookingData.time) {
-            bookingStatus.textContent = 'Harap isi semua field';
-            bookingStatus.className = 'status error';
-            bookingStatus.style.display = 'block';
+            bookingStatus.innerHTML = '<div class="bg-red-50 text-red-700 px-4 py-3 rounded-xl">Harap isi semua field</div>';
             return;
         }
 
         // Add booking to Firestore
         db.collection('bookings').add(bookingData)
             .then((docRef) => {
-                bookingStatus.textContent = 'Janji temu berhasil dibuat!';
-                bookingStatus.className = 'status success';
-                bookingStatus.style.display = 'block';
+                bookingStatus.innerHTML = '<div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl">Janji temu berhasil dibuat!</div>';
                 bookingForm.reset();
-                loadMyBookings(user.uid); // Refresh bookings list
+                loadMyBookings(user.uid);
             })
             .catch((error) => {
-                bookingStatus.textContent = `Gagal membuat janji temu: ${error.message}`;
-                bookingStatus.className = 'status error';
-                bookingStatus.style.display = 'block';
+                bookingStatus.innerHTML = `<div class="bg-red-50 text-red-700 px-4 py-3 rounded-xl">Gagal membuat janji temu: ${error.message}</div>`;
             });
     });
 
@@ -212,39 +201,97 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                     }
 
+                    if (snapshot.empty) {
+                        bookingsList.innerHTML = `
+                            <div class="bg-white rounded-2xl shadow p-8 text-center">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <p class="text-gray-500">Belum ada janji temu</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
                     snapshot.forEach((doc) => {
                         const booking = doc.data();
+                        const statusColors = {
+                            'confirmed': 'bg-green-100 text-green-700',
+                            'completed': 'bg-blue-100 text-blue-700',
+                            'cancelled': 'bg-red-100 text-red-700'
+                        };
+                        const statusLabels = {
+                            'confirmed': 'Dikonfirmasi',
+                            'completed': 'Selesai',
+                            'cancelled': 'Dibatalkan'
+                        };
+
                         const bookingCard = document.createElement('div');
-                        bookingCard.className = 'booking-card';
+                        bookingCard.className = 'bg-white rounded-2xl shadow card-hover transition-all p-5 fade-in';
                         bookingCard.dataset.id = doc.id;
 
                         bookingCard.innerHTML = `
-                            <div class="booking-info">
-                                <h3>${serviceNames[booking.service] || booking.service}</h3>
-                                <p><strong>Nama:</strong> ${booking.customerName}</p>
-                                <p><strong>Telepon:</strong> ${booking.phoneNumber}</p>
-                                <p><strong>Tanggal:</strong> ${new Date(booking.date).toLocaleDateString('id-ID')}</p>
-                                <p><strong>Waktu:</strong> ${booking.time}</p>
-                                <p><strong>Status:</strong> <span class="status-badge">${booking.status}</span></p>
-                            </div>
-                            <div class="booking-actions">
-                                <button class="btn btn-sm btn-danger cancel-booking">Batalkan</button>
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-gray-800">${serviceNames[booking.service] || booking.service}</h3>
+                                            <span class="text-xs ${statusColors[booking.status] || 'bg-gray-100 text-gray-700'} px-2 py-1 rounded-full">${statusLabels[booking.status] || booking.status}</span>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                            </svg>
+                                            ${booking.customerName}
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                            </svg>
+                                            ${booking.phoneNumber}
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            ${new Date(booking.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            ${booking.time}
+                                        </div>
+                                    </div>
+                                </div>
+                                ${booking.status === 'confirmed' ? `
+                                    <button class="cancel-booking bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl transition-colors text-sm font-medium">
+                                        Batalkan
+                                    </button>
+                                ` : ''}
                             </div>
                         `;
 
-                        // Add cancel functionality
                         const cancelBtn = bookingCard.querySelector('.cancel-booking');
-                        cancelBtn.addEventListener('click', () => {
-                            if (confirm('Apakah Anda yakin ingin membatalkan janji temu ini?')) {
-                                db.collection('bookings').doc(doc.id).update({ status: 'cancelled' })
-                                    .then(() => {
-                                        // Booking will be updated via real-time listener
-                                    })
-                                    .catch((error) => {
-                                        alert(`Gagal membatalkan: ${error.message}`);
-                                    });
-                            }
-                        });
+                        if (cancelBtn) {
+                            cancelBtn.addEventListener('click', () => {
+                                if (confirm('Apakah Anda yakin ingin membatalkan janji temu ini?')) {
+                                    db.collection('bookings').doc(doc.id).update({ status: 'cancelled' })
+                                        .catch((error) => {
+                                            alert(`Gagal membatalkan: ${error.message}`);
+                                        });
+                                }
+                            });
+                        }
 
                         bookingsList.appendChild(bookingCard);
                     });
