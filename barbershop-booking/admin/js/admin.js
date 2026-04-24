@@ -24,6 +24,22 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // Handle foreground messages
+        messaging.onMessage((payload) => {
+            console.log('Foreground message received:', payload);
+            const notificationTitle = payload.notification.title || 'Booking Baru!';
+            const notificationOptions = {
+                body: payload.notification.body || 'Ada booking baru',
+                icon: 'icon-192.png',
+                badge: 'icon-192.png',
+                tag: 'booking-notification'
+            };
+            
+            if (Notification.permission === 'granted') {
+                new Notification(notificationTitle, notificationOptions);
+            }
+        });
+        
         try {
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
@@ -40,10 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function saveTokenToFirestore(token) {
         if (!token) return;
-        await db.collection('settings').doc('adminTokens').set({ token: token }, { merge: true });
+        // Simpan token dengan timestamp untuk identifikasi device
+        await db.collection('settings').doc('adminTokens').set({ 
+            token: token,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
     }
 
-    function showNotification(title, body) {
+    function showInAppNotification(title, body) {
         if (Notification.permission === 'granted') {
             new Notification(title, { body: body, icon: 'icon-192.png', badge: 'icon-192.png' });
         }
@@ -54,17 +74,25 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('adminLoginBtn').addEventListener('click', checkAdminPassword);
     }
 
-    function checkAdminPassword() {
-        if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) initializeApp();
-        else alert('Password salah!');
+function checkAdminPassword() {
+        if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
+            localStorage.setItem('adminLoggedIn', 'true');
+            initializeApp();
+        } else {
+            alert('Password salah!');
+        }
     }
 
     function initializeApp() {
+        localStorage.setItem('adminLoggedIn', 'true');
         adminUserInfo.innerHTML = '<div class="flex items-center gap-3"><span class="text-sm font-medium">Admin</span><button id="enableNotifBtn" class="bg-blue-600 px-2 py-1 rounded-lg text-xs">Notif</button><button id="adminLogout" class="bg-white/20 px-3 py-1 rounded-lg text-sm">Logout</button></div>';
         const enableNotifBtn = document.getElementById('enableNotifBtn');
         
         enableNotifBtn.addEventListener('click', () => { requestFCMPermission(); });
-        document.getElementById('adminLogout').addEventListener('click', showLoginForm);
+        document.getElementById('adminLogout').addEventListener('click', () => {
+            localStorage.removeItem('adminLoggedIn');
+            showLoginForm();
+        });
         
         requestFCMPermission();
         initializeData();
@@ -73,26 +101,15 @@ document.addEventListener('DOMContentLoaded', () => {
         listenForNewBookings();
     }
 
-    function listenForNewBookings() {
-        db.collection('bookings').orderBy('createdAt', 'desc').limit(1).onSnapshot(snapshot => {
-            if (!snapshot.empty) {
-                const b = snapshot.docs[0].data();
-                const createdAt = b.createdAt ? b.createdAt.toMillis() : 0;
-                if (lastBookingTime > 0 && createdAt > lastBookingTime) {
-                    db.collection('settings').doc('services').get().then(doc => {
-                        let name = b.service;
-                        if (doc.exists) { const f = doc.data().services.find(s => s.id === b.service); if (f) name = f.name; }
-                        const msg = b.customerName + ' - ' + name + '\n' + b.date + ' jam ' + b.time;
-                        alert('Booking Baru!\n\n' + msg);
-                        showNotification('Booking Baru!', msg);
-                    });
-                }
-                lastBookingTime = createdAt;
-            }
-        });
+    function checkSavedSession() {
+        if (localStorage.getItem('adminLoggedIn') === 'true') {
+            initializeApp();
+        } else {
+            showLoginForm();
+        }
     }
 
-    showLoginForm();
+    checkSavedSession();
 
     async function initializeData() {
         let snap = await db.collection('settings').doc('services').get();

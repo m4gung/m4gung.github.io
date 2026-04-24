@@ -14,8 +14,19 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 let messaging = null;
+
 if ('firebase.messaging' in window) {
   messaging = firebase.messaging();
+  
+  // Register service worker for background messages
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./firebase-messaging-sw.js')
+      .then((registration) => {
+        console.log('Service Worker registered:', registration);
+        messaging.useServiceWorker(registration);
+      })
+      .catch((err) => console.log('Service Worker registration failed:', err));
+  }
 }
 
 db.enablePersistence()
