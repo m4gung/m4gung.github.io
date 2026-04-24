@@ -57,20 +57,10 @@ For testing, you can use these rules (not recommended for production without adj
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Settings - readable by all, writable by admin only
-    match /settings/{setting} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
-    // Bookings - readable/writable by owner or authenticated users
-    match /bookings/{bookingId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null;
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
-}
 ```
 
 ## Admin Access

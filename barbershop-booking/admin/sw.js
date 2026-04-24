@@ -1,54 +1,47 @@
 // Service Worker for Barbershop Booking PWA
 
-const CACHE_NAME = 'barbershop-booking-v1';
+const CACHE_NAME = 'barbershop-booking-v2';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/css/style.css',
-  '/js/firebase-config.js',
-  '/js/main.js',
   '/manifest.json',
-  // Add any other assets you want to cache
+  '/icon-192.png',
+  '/icon-512.png',
+  '/icon.svg',
 ];
 
-// Install the service worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-// Cache and return requests
 self.addEventListener('fetch', (event) => {
+  const url = event.request.url;
+  
+  // Skip caching for Firebase and dynamic content
+  if (url.includes('firebase') || 
+      url.includes('firestore') || 
+      url.includes('googleapis') ||
+      url.includes('gstatic.com/firebasejs')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
+  // For other requests, try network first, fallback to cache
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
 
-// Update a service worker
 self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys().then((names) => Promise.all(
+      names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n))
+    ))
   );
 });
