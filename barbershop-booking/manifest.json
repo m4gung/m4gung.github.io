@@ -1,0 +1,17 @@
+{
+  "name": "Barbershop Booking",
+  "short_name": "Barber Booking",
+  "description": "Aplikasi booking janji temu barbershop",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4a6cf7",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

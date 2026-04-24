@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Barbershop Booking</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4a6cf7">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+</head>
+
+<body>
+    <div id="admin-app">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Admin Dashboard</h1>
+            <div class="user-info" id="adminUserInfo">
+                <!-- Admin user info will be inserted here -->
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Stats Section -->
+            <section id="statsSection" class="section">
+                <h2>Statistics</h2>
+                <div id="statsContainer" class="stats-grid">
+                    <!-- Stats will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Bookings Section -->
+            <section id="bookingsSection" class="section">
+                <h2>All Bookings</h2>
+                <div id="adminBookingsList" class="bookings-list">
+                    <!-- Bookings will be listed here -->
+                </div>
+                <div class="form-group">
+                    <button id="refreshAdminBookings" class="btn btn-primary">Segarkan Data</button>
+                </div>
+            </section>
+
+            <!-- Services Management Section -->
+            <section id="servicesManagementSection" class="section">
+                <h2>Kelola Layanan</h2>
+                <div id="servicesList" class="services-list"></div>
+                <div class="form-group">
+                    <h3>Tambah Layanan Baru</h3>
+                    <input type="text" id="newServiceName" placeholder="Nama Layanan" class="form-control">
+                    <input type="number" id="newServicePrice" placeholder="Harga" class="form-control">
+                    <input type="number" id="newServiceDuration" placeholder="Durasi (menit)" class="form-control">
+                    <button id="addServiceBtn" class="btn btn-primary">Tambah Layanan</button>
+                </div>
+            </section>
+
+            <!-- Time Slots Management Section -->
+            <section id="timeSlotsManagementSection" class="section">
+                <h2>Kelola Waktu</h2>
+                <div id="timeSlotsList" class="time-slots-list"></div>
+                <div class="form-group">
+                    <h3>Tambah Waktu Baru</h3>
+                    <input type="time" id="newTimeSlot" class="form-control">
+                    <button id="addTimeSlotBtn" class="btn btn-primary">Tambah Waktu</button>
+                </div>
+            </section>
+
+            <!-- Available Slots Section -->
+            <section id="slotsSection" class="section">
+                <h2>Waktu Tersedia per Tanggal</h2>
+                <div class="form-group">
+                    <label for="adminDateSelect">Pilih Tanggal</label>
+                    <input type="date" id="adminDateSelect" min="">
+                </div>
+                <div id="availableSlotsContainer">
+                    <!-- Available slots will be displayed here -->
+                </div>
+                <div class="form-group">
+                    <button id="checkSlotsBtn" class="btn btn-secondary">Cek Ketersediaan</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>&copy; <span id="adminYear"></span> Barbershop Booking Admin. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Firebase App -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Our scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+
+</html>
