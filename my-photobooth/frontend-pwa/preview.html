@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>My Photobooth - Preview</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="preview-page">
+  <div class="preview-container">
+    <div class="preview-header">
+      <h1>📸 Mode Preview</h1>
+      <div class="status-bar">
+        <span id="previewStatus" class="status-dot offline"></span>
+        <span id="previewStatusText">Menunggu koneksi kamera...</span>
+      </div>
+    </div>
+
+    <div class="preview-wrapper">
+      <video id="streamVideo" autoplay playsinline></video>
+      <div id="previewOverlay" class="preview-overlay">
+        <div class="overlay-content">
+          <div class="spinner"></div>
+          <p>Menunggu video stream...</p>
+        </div>
+      </div>
+      <canvas id="previewCanvas" class="hidden"></canvas>
+    </div>
+
+    <div class="preview-controls">
+      <div class="capture-section">
+        <button id="captureBtn" class="btn btn-capture btn-large" disabled>
+          <span class="btn-icon">📷</span>
+          <span class="btn-text">Jepret!</span>
+        </button>
+      </div>
+
+      <div class="action-section">
+        <div class="btn-group">
+          <button id="retakeBtn" class="btn btn-secondary" disabled>
+            <span>🔄</span> Ambil Ulang
+          </button>
+          <button id="doneBtn" class="btn btn-success" disabled>
+            <span>✓</span> Selesai
+          </button>
+        </div>
+      </div>
+
+      <div class="photo-section">
+        <div class="thumbnail-container">
+          <img id="photoThumbnail" alt="Foto" class="hidden">
+          <div id="photoPlaceholder">
+            <span>📸</span>
+            <p>Foto akan muncul di sini</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-tabs">
+      <button class="tab-btn active" data-tab="edit">Edit</button>
+      <button class="tab-btn" data-tab="gallery">Galeri</button>
+      <button class="tab-btn" data-tab="settings">Pengaturan</button>
+    </div>
+
+    <div class="tab-content active" id="editTab">
+      <div class="frame-selection">
+        <h3>Pilih Bingkai</h3>
+        <div class="frame-grid" id="frameGrid">
+          <div class="frame-item selected" data-frame="none">
+            <img src="assets/frame-none.svg" alt="Tanpa Bingkai">
+            <span>Tanpa</span>
+          </div>
+          <div class="frame-item" data-frame="classic">
+            <img src="assets/frame-classic.svg" alt="Klasik">
+            <span>Klasik</span>
+          </div>
+          <div class="frame-item" data-frame="modern">
+            <img src="assets/frame-modern.svg" alt="Modern">
+            <span>Modern</span>
+          </div>
+          <div class="frame-item" data-frame="festive">
+            <img src="assets/frame-festive.svg" alt="Pesta">
+            <span>Pesta</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="edit-tools">
+        <h3>Tools Edit</h3>
+        <div class="tool-buttons">
+          <button class="tool-btn" data-tool="rotate" title="Putar">↻</button>
+          <button class="tool-btn" data-tool="flipH" title="Balik Horizontal">↔</button>
+          <button class="tool-btn" data-tool="flipV" title="Balik Vertical">↕</button>
+          <button class="tool-btn" data-tool="grayscale" title="Hitam Putih">🎨</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="galleryTab">
+      <div class="gallery-grid" id="galleryGrid">
+        <p class="empty-state">Belum ada foto</p>
+      </div>
+    </div>
+
+    <div class="tab-content" id="settingsTab">
+      <div class="settings-form">
+        <h3>Pengaturan</h3>
+        
+        <div class="setting-group">
+          <label for="serverIP">IP Server:</label>
+          <input type="text" id="serverIP" value="localhost" placeholder="192.168.1.10">
+        </div>
+        
+        <div class="setting-group">
+          <label for="serverPort">Port:</label>
+          <input type="text" id="serverPort" value="3000" placeholder="3000">
+        </div>
+        
+        <div class="setting-group">
+          <label for="photoQuality">Kualitas Foto:</label>
+          <select id="photoQuality">
+            <option value="0.5">Rendah</option>
+            <option value="0.8" selected>Sedang</option>
+            <option value="1.0">Tinggi</option>
+          </select>
+        </div>
+        
+        <button id="saveSettingsBtn" class="btn btn-primary">Simpan Pengaturan</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/edit-canvas.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <defs>
+    <linearGradient id="festiveGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="33%" style="stop-color:#ffd93d;stop-opacity:1" />
+      <stop offset="66%" style="stop-color:#6bcb77;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4d96ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="#1a1a2e"/>
+  <rect x="15" y="15" width="1050" height="1050" rx="25" fill="none" stroke="url(#festiveGrad)" stroke-width="50"/>
+  <circle cx="60" cy="60" r="30" fill="#ff6b6b"/>
+  <circle cx="1020" cy="60" r="30" fill="#ffd93d"/>
+  <circle cx="60" cy="1020" r="30" fill="#6bcb77"/>
+  <circle cx="1020" cy="1020" r="30" fill="#4d96ff"/>
+  <circle cx="540" cy="60" r="20" fill="#ff6b6b"/>
+  <circle cx="540" cy="1020" r="20" fill="#4d96ff"/>
+  <circle cx="60" cy="540" r="20" fill="#6bcb77"/>
+  <circle cx="1020" cy="540" r="20" fill="#ffd93d"/>
+  <text x="540" y="540" text-anchor="middle" fill="#ffd93d" font-size="32" font-family="sans-serif" font-weight="bold">Festive Frame</text>
+</svg>

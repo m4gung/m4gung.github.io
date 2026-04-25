@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>My Photobooth - Pilih Mode</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📸 My Photobooth</h1>
+      <p class="subtitle">Sistem Photobooth DIY Offline</p>
+    </header>
+
+    <div class="status-panel">
+      <div class="status-indicator">
+        <span id="connectionStatus" class="status-dot offline"></span>
+        <span id="connectionText">Mengecek koneksi...</span>
+      </div>
+      <div id="serverInfo" class="server-info hidden">
+        <p>Server: <span id="serverUrl"></span></p>
+      </div>
+    </div>
+
+    <div class="mode-selection">
+      <h2>Pilih Mode Perangkat</h2>
+      
+      <a href="camera.html" class="mode-card camera-mode">
+        <div class="mode-icon">📱</div>
+        <h3>Mode Kamera</h3>
+        <p>Gunakan di iPhone untuk mengambil foto</p>
+        <ul class="mode-features">
+          <li>Akses kamera</li>
+          <li>Terima perintah jepret</li>
+          <li>Kirim foto ke server</li>
+        </ul>
+      </a>
+
+      <a href="preview.html" class="mode-card preview-mode">
+        <div class="mode-icon">📱</div>
+        <h3>Mode Preview</h3>
+        <p>Gunakan di iPad untuk preview & editing</p>
+        <ul class="mode-features">
+          <li>Live video stream</li>
+          <li>Kirim perintah jepret</li>
+          <li>Edit dengan bingkai</li>
+          <li>Simpan hasil akhir</li>
+        </ul>
+      </a>
+    </div>
+
+    <div class="instructions">
+      <h3>Petunjuk Penggunaan</h3>
+      <ol>
+        <li>Sambungkan semua perangkat ke WiFi yang sama</li>
+        <li>Jalankan server di laptop: <code>cd backend-server && npm start</code></li>
+        <li>Buka <span id="localIP">http://localhost:3000</span> di browser</li>
+        <li>Pilih Mode Kamera di iPhone</li>
+        <li>Pilih Mode Preview di iPad</li>
+        <li>Tekan tombol "Jepret" di iPad untuk mengambil foto</li>
+      </ol>
+    </div>
+
+    <footer>
+      <p>My Photobooth v1.0 - 100% Offline</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

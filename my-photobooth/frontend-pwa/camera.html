@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#16213e">
+  <title>My Photobooth - Kamera</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="camera-page">
+  <div class="camera-container">
+    <div class="camera-header">
+      <h1>📸 Mode Kamera</h1>
+      <div class="status-bar">
+        <span id="cameraStatus" class="status-dot offline"></span>
+        <span id="cameraStatusText">Meminta akses kamera...</span>
+      </div>
+    </div>
+
+    <div class="video-wrapper">
+      <video id="cameraVideo" autoplay playsinline muted></video>
+      <div id="cameraOverlay" class="camera-overlay">
+        <div class="overlay-content">
+          <p>Izinkan akses kamera</p>
+          <button id="requestCameraBtn" class="btn btn-primary">Akses Kamera</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="camera-controls">
+      <div class="control-group">
+        <label for="cameraSelect">Kamera:</label>
+        <select id="cameraSelect">
+          <option value="">Memuat...</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label for="resolutionSelect">Resolusi:</label>
+        <select id="resolutionSelect">
+          <option value="1920x1080">Full HD (1080p)</option>
+          <option value="1280x720">HD (720p)</option>
+          <option value="3840x2160">4K</option>
+          <option value="640x480">VGA</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="camera-info">
+      <p id="cameraInfo">Siap menerima perintah jepret</p>
+    </div>
+
+    <canvas id="captureCanvas" class="hidden"></canvas>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/webrtc-handshake.js"></script>
+</body>
+</html>
