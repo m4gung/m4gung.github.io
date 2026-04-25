@@ -179,7 +179,7 @@ io.on('connection', (socket) => {
   });
   
   socket.on('photo_ready', (data) => {
-    console.log('Photo ready from camera');
+    console.log('Photo ready from camera, forwarding to preview. Data has image:', !!data.image);
     socket.broadcast.emit('photo_ready_response', data);
   });
   

@@ -71,24 +71,21 @@ const PhotoEditor = {
     });
   },
 
-  async updatePreview(imageData) {
+async updatePreview(imageData) {
     const previewOverlay = document.getElementById('previewOverlay');
     const previewStatus = document.getElementById('previewStatus');
     const previewStatusText = document.getElementById('previewStatusText');
     const captureBtn = document.getElementById('captureBtn');
+    const streamImage = document.getElementById('streamImage');
 
     if (previewOverlay) previewOverlay.classList.add('hidden');
     if (previewStatus) previewStatus.className = 'status-dot online';
     if (previewStatusText) previewStatusText.textContent = 'Video stream aktif';
     if (captureBtn) captureBtn.disabled = false;
 
-    try {
-      const img = await this.loadImage(imageData);
-      this.canvas.width = img.width;
-      this.canvas.height = img.height;
-      this.ctx.drawImage(img, 0, 0);
-    } catch (error) {
-      console.error('Failed to update preview:', error);
+    if (streamImage && imageData) {
+      streamImage.src = imageData;
+      streamImage.classList.remove('hidden');
     }
   },
 

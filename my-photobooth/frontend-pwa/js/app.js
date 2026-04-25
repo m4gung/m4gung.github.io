@@ -36,7 +36,7 @@ const App = {
     });
 
     this.socket.on('connect', () => {
-      console.log('Connected to server:', this.socket.id);
+      console.log('[DEBUG] Connected to server:', this.socket.id);
       this.isConnected = true;
       this.updateConnectionStatus(true);
       this.socket.emit('register', { deviceType: this.getDeviceType() });
@@ -55,8 +55,12 @@ const App = {
     });
 
     this.socket.on('photo_request', () => {
+      console.log('[DEBUG] photo_request received');
       if (typeof PhotoboothCamera !== 'undefined') {
+        console.log('[DEBUG] Calling PhotoboothCamera.capturePhoto()');
         PhotoboothCamera.capturePhoto();
+      } else {
+        console.log('[DEBUG] PhotoboothCamera not defined');
       }
     });
 
@@ -64,9 +68,22 @@ const App = {
       this.handlePhotoSaved(data);
     });
 
-    this.socket.on('camera_stream_update', (data) => {
+this.socket.on('camera_stream_update', (data) => {
+      console.log('[DEBUG] camera_stream_update received, isPhoto:', data.isPhoto);
       if (typeof PhotoboothPreview !== 'undefined') {
-        PhotoboothPreview.updateStream(data.image);
+        if (data.isPhoto) {
+          PhotoboothPreview.showCapturedPhoto(data.image);
+        } else {
+          PhotoboothPreview.updateStream(data.image);
+        }
+      }
+    });
+
+    this.socket.on('photo_ready_response', (data) => {
+      console.log('[DEBUG] photo_ready_response received:', data);
+      if (data.image && typeof PhotoboothPreview !== 'undefined') {
+        console.log('[DEBUG] Calling showCapturedPhoto');
+        PhotoboothPreview.showCapturedPhoto(data.image);
       }
     });
 
@@ -358,8 +375,10 @@ const PhotoboothCamera = {
   },
 
   async capturePhoto() {
+    console.log('[DEBUG] capturePhoto called');
+    
     if (!this.videoElement || !this.stream) {
-      console.error('Camera not started');
+      console.error('[DEBUG] Camera not started, videoElement:', !!this.videoElement, 'stream:', !!this.stream);
       return null;
     }
 
@@ -367,19 +386,27 @@ const PhotoboothCamera = {
     canvas.width = this.videoElement.videoWidth;
     canvas.height = this.videoElement.videoHeight;
 
+    console.log('[DEBUG] Canvas size:', canvas.width, 'x', canvas.height);
+
     const context = canvas.getContext('2d');
     context.drawImage(this.videoElement, 0, 0);
 
-    const dataUrl = canvas.toDataURL('image/png', 1.0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+    console.log('[DEBUG] Image captured, length:', dataUrl.length);
 
+    // Emit photo_ready without the large image data first
     App.socket?.emit('photo_ready', { 
       timestamp: Date.now(),
       hasImage: true
     });
+    console.log('[DEBUG] Emitted photo_ready');
 
+    // Send image via camera_stream (already broadcast to preview)
     App.socket?.emit('camera_stream', {
-      image: dataUrl
+      image: dataUrl,
+      isPhoto: true
     });
+    console.log('[DEBUG] Emitted camera_stream with photo');
 
     return dataUrl;
   },
@@ -498,6 +525,7 @@ const PhotoboothPreview = {
   },
 
   capturePhoto() {
+    console.log('[DEBUG] capturePhoto button clicked');
     App.socket?.emit('take_photo');
     
     const captureBtn = document.getElementById('captureBtn');
@@ -614,14 +642,22 @@ const PhotoboothPreview = {
   },
 
   updateStream(imageData) {
-    if (!this.videoElement) return;
-    
     const previewOverlay = document.getElementById('previewOverlay');
     const previewStatus = document.getElementById('previewStatus');
     const previewStatusText = document.getElementById('previewStatusText');
     const captureBtn = document.getElementById('captureBtn');
+    const streamVideo = document.getElementById('streamVideo');
+    const streamImage = document.getElementById('streamImage');
 
     if (imageData) {
+      if (streamVideo) {
+        streamVideo.pause();
+        streamVideo.classList.add('hidden');
+      }
+      if (streamImage) {
+        streamImage.src = imageData;
+        streamImage.classList.remove('hidden');
+      }
       if (previewOverlay) previewOverlay.classList.add('hidden');
       if (previewStatus) previewStatus.className = 'status-dot online';
       if (previewStatusText) previewStatusText.textContent = 'Video stream aktif';
@@ -635,6 +671,41 @@ const PhotoboothPreview = {
       captureBtn.classList.add('flash');
       setTimeout(() => captureBtn.classList.remove('flash'), 500);
     }
+  },
+
+  showCapturedPhoto(imageData) {
+    console.log('[DEBUG] showCapturedPhoto called, image length:', imageData ? imageData.length : 0);
+    
+    this.currentPhoto = imageData;
+    
+    const streamImage = document.getElementById('streamImage');
+    const streamVideo = document.getElementById('streamVideo');
+    const previewOverlay = document.getElementById('previewOverlay');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const doneBtn = document.getElementById('doneBtn');
+    
+    if (streamVideo) {
+      streamVideo.pause();
+      streamVideo.classList.add('hidden');
+    }
+    
+    if (streamImage) {
+      streamImage.src = imageData;
+      streamImage.classList.remove('hidden');
+    }
+    
+    if (previewOverlay) previewOverlay.classList.add('hidden');
+    if (retakeBtn) retakeBtn.disabled = false;
+    if (doneBtn) doneBtn.disabled = false;
+    
+    // Also send to PhotoEditor for editing
+    if (typeof PhotoEditor !== 'undefined') {
+      PhotoEditor.setImage(imageData);
+    }
+    
+    this.updatePhotoDisplay(imageData);
+    
+    App.showNotification('Foto berhasil diambil!', 'success');
   }
 };
 

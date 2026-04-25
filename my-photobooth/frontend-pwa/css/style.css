@@ -284,7 +284,8 @@ footer {
   margin-bottom: 16px;
 }
 
-.video-wrapper video, .preview-wrapper video {
+.video-wrapper video, .preview-wrapper video,
+.video-wrapper #streamImage, .preview-wrapper #streamImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
