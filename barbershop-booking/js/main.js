@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('date');
     const timeSelect = document.getElementById('time');
     const serviceSelect = document.getElementById('service');
+    const kepsterSelect = document.getElementById('kepster');
     const yearSpan = document.getElementById('year');
 
     // Set current year
@@ -28,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await checkAndGenerateServices();
         await checkAndGenerateTimeSlots();
         loadServicesFromFirestore();
+        loadKepstersFromFirestore();
         loadTimeSlotsFromFirestore();
     }
 
@@ -75,28 +77,53 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function loadKepstersFromFirestore() {
+        db.collection('settings').doc('kepsters').onSnapshot((doc) => {
+            kepsterSelect.innerHTML = '<option value="">-- Pilih Kepster --</option>';
+            if (doc.exists && doc.data().kepsters) {
+                doc.data().kepsters.forEach(kepster => {
+                    const option = document.createElement('option');
+                    option.value = kepster.id;
+                    option.textContent = kepster.name;
+                    kepsterSelect.appendChild(option);
+                });
+            }
+        });
+    }
+
     function loadTimeSlotsFromFirestore() {
+        let unsubscribeBookings = null;
+
         function updateSlots() {
             const selectedDate = dateInput.value;
+            const selectedKepster = kepsterSelect.value;
+            
             db.collection('settings').doc('timeSlots').get().then(doc => {
                 if (!doc.exists) {
                     timeSelect.innerHTML = '<option value="">-- Pilih Waktu --</option>';
                     return;
                 }
-                let slots = doc.data().slots.sort((a, b) => a.time.localeCompare(b.time));
+                let allSlots = doc.data().slots.sort((a, b) => a.time.localeCompare(b.time));
                 
-                if (selectedDate) {
-                    db.collection('bookings')
+                if (unsubscribeBookings) {
+                    unsubscribeBookings();
+                    unsubscribeBookings = null;
+                }
+
+                if (selectedDate && selectedKepster) {
+                    unsubscribeBookings = db.collection('bookings')
                         .where('date', '==', selectedDate)
-                        .where('status', '==', 'confirmed')
-                        .get()
-                        .then(snapshot => {
-                            const bookedTimes = snapshot.docs.map(d => d.data().time);
-                            slots = slots.filter(s => !bookedTimes.includes(s.time));
-                            renderTimeSlots(slots);
+                        .where('kepster', '==', selectedKepster)
+                        .onSnapshot(snapshot => {
+                            const bookedTimes = snapshot.docs
+                                .map(d => d.data())
+                                .filter(b => b.status === 'confirmed' || b.status === 'completed')
+                                .map(b => b.time);
+                            const availableSlots = allSlots.filter(s => !bookedTimes.includes(s.time));
+                            renderTimeSlots(availableSlots);
                         });
                 } else {
-                    renderTimeSlots(slots);
+                    renderTimeSlots(allSlots);
                 }
             });
         }
@@ -113,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         db.collection('settings').doc('timeSlots').onSnapshot(() => { updateSlots(); });
         dateInput.addEventListener('change', updateSlots);
+        kepsterSelect.addEventListener('change', updateSlots);
     }
 
     initializeBookingData();
@@ -185,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             customerName: document.getElementById('customerName').value.trim(),
             phoneNumber: document.getElementById('phoneNumber').value.trim(),
             service: document.getElementById('service').value,
+            kepster: document.getElementById('kepster').value,
             date: dateInput.value,
             time: timeSelect.value,
             userId: user.uid,
@@ -193,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // Basic validation
-        if (!bookingData.customerName || !bookingData.phoneNumber || !bookingData.service || !bookingData.date || !bookingData.time) {
+        if (!bookingData.customerName || !bookingData.phoneNumber || !bookingData.service || !bookingData.kepster || !bookingData.date || !bookingData.time) {
             bookingStatus.innerHTML = '<div class="bg-red-50 text-red-700 px-4 py-3 rounded-xl">Harap isi semua field</div>';
             return;
         }
@@ -214,15 +243,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadMyBookings(userId) {
         db.collection('bookings')
             .where('userId', '==', userId)
-            .orderBy('createdAt', 'desc')
+            // Menghapus orderBy untuk menghindari error kebutuhan composite index dari firestore
             .onSnapshot((snapshot) => {
                 bookingsList.innerHTML = '';
                 
-                db.collection('settings').doc('services').get().then((servicesDoc) => {
+                Promise.all([
+                    db.collection('settings').doc('services').get(),
+                    db.collection('settings').doc('kepsters').get()
+                ]).then(([servicesDoc, kepstersDoc]) => {
                     const serviceNames = {};
                     if (servicesDoc.exists) {
                         servicesDoc.data().services.forEach(s => {
                             serviceNames[s.id] = s.name;
+                        });
+                    }
+                    
+                    const kepsterNames = {};
+                    if (kepstersDoc.exists && kepstersDoc.data().kepsters) {
+                        kepstersDoc.data().kepsters.forEach(k => {
+                            kepsterNames[k.id] = k.name;
                         });
                     }
 
@@ -240,7 +279,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
 
-                    snapshot.forEach((doc) => {
+                    // Urutkan di client-side (terbaru ke terlama)
+                    let docs = [];
+                    snapshot.forEach(doc => docs.push(doc));
+                    docs.sort((a, b) => {
+                        const timeA = a.data().createdAt ? a.data().createdAt.toMillis() : 0;
+                        const timeB = b.data().createdAt ? b.data().createdAt.toMillis() : 0;
+                        return timeB - timeA;
+                    });
+
+                    docs.forEach((doc) => {
                         const booking = doc.data();
                         const statusColors = {
                             'confirmed': 'bg-green-100 text-green-700',
@@ -256,6 +304,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const bookingCard = document.createElement('div');
                         bookingCard.className = 'bg-white rounded-2xl shadow card-hover transition-all p-5 fade-in';
                         bookingCard.dataset.id = doc.id;
+                        
+                        const kepsterDisplay = booking.kepster ? (kepsterNames[booking.kepster] || booking.kepster) : '-';
 
                         bookingCard.innerHTML = `
                             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -268,10 +318,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                         </div>
                                         <div>
                                             <h3 class="font-semibold text-gray-800">${serviceNames[booking.service] || booking.service}</h3>
+                                            <p class="text-xs text-gray-500 mb-1">Kepster: <span class="font-medium">${kepsterDisplay}</span></p>
                                             <span class="text-xs ${statusColors[booking.status] || 'bg-gray-100 text-gray-700'} px-2 py-1 rounded-full">${statusLabels[booking.status] || booking.status}</span>
                                         </div>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-600 mt-3">
                                         <div class="flex items-center gap-2">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -299,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     </div>
                                 </div>
                                 ${booking.status === 'confirmed' ? `
-                                    <button class="cancel-booking bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl transition-colors text-sm font-medium">
+                                    <button class="cancel-booking bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl transition-colors text-sm font-medium mt-4 md:mt-0">
                                         Batalkan
                                     </button>
                                 ` : ''}
