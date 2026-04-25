@@ -221,12 +221,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderKepsters() {
         db.collection('settings').doc('kepsters').onSnapshot(doc => {
             let html = '';
+            let selectHtml = '<option value="">-- Pilih Kepster --</option>';
             if (doc.exists) {
                 doc.data().kepsters.forEach(k => {
                     html += '<div class="bg-gray-50 rounded-xl p-4 flex justify-between items-center"><h4 class="font-semibold">' + k.name + '</h4><button class="delete-kepster text-red-500 hover:text-red-700" data-id="' + k.id + '"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div>';
+                    selectHtml += '<option value="' + k.id + '">' + k.name + '</option>';
                 });
             }
             document.getElementById('kepstersList').innerHTML = html;
+            const kepsterSelect = document.getElementById('adminCheckKepsterSelect');
+            if (kepsterSelect) kepsterSelect.innerHTML = selectHtml;
             
             document.querySelectorAll('.delete-kepster').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
@@ -407,12 +411,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('checkSlotsBtn').addEventListener('click', () => {
         const date = adminDateSelect.value;
-        if (!date) return;
-        db.collection('bookings').where('date', '==', date).where('status', '==', 'confirmed').get().then(snap => {
-            const booked = snap.docs.map(d => d.data().time);
+        const kepsterSelect = document.getElementById('adminCheckKepsterSelect');
+        const kepster = kepsterSelect ? kepsterSelect.value : '';
+        
+        if (!date || !kepster) {
+            alert('Silakan pilih kepster dan tanggal terlebih dahulu.');
+            return;
+        }
+        
+        db.collection('bookings').where('date', '==', date).get().then(snap => {
+            const booked = snap.docs
+                .map(d => d.data())
+                .filter(b => b.kepster === kepster && (b.status === 'confirmed' || b.status === 'completed'))
+                .map(b => b.time);
+                
             db.collection('settings').doc('timeSlots').get().then(doc => {
                 const avail = doc.data().slots.filter(s => !booked.includes(s.time));
-                availableSlotsContainer.innerHTML = avail.length ? avail.map(s => '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">' + s.time + '</span>').join(' ') : 'Tidak ada';
+                availableSlotsContainer.innerHTML = avail.length ? avail.map(s => '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">' + s.time + '</span>').join(' ') : 'Tidak ada slot tersedia';
             });
         });
     });
