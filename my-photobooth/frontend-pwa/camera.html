@@ -42,9 +42,17 @@
         <label for="resolutionSelect">Resolusi:</label>
         <select id="resolutionSelect">
           <option value="1920x1080">Full HD (1080p)</option>
-          <option value="1280x720">HD (720p)</option>
-          <option value="3840x2160">4K</option>
+          <option value="1280x720" selected>HD (720p)</option>
           <option value="640x480">VGA</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="streamFps">FPS Streaming:</label>
+        <select id="streamFps">
+          <option value="50">20 FPS</option>
+          <option value="100" selected>10 FPS</option>
+          <option value="200">5 FPS</option>
         </select>
       </div>
     </div>

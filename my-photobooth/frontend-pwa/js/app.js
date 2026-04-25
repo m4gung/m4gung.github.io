@@ -3,14 +3,13 @@ const App = {
   serverPort: localStorage.getItem('photobooth_server_port') || '',
   socket: null,
   isConnected: false,
+  frameInterval: null,
 
   get serverUrl() {
-    // If custom IP is set, use it with port
     if (this.serverIP) {
       const port = this.serverPort || (window.location.port || (window.location.protocol === 'https:' ? '443' : '80'));
       return `${window.location.protocol}//${this.serverIP}:${port}`;
     }
-    // Auto-detect from current page URL (works with ngrok, localhost, etc)
     const port = this.serverPort || window.location.port;
     if (port && port !== '80' && port !== '443') {
       return `${window.location.protocol}//${window.location.hostname}:${port}`;
@@ -63,6 +62,12 @@ const App = {
 
     this.socket.on('photo_saved', (data) => {
       this.handlePhotoSaved(data);
+    });
+
+    this.socket.on('camera_stream_update', (data) => {
+      if (typeof PhotoboothPreview !== 'undefined') {
+        PhotoboothPreview.updateStream(data.image);
+      }
     });
 
     this.socket.on('device_registered', (data) => {
@@ -294,6 +299,8 @@ const PhotoboothCamera = {
       if (overlay) overlay.classList.add('hidden');
       if (statusText) statusText.textContent = 'Kamera aktif - Siap jepret!';
 
+      this.startContinuousStream();
+      
       App.socket?.emit('camera_ready', { deviceId: deviceId || 'default' });
 
       return true;
@@ -309,8 +316,44 @@ const PhotoboothCamera = {
       this.stream.getTracks().forEach(track => track.stop());
       this.stream = null;
     }
+    this.stopContinuousStream();
     if (this.videoElement) {
       this.videoElement.srcObject = null;
+    }
+  },
+
+  startContinuousStream() {
+    if (this.frameInterval) return;
+    
+    const streamCanvas = document.createElement('canvas');
+    streamCanvas.width = 640;
+    streamCanvas.height = 480;
+    const streamCtx = streamCanvas.getContext('2d');
+    
+    const fpsSelect = document.getElementById('streamFps');
+    const intervalMs = parseInt(fpsSelect?.value || '100');
+    
+    this.frameInterval = setInterval(() => {
+      if (!this.stream || !this.videoElement) return;
+      if (this.videoElement.readyState !== 4) return;
+      
+      const videoWidth = this.videoElement.videoWidth;
+      const videoHeight = this.videoElement.videoHeight;
+      if (videoWidth === 0 || videoHeight === 0) return;
+      
+      streamCanvas.width = 640;
+      streamCanvas.height = 480;
+      streamCtx.drawImage(this.videoElement, 0, 0, 640, 480);
+      
+      const imageData = streamCanvas.toDataURL('image/jpeg', 0.5);
+      App.socket?.emit('camera_stream', { image: imageData });
+    }, intervalMs);
+  },
+
+  stopContinuousStream() {
+    if (this.frameInterval) {
+      clearInterval(this.frameInterval);
+      this.frameInterval = null;
     }
   },
 
