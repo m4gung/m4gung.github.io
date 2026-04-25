@@ -101,6 +101,36 @@ function checkAdminPassword() {
         listenForNewBookings();
     }
 
+    function listenForNewBookings() {
+        db.collection('bookings')
+            .orderBy('createdAt', 'desc')
+            .limit(1)
+            .onSnapshot((snapshot) => {
+                if (!snapshot.empty) {
+                    const latestBooking = snapshot.docs[0].data();
+                    const createdAt = latestBooking.createdAt ? latestBooking.createdAt.toMillis() : 0;
+                    
+                    if (lastBookingTime > 0 && createdAt > lastBookingTime) {
+                        db.collection('settings').doc('services').get().then((servicesDoc) => {
+                            let serviceName = latestBooking.service;
+                            if (servicesDoc.exists) {
+                                const services = servicesDoc.data().services;
+                                const found = services.find(s => s.id === latestBooking.service);
+                                if (found) serviceName = found.name;
+                            }
+                            
+                            showInAppNotification(
+                                'Booking Baru!',
+                                `${latestBooking.customerName} - ${serviceName}\n${latestBooking.date} jam ${latestBooking.time}`
+                            );
+                        });
+                    }
+                    
+                    lastBookingTime = createdAt;
+                }
+            });
+    }
+
     function checkSavedSession() {
         if (localStorage.getItem('adminLoggedIn') === 'true') {
             initializeApp();

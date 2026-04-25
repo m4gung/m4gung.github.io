@@ -18,11 +18,7 @@ if ('firebase.messaging' in window) {
   messaging = firebase.messaging();
 }
 
-db.enablePersistence()
-    .catch((err) => {
-        if (err.code === 'failed-precondition') console.warn("Persistence failed");
-        else if (err.code === 'unimplemented') console.warn("Persistence not available");
-    });
+
 
 window.firebase = firebase;
 window.auth = auth;
