@@ -105,16 +105,29 @@ const App = {
   },
 
   bindEvents() {
-    document.querySelectorAll('a[href^="camera"], a[href^="preview"]').forEach(link => {
+    document.querySelectorAll('.mode-card[data-link]').forEach(link => {
       link.addEventListener('click', (e) => {
+        e.preventDefault();
         const targetIP = localStorage.getItem('photobooth_server_ip');
         const targetPort = localStorage.getItem('photobooth_server_port');
-        if (targetIP && targetPort) {
-          const url = new URL(link.href, window.location.origin);
-          url.hostname = targetIP;
-          url.port = targetPort;
-          e.currentTarget.href = url.toString();
+        const href = link.getAttribute('data-link');
+        
+        let targetUrl;
+        if (targetIP) {
+          // Manual IP configuration
+          const port = targetPort || (window.location.protocol === 'https:' ? '443' : '80');
+          targetUrl = `${window.location.protocol}//${targetIP}:${port}/${href}`;
+        } else {
+          // Auto-detect from current URL
+          const currentPort = window.location.port;
+          if (currentPort && currentPort !== '80' && currentPort !== '443') {
+            targetUrl = `${window.location.protocol}//${window.location.hostname}:${currentPort}/${href}`;
+          } else {
+            targetUrl = `${window.location.origin}/${href}`;
+          }
         }
+        
+        window.location.href = targetUrl;
       });
     });
   },
@@ -534,13 +547,23 @@ const PhotoboothPreview = {
     const serverIP = document.getElementById('serverIP');
     const serverPort = document.getElementById('serverPort');
 
-    if (serverIP) {
-      localStorage.setItem('photobooth_server_ip', serverIP.value);
-      App.serverIP = serverIP.value;
+    const ipValue = serverIP?.value?.trim() || '';
+    const portValue = serverPort?.value?.trim() || '';
+
+    if (ipValue) {
+      localStorage.setItem('photobooth_server_ip', ipValue);
+      App.serverIP = ipValue;
+    } else {
+      localStorage.removeItem('photobooth_server_ip');
+      App.serverIP = '';
     }
-    if (serverPort) {
-      localStorage.setItem('photobooth_server_port', serverPort.value);
-      App.serverPort = serverPort.value;
+    
+    if (portValue) {
+      localStorage.setItem('photobooth_server_port', portValue);
+      App.serverPort = portValue;
+    } else {
+      localStorage.removeItem('photobooth_server_port');
+      App.serverPort = '';
     }
 
     App.setupSocket();
