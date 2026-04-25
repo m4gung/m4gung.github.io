@@ -113,12 +113,12 @@
         
         <div class="setting-group">
           <label for="serverIP">IP Server:</label>
-          <input type="text" id="serverIP" value="localhost" placeholder="192.168.1.10">
+          <input type="text" id="serverIP" value="" placeholder="192.168.1.10 (kosongkan untuk auto)">
         </div>
         
         <div class="setting-group">
           <label for="serverPort">Port:</label>
-          <input type="text" id="serverPort" value="3000" placeholder="3000">
+          <input type="text" id="serverPort" value="" placeholder="3000 (kosongkan untuk auto)">
         </div>
         
         <div class="setting-group">
@@ -130,6 +130,7 @@
           </select>
         </div>
         
+        <button id="autoDetectBtn" class="btn btn-secondary">Deteksi Otomatis (untuk ngrok)</button>
         <button id="saveSettingsBtn" class="btn btn-primary">Simpan Pengaturan</button>
       </div>
     </div>

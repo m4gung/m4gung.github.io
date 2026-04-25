@@ -1,12 +1,21 @@
 const App = {
-  serverIP: localStorage.getItem('photobooth_server_ip') || 'localhost',
-  serverPort: localStorage.getItem('photobooth_server_port') || '3000',
+  serverIP: localStorage.getItem('photobooth_server_ip') || '',
+  serverPort: localStorage.getItem('photobooth_server_port') || '',
   socket: null,
   isConnected: false,
 
   get serverUrl() {
-    const port = this.serverPort || '3000';
-    return `http://${this.serverIP}:${port}`;
+    // If custom IP is set, use it with port
+    if (this.serverIP) {
+      const port = this.serverPort || (window.location.port || (window.location.protocol === 'https:' ? '443' : '80'));
+      return `${window.location.protocol}//${this.serverIP}:${port}`;
+    }
+    // Auto-detect from current page URL (works with ngrok, localhost, etc)
+    const port = this.serverPort || window.location.port;
+    if (port && port !== '80' && port !== '443') {
+      return `${window.location.protocol}//${window.location.hostname}:${port}`;
+    }
+    return window.location.origin;
   },
 
   init() {
@@ -373,6 +382,7 @@ const PhotoboothPreview = {
     const retakeBtn = document.getElementById('retakeBtn');
     const doneBtn = document.getElementById('doneBtn');
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const autoDetectBtn = document.getElementById('autoDetectBtn');
 
     if (captureBtn) {
       captureBtn.addEventListener('click', () => this.capturePhoto());
@@ -388,6 +398,23 @@ const PhotoboothPreview = {
 
     if (saveSettingsBtn) {
       saveSettingsBtn.addEventListener('click', () => this.saveSettings());
+    }
+
+    if (autoDetectBtn) {
+      autoDetectBtn.addEventListener('click', () => {
+        App.serverIP = '';
+        App.serverPort = '';
+        localStorage.removeItem('photobooth_server_ip');
+        localStorage.removeItem('photobooth_server_port');
+        
+        const serverIP = document.getElementById('serverIP');
+        const serverPort = document.getElementById('serverPort');
+        if (serverIP) serverIP.value = '';
+        if (serverPort) serverPort.value = '';
+        
+        App.setupSocket();
+        App.showNotification('Mode otomatis aktif - gunakan URL saat ini', 'success');
+      });
     }
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
