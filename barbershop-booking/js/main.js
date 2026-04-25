@@ -105,22 +105,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 let allSlots = doc.data().slots.sort((a, b) => a.time.localeCompare(b.time));
                 
+                // Filter out past times if date is today
+                const now = new Date();
+                const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                
+                if (selectedDate === localToday) {
+                    const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                    allSlots = allSlots.filter(s => s.time >= currentTimeStr);
+                }
+
                 if (unsubscribeBookings) {
                     unsubscribeBookings();
                     unsubscribeBookings = null;
                 }
 
                 if (selectedDate && selectedKepster) {
+                    // Gunakan filter 'date' saja dari firestore, sisanya filter di client-side
                     unsubscribeBookings = db.collection('bookings')
                         .where('date', '==', selectedDate)
-                        .where('kepster', '==', selectedKepster)
                         .onSnapshot(snapshot => {
                             const bookedTimes = snapshot.docs
                                 .map(d => d.data())
-                                .filter(b => b.status === 'confirmed' || b.status === 'completed')
+                                .filter(b => b.kepster === selectedKepster && (b.status === 'confirmed' || b.status === 'completed'))
                                 .map(b => b.time);
                             const availableSlots = allSlots.filter(s => !bookedTimes.includes(s.time));
                             renderTimeSlots(availableSlots);
+                        }, (error) => {
+                            console.error('Error fetching bookings:', error);
                         });
                 } else {
                     renderTimeSlots(allSlots);
@@ -204,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Booking form submission
-    bookingForm.addEventListener('submit', (e) => {
+    bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const user = auth.currentUser;
         if (!user) return;
@@ -227,16 +238,45 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Add booking to Firestore
-        db.collection('bookings').add(bookingData)
-            .then((docRef) => {
-                bookingStatus.innerHTML = '<div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl">Janji temu berhasil dibuat!</div>';
-                bookingForm.reset();
-                loadMyBookings(user.uid);
-            })
-            .catch((error) => {
-                bookingStatus.innerHTML = `<div class="bg-red-50 text-red-700 px-4 py-3 rounded-xl">Gagal membuat janji temu: ${error.message}</div>`;
+        const submitBtn = bookingForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = 'Memproses...';
+        submitBtn.disabled = true;
+
+        try {
+            // Validasi ketersediaan waktu
+            const checkSnap = await db.collection('bookings')
+                .where('date', '==', bookingData.date)
+                .get();
+                
+            let isBooked = false;
+            checkSnap.forEach(doc => {
+                const b = doc.data();
+                if (b.kepster === bookingData.kepster && b.time === bookingData.time && (b.status === 'confirmed' || b.status === 'completed')) {
+                    isBooked = true;
+                }
             });
+
+            if (isBooked) {
+                bookingStatus.innerHTML = '<div class="bg-red-50 text-red-700 px-4 py-3 rounded-xl">Maaf, slot waktu ini baru saja dipesan orang lain. Silakan pilih waktu atau kepster lain.</div>';
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                kepsterSelect.dispatchEvent(new Event('change')); // Refresh slots
+                return;
+            }
+
+            // Add booking to Firestore
+            await db.collection('bookings').add(bookingData);
+            bookingStatus.innerHTML = '<div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl">Janji temu berhasil dibuat!</div>';
+            bookingForm.reset();
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+            // updateSlots will automatically trigger via onSnapshot
+        } catch (error) {
+            bookingStatus.innerHTML = `<div class="bg-red-50 text-red-700 px-4 py-3 rounded-xl">Gagal membuat janji temu: ${error.message}</div>`;
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        }
     });
 
     // Load user's bookings

@@ -258,16 +258,59 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderServices() {
         db.collection('settings').doc('services').onSnapshot(doc => {
             let html = '';
-            if (doc.exists) doc.data().services.forEach(s => { html += '<div class="bg-gray-50 rounded-xl p-4"><h4 class="font-semibold">' + s.name + '</h4><p class="text-sm text-gray-500">Rp ' + s.price.toLocaleString('id-ID') + ' - ' + s.duration + ' menit</p></div>'; });
+            if (doc.exists) {
+                doc.data().services.forEach(s => { 
+                    html += `<div class="bg-gray-50 rounded-xl p-4 relative">
+                        <h4 class="font-semibold">${s.name}</h4>
+                        <p class="text-sm text-gray-500">Rp ${s.price.toLocaleString('id-ID')} - ${s.duration} menit</p>
+                        <button class="delete-service absolute top-2 right-2 text-red-500 hover:text-red-700 p-1" data-id="${s.id}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>`; 
+                });
+            }
             document.getElementById('servicesList').innerHTML = html;
+
+            document.querySelectorAll('.delete-service').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if (confirm('Hapus layanan ini?')) {
+                        const id = e.target.closest('button').getAttribute('data-id');
+                        const docRef = db.collection('settings').doc('services');
+                        const snap = await docRef.get();
+                        const services = snap.data().services.filter(s => s.id !== id);
+                        docRef.update({ services });
+                    }
+                });
+            });
         });
     }
 
     function renderTimeSlots() {
         db.collection('settings').doc('timeSlots').onSnapshot(doc => {
             let html = '';
-            if (doc.exists) doc.data().slots.sort((a,b) => a.time.localeCompare(b.time)).forEach(s => { html += '<div class="bg-gray-50 rounded-xl p-3"><span class="font-medium">' + s.time + '</span></div>'; });
+            if (doc.exists) {
+                doc.data().slots.sort((a,b) => a.time.localeCompare(b.time)).forEach(s => { 
+                    html += `<div class="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
+                        <span class="font-medium">${s.time}</span>
+                        <button class="delete-slot text-red-500 hover:text-red-700 p-1" data-id="${s.id}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>`; 
+                });
+            }
             document.getElementById('timeSlotsList').innerHTML = html;
+            
+            document.querySelectorAll('.delete-slot').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if (confirm('Hapus waktu ini?')) {
+                        const id = e.target.closest('button').getAttribute('data-id');
+                        const docRef = db.collection('settings').doc('timeSlots');
+                        const snap = await docRef.get();
+                        const slots = snap.data().slots.filter(s => s.id !== id);
+                        docRef.update({ slots });
+                    }
+                });
+            });
         });
     }
 
@@ -329,17 +372,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('newServiceName').value.trim();
         const price = parseInt(document.getElementById('newServicePrice').value);
         const duration = parseInt(document.getElementById('newServiceDuration').value);
-        if (!name || !price || !duration) { alert('Isi semua'); return; }
-        const doc = await db.collection('settings').doc('services').get();
-        doc.data().services.push({ id: name.toLowerCase().replace(/\s+/g, '-'), name, price, duration });
-        await db.collection('settings').doc('services').update({ services: doc.data().services });
+        if (!name || !price || !duration) { alert('Isi semua bidang'); return; }
+        
+        const docRef = db.collection('settings').doc('services');
+        const snap = await docRef.get();
+        let services = snap.exists ? (snap.data().services || []) : [];
+        const id = name.toLowerCase().replace(/\s+/g, '-');
+        
+        if (!services.some(s => s.id === id)) {
+            services.push({ id, name, price, duration });
+            await docRef.update({ services });
+            document.getElementById('newServiceName').value = '';
+            document.getElementById('newServicePrice').value = '';
+            document.getElementById('newServiceDuration').value = '';
+        } else {
+            alert('Layanan dengan nama ini sudah ada.');
+        }
     });
 
     document.getElementById('addTimeSlotBtn').addEventListener('click', async () => {
         const time = document.getElementById('newTimeSlot').value;
-        if (!time) return;
-        const doc = await db.collection('settings').doc('timeSlots').get();
-        if (!doc.data().slots.some(s => s.time === time)) { doc.data().slots.push({ id: time, time }); await db.collection('settings').doc('timeSlots').update({ slots: doc.data().slots }); }
+        if (!time) return alert('Pilih waktu');
+        const docRef = db.collection('settings').doc('timeSlots');
+        const snap = await docRef.get();
+        let slots = snap.exists ? (snap.data().slots || []) : [];
+        if (!slots.some(s => s.time === time)) { 
+            slots.push({ id: time, time }); 
+            await docRef.update({ slots }); 
+        } else {
+            alert('Waktu tersebut sudah ada.');
+        }
+        document.getElementById('newTimeSlot').value = '';
     });
 
     document.getElementById('checkSlotsBtn').addEventListener('click', () => {
