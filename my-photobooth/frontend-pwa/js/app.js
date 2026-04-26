@@ -1,453 +1,76 @@
 const App = {
   serverIP: localStorage.getItem('photobooth_server_ip') || '',
   serverPort: localStorage.getItem('photobooth_server_port') || '',
-  socket: null,
-  isConnected: false,
-  frameInterval: null,
 
   get serverUrl() {
     if (this.serverIP) {
-      const port = this.serverPort || (window.location.port || (window.location.protocol === 'https:' ? '443' : '80'));
+      const port = this.serverPort || (window.location.protocol === 'https:' ? '443' : '80');
       return `${window.location.protocol}//${this.serverIP}:${port}`;
-    }
-    const port = this.serverPort || window.location.port;
-    if (port && port !== '80' && port !== '443') {
-      return `${window.location.protocol}//${window.location.hostname}:${port}`;
     }
     return window.location.origin;
   },
 
   init() {
-    this.setupSocket();
-    this.updateLocalIP();
-    this.bindEvents();
+    App.setupSocket();
+    App.bindEvents();
   },
 
   setupSocket() {
-    if (this.socket) {
-      this.socket.disconnect();
-    }
-
-    this.socket = io(this.serverUrl, {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000
-    });
-
-    this.socket.on('connect', () => {
-      console.log('[DEBUG] Connected to server:', this.socket.id);
-      this.isConnected = true;
-      this.updateConnectionStatus(true);
-      this.socket.emit('register', { deviceType: this.getDeviceType() });
-    });
-
-    this.socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-      this.isConnected = false;
-      this.updateConnectionStatus(false);
-    });
-
-    this.socket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
-      this.isConnected = false;
-      this.updateConnectionStatus(false, error.message);
-    });
-
-    this.socket.on('photo_request', () => {
-      console.log('[DEBUG] photo_request received');
-      if (typeof PhotoboothCamera !== 'undefined') {
-        console.log('[DEBUG] Calling PhotoboothCamera.capturePhoto()');
-        PhotoboothCamera.capturePhoto();
-      } else {
-        console.log('[DEBUG] PhotoboothCamera not defined');
-      }
-    });
-
-    this.socket.on('photo_saved', (data) => {
-      this.handlePhotoSaved(data);
-    });
-
-this.socket.on('camera_stream_update', (data) => {
-      console.log('[DEBUG] camera_stream_update received, isPhoto:', data.isPhoto);
-      if (typeof PhotoboothPreview !== 'undefined') {
-        if (data.isPhoto) {
-          PhotoboothPreview.showCapturedPhoto(data.image);
-        } else {
-          PhotoboothPreview.updateStream(data.image);
-        }
-      }
-    });
-
-    this.socket.on('photo_ready_response', (data) => {
-      console.log('[DEBUG] photo_ready_response received:', data);
-      if (data.image && typeof PhotoboothPreview !== 'undefined') {
-        console.log('[DEBUG] Calling showCapturedPhoto');
-        PhotoboothPreview.showCapturedPhoto(data.image);
-      }
-    });
-
-    this.socket.on('device_registered', (data) => {
-      console.log('Devices registered:', data);
-    });
+    SocketClient.init();
   },
 
-  getDeviceType() {
-    const path = window.location.pathname;
-    if (path.includes('camera.html')) return 'camera';
-    if (path.includes('preview.html')) return 'preview';
-    return 'unknown';
-  },
-
-  updateLocalIP() {
-    const ipElement = document.getElementById('localIP');
-    if (ipElement) {
-      ipElement.textContent = this.serverUrl;
-    }
-  },
-
-  updateConnectionStatus(connected, message = '') {
-    const statusDot = document.querySelector('.status-dot');
-    const statusText = document.querySelector('#connectionText, #cameraStatusText, #previewStatusText');
-    const serverInfo = document.getElementById('serverInfo');
-    const serverUrl = document.getElementById('serverUrl');
-
-    if (statusDot) {
-      statusDot.className = `status-dot ${connected ? 'online' : 'offline'}`;
-    }
-
-    if (statusText) {
-      statusText.textContent = connected ? 'Terhubung ke server' : (message || 'Terputus dari server');
-    }
-
-    if (serverInfo && serverUrl) {
-      serverInfo.classList.remove('hidden');
-      serverUrl.textContent = this.serverUrl;
-    }
-  },
-
-  bindEvents() {
-    document.querySelectorAll('.mode-card[data-link]').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetIP = localStorage.getItem('photobooth_server_ip');
-        const targetPort = localStorage.getItem('photobooth_server_port');
-        const href = link.getAttribute('data-link');
-        
-        let targetUrl;
-        if (targetIP) {
-          // Manual IP configuration
-          const port = targetPort || (window.location.protocol === 'https:' ? '443' : '80');
-          targetUrl = `${window.location.protocol}//${targetIP}:${port}/${href}`;
-        } else {
-          // Auto-detect from current URL
-          const currentPort = window.location.port;
-          if (currentPort && currentPort !== '80' && currentPort !== '443') {
-            targetUrl = `${window.location.protocol}//${window.location.hostname}:${currentPort}/${href}`;
-          } else {
-            targetUrl = `${window.location.origin}/${href}`;
-          }
-        }
-        
-        window.location.href = targetUrl;
-      });
-    });
-  },
-
-  handlePhotoSaved(data) {
-    console.log('Photo saved:', data);
-    
-    if (typeof PhotoEditor !== 'undefined' && data.type === 'final') {
-      PhotoEditor.addToGallery(data);
-    }
-  },
+  bindEvents() {},
 
   async uploadPhoto(imageData, type = 'raw') {
     try {
       const response = await fetch(`${this.serverUrl}/upload-base64`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          image: imageData,
-          type: type
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData, type })
       });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const result = await response.json();
-      console.log('Upload successful:', result);
-      return result;
+      if (!response.ok) throw new Error('Upload failed');
+      return await response.json();
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('[App] Upload error:', error);
       throw error;
     }
   },
 
   async getPhotos() {
     try {
-      const response = await fetch(`${this.serverUrl}/photos`);
+      const response = await fetch(`${this.serverUrl}/photos?type=final`);
       const result = await response.json();
       return result.photos || [];
     } catch (error) {
-      console.error('Get photos error:', error);
+      console.error('[App] Get photos error:', error);
       return [];
     }
   },
 
   async deletePhoto(filename) {
     try {
-      const response = await fetch(`${this.serverUrl}/uploads/${filename}`, {
-        method: 'DELETE'
-      });
+      const response = await fetch(`${this.serverUrl}/uploads/final/${filename}`, { method: 'DELETE' });
       return response.ok;
     } catch (error) {
-      console.error('Delete photo error:', error);
+      console.error('[App] Delete error:', error);
       return false;
     }
   },
 
   showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      notification.classList.add('show');
-    }, 10);
-
-    setTimeout(() => {
-      notification.classList.remove('show');
-      setTimeout(() => {
-        notification.remove();
-      }, 300);
-    }, 3000);
+    const n = document.createElement('div');
+    n.className = 'notification';
+    n.textContent = message;
+    document.body.appendChild(n);
+    setTimeout(() => n.classList.add('show'), 10);
+    setTimeout(() => { n.classList.remove('show'); setTimeout(() => n.remove(), 300); }, 3000);
   }
 };
 
-const PhotoboothCamera = {
-  videoElement: null,
-  canvasElement: null,
-  stream: null,
-  currentDeviceId: null,
-  devices: [],
-
-  init() {
-    this.videoElement = document.getElementById('cameraVideo');
-    this.canvasElement = document.getElementById('captureCanvas');
-
-    if (!this.videoElement) return;
-
-    this.bindEvents();
-    this.checkCameraAccess();
-  },
-
-  async checkCameraAccess() {
-    const overlay = document.getElementById('cameraOverlay');
-    const statusDot = document.getElementById('cameraStatus');
-    const statusText = document.getElementById('cameraStatusText');
-
-    try {
-      const testStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      testStream.getTracks().forEach(track => track.stop());
-      
-      if (overlay) overlay.classList.add('hidden');
-      if (statusDot) {
-        statusDot.className = 'status-dot online';
-        statusText.textContent = 'Kamera siap';
-      }
-      
-      this.loadCameras();
-    } catch (error) {
-      console.error('Camera access error:', error);
-      if (statusDot) {
-        statusDot.className = 'status-dot offline';
-        statusText.textContent = 'Kamera tidak tersedia';
-      }
-    }
-  },
-
-  async loadCameras() {
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      this.devices = devices.filter(device => device.kind === 'videoinput');
-      
-      const cameraSelect = document.getElementById('cameraSelect');
-      if (cameraSelect && this.devices.length > 0) {
-        cameraSelect.innerHTML = this.devices.map(device => 
-          `<option value="${device.deviceId}">${device.label || `Kamera ${this.devices.indexOf(device) + 1}`}</option>`
-        ).join('');
-        
-        if (this.devices.length === 1) {
-          cameraSelect.classList.add('hidden');
-        }
-      }
-    } catch (error) {
-      console.error('Load cameras error:', error);
-    }
-  },
-
-  async startCamera(deviceId = null) {
-    const overlay = document.getElementById('cameraOverlay');
-    const statusText = document.getElementById('cameraStatusText');
-
-    try {
-      const constraints = {
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        },
-        audio: false
-      };
-
-      if (deviceId) {
-        constraints.video.deviceId = { exact: deviceId };
-      }
-
-      this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-      this.videoElement.srcObject = this.stream;
-      
-      if (overlay) overlay.classList.add('hidden');
-      if (statusText) statusText.textContent = 'Kamera aktif - Siap jepret!';
-
-      this.startContinuousStream();
-      
-      App.socket?.emit('camera_ready', { deviceId: deviceId || 'default' });
-
-      return true;
-    } catch (error) {
-      console.error('Start camera error:', error);
-      if (statusText) statusText.textContent = 'Gagal mengakses kamera';
-      return false;
-    }
-  },
-
-  stopCamera() {
-    if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
-      this.stream = null;
-    }
-    this.stopContinuousStream();
-    if (this.videoElement) {
-      this.videoElement.srcObject = null;
-    }
-  },
-
-  startContinuousStream() {
-    if (this.frameInterval) return;
-    
-    const streamCanvas = document.createElement('canvas');
-    streamCanvas.width = 640;
-    streamCanvas.height = 480;
-    const streamCtx = streamCanvas.getContext('2d');
-    
-    const fpsSelect = document.getElementById('streamFps');
-    const intervalMs = parseInt(fpsSelect?.value || '100');
-    
-    this.frameInterval = setInterval(() => {
-      if (!this.stream || !this.videoElement) return;
-      if (this.videoElement.readyState !== 4) return;
-      
-      const videoWidth = this.videoElement.videoWidth;
-      const videoHeight = this.videoElement.videoHeight;
-      if (videoWidth === 0 || videoHeight === 0) return;
-      
-      streamCanvas.width = 640;
-      streamCanvas.height = 480;
-      streamCtx.drawImage(this.videoElement, 0, 0, 640, 480);
-      
-      const imageData = streamCanvas.toDataURL('image/jpeg', 0.5);
-      App.socket?.emit('camera_stream', { image: imageData });
-    }, intervalMs);
-  },
-
-  stopContinuousStream() {
-    if (this.frameInterval) {
-      clearInterval(this.frameInterval);
-      this.frameInterval = null;
-    }
-  },
-
-  async capturePhoto() {
-    console.log('[DEBUG] capturePhoto called');
-    
-    if (!this.videoElement || !this.stream) {
-      console.error('[DEBUG] Camera not started, videoElement:', !!this.videoElement, 'stream:', !!this.stream);
-      return null;
-    }
-
-    const canvas = this.canvasElement || document.createElement('canvas');
-    canvas.width = this.videoElement.videoWidth;
-    canvas.height = this.videoElement.videoHeight;
-
-    console.log('[DEBUG] Canvas size:', canvas.width, 'x', canvas.height);
-
-    const context = canvas.getContext('2d');
-    context.drawImage(this.videoElement, 0, 0);
-
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
-    console.log('[DEBUG] Image captured, length:', dataUrl.length);
-
-    // Emit photo_ready without the large image data first
-    App.socket?.emit('photo_ready', { 
-      timestamp: Date.now(),
-      hasImage: true
-    });
-    console.log('[DEBUG] Emitted photo_ready');
-
-    // Send image via camera_stream (already broadcast to preview)
-    App.socket?.emit('camera_stream', {
-      image: dataUrl,
-      isPhoto: true
-    });
-    console.log('[DEBUG] Emitted camera_stream with photo');
-
-    return dataUrl;
-  },
-
-  bindEvents() {
-    const cameraSelect = document.getElementById('cameraSelect');
-    const resolutionSelect = document.getElementById('resolutionSelect');
-    const requestCameraBtn = document.getElementById('requestCameraBtn');
-
-    if (requestCameraBtn) {
-      requestCameraBtn.addEventListener('click', () => this.startCamera());
-    }
-
-    if (cameraSelect) {
-      cameraSelect.addEventListener('change', (e) => {
-        this.startCamera(e.target.value);
-      });
-    }
-
-    if (resolutionSelect) {
-      resolutionSelect.addEventListener('change', (e) => {
-        const [width, height] = e.target.value.split('x').map(Number);
-        this.startCamera(this.currentDeviceId);
-      });
-    }
-  }
-};
+App.setupSocket();
 
 const PhotoboothPreview = {
-  videoElement: null,
-  canvasElement: null,
-  stream: null,
-  currentPhoto: null,
-  photos: [],
-
   init() {
-    this.videoElement = document.getElementById('streamVideo');
-    this.canvasElement = document.getElementById('previewCanvas');
-
-    if (!this.videoElement) return;
-
     this.bindEvents();
     this.loadSettings();
   },
@@ -455,7 +78,6 @@ const PhotoboothPreview = {
   loadSettings() {
     const serverIP = document.getElementById('serverIP');
     const serverPort = document.getElementById('serverPort');
-
     if (serverIP) serverIP.value = App.serverIP;
     if (serverPort) serverPort.value = App.serverPort;
   },
@@ -464,263 +86,132 @@ const PhotoboothPreview = {
     const captureBtn = document.getElementById('captureBtn');
     const retakeBtn = document.getElementById('retakeBtn');
     const doneBtn = document.getElementById('doneBtn');
-    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-    const autoDetectBtn = document.getElementById('autoDetectBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const editBtn = document.getElementById('editBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
 
     if (captureBtn) {
-      captureBtn.addEventListener('click', () => this.capturePhoto());
-    }
-
-    if (retakeBtn) {
-      retakeBtn.addEventListener('click', () => this.retakePhoto());
-    }
-
-    if (doneBtn) {
-      doneBtn.addEventListener('click', () => this.finishPhoto());
-    }
-
-    if (saveSettingsBtn) {
-      saveSettingsBtn.addEventListener('click', () => this.saveSettings());
-    }
-
-    if (autoDetectBtn) {
-      autoDetectBtn.addEventListener('click', () => {
-        App.serverIP = '';
-        App.serverPort = '';
-        localStorage.removeItem('photobooth_server_ip');
-        localStorage.removeItem('photobooth_server_port');
-        
-        const serverIP = document.getElementById('serverIP');
-        const serverPort = document.getElementById('serverPort');
-        if (serverIP) serverIP.value = '';
-        if (serverPort) serverPort.value = '';
-        
-        App.setupSocket();
-        App.showNotification('Mode otomatis aktif - gunakan URL saat ini', 'success');
+      captureBtn.addEventListener('click', () => {
+        if (typeof LayoutManager !== 'undefined') LayoutManager.startCapture();
       });
     }
 
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (retakeBtn) {
+      retakeBtn.addEventListener('click', () => {
+        if (typeof LayoutManager !== 'undefined') LayoutManager.reset();
+        captureBtn.disabled = false;
+        retakeBtn.disabled = true;
+        doneBtn.disabled = true;
+        document.getElementById('stripPreview').classList.add('hidden');
+      });
+    }
+
+    if (doneBtn) {
+      doneBtn.addEventListener('click', async () => {
+        doneBtn.disabled = true;
+        if (typeof LayoutManager !== 'undefined' && LayoutManager.photos.length > 0) {
+          const img = await LayoutManager.getFinalImage();
+          if (img) {
+            await App.uploadPhoto(img, 'final');
+            App.showNotification('Foto disimpan!');
+            LayoutManager.reset();
+            captureBtn.disabled = false;
+            retakeBtn.disabled = true;
+            doneBtn.disabled = true;
+            document.getElementById('stripPreview').classList.add('hidden');
+          }
+        }
+      });
+    }
+
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', async () => {
+        if (typeof LayoutManager !== 'undefined') await LayoutManager.download();
+      });
+    }
+
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        if (typeof LayoutManager !== 'undefined' && LayoutManager.photos.length > 0) {
+          sessionStorage.setItem('photobooth_photos', JSON.stringify({
+            photos: LayoutManager.photos,
+            layout: LayoutManager.currentLayout
+          }));
+          window.location.href = 'edit.html';
+        }
+      });
+    }
+
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener('click', () => {
+        const box = document.getElementById('previewBox');
+        box.classList.toggle('fullscreen');
+        fullscreenBtn.textContent = box.classList.contains('fullscreen') ? '✕' : '⛶';
+      });
+    }
+
+    document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', (e) => this.switchTab(e.target));
     });
 
-    document.querySelectorAll('.frame-item').forEach(item => {
-      item.addEventListener('click', (e) => this.selectFrame(e.currentTarget));
+    document.querySelectorAll('.layout-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        document.querySelectorAll('.layout-card').forEach(c => c.classList.remove('selected'));
+        e.currentTarget.classList.add('selected');
+        if (typeof LayoutManager !== 'undefined') {
+          LayoutManager.selectLayout(e.currentTarget.dataset.layout);
+        }
+      });
     });
 
-    document.querySelectorAll('.tool-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => this.applyTool(e.currentTarget.dataset.tool));
+    document.querySelectorAll('.frame-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        document.querySelectorAll('.frame-card').forEach(c => c.classList.remove('selected'));
+        e.currentTarget.classList.add('selected');
+      });
     });
   },
 
-  switchTab(button) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    
-    button.classList.add('active');
-    
-    const tabId = button.dataset.tab + 'Tab';
-    const tabContent = document.getElementById(tabId);
-    if (tabContent) tabContent.classList.add('active');
+  switchTab(btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = document.getElementById(btn.dataset.tab + 'Tab');
+    if (tab) tab.classList.add('active');
+    if (btn.dataset.tab === 'gallery') this.loadGallery();
   },
 
-  capturePhoto() {
-    console.log('[DEBUG] capturePhoto button clicked');
-    App.socket?.emit('take_photo');
-    
-    const captureBtn = document.getElementById('captureBtn');
-    if (captureBtn) {
-      captureBtn.classList.add('capturing');
-      captureBtn.disabled = true;
-      
-      setTimeout(() => {
-        captureBtn.classList.remove('capturing');
-        captureBtn.disabled = false;
-      }, 2000);
+  async loadGallery() {
+    const grid = document.getElementById('galleryGrid');
+    if (!grid) return;
+    const photos = await App.getPhotos();
+    grid.innerHTML = '';
+    if (photos.length === 0) {
+      grid.innerHTML = '<p class="empty-state">Belum ada foto</p>';
+      return;
     }
-
-    App.showNotification('Meminta foto...', 'info');
-  },
-
-  retakePhoto() {
-    this.currentPhoto = null;
-    this.updatePhotoDisplay(null);
-    
-    const retakeBtn = document.getElementById('retakeBtn');
-    const doneBtn = document.getElementById('doneBtn');
-    
-    if (retakeBtn) retakeBtn.disabled = true;
-    if (doneBtn) doneBtn.disabled = true;
-    
-    App.showNotification('Ambil ulang', 'info');
-  },
-
-  async finishPhoto() {
-    if (!this.currentPhoto) return;
-
-    const doneBtn = document.getElementById('doneBtn');
-    if (doneBtn) doneBtn.disabled = true;
-
-    try {
-      await App.uploadPhoto(this.currentPhoto, 'final');
-      App.showNotification('Foto disimpan!', 'success');
-      
-      this.currentPhoto = null;
-      this.updatePhotoDisplay(null);
-    } catch (error) {
-      App.showNotification('Gagal menyimpan foto', 'error');
-    }
-
-    if (doneBtn) doneBtn.disabled = false;
-  },
-
-  updatePhotoDisplay(photoData) {
-    const thumbnail = document.getElementById('photoThumbnail');
-    const placeholder = document.getElementById('photoPlaceholder');
-
-    if (photoData) {
-      if (thumbnail) {
-        thumbnail.src = photoData;
-        thumbnail.classList.remove('hidden');
-      }
-      if (placeholder) {
-        placeholder.classList.add('hidden');
-      }
-    } else {
-      if (thumbnail) {
-        thumbnail.classList.add('hidden');
-      }
-      if (placeholder) {
-        placeholder.classList.remove('hidden');
-      }
-    }
-  },
-
-  selectFrame(frameItem) {
-    document.querySelectorAll('.frame-item').forEach(item => {
-      item.classList.remove('selected');
+    photos.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'gallery-item';
+      div.innerHTML = `<img src="${p.url}" alt="Photo"><button class="delete-btn">×</button>`;
+      div.querySelector('.delete-btn').onclick = async () => {
+        if (confirm('Hapus?')) {
+          await App.deletePhoto(p.filename);
+          div.remove();
+        }
+      };
+      grid.appendChild(div);
     });
-    frameItem.classList.add('selected');
-    
-    const frameName = frameItem.dataset.frame;
-    if (typeof PhotoEditor !== 'undefined') {
-      PhotoEditor.setFrame(frameName);
-    }
-  },
-
-  applyTool(tool) {
-    if (typeof PhotoEditor !== 'undefined') {
-      PhotoEditor.applyTool(tool);
-    }
-  },
-
-  saveSettings() {
-    const serverIP = document.getElementById('serverIP');
-    const serverPort = document.getElementById('serverPort');
-
-    const ipValue = serverIP?.value?.trim() || '';
-    const portValue = serverPort?.value?.trim() || '';
-
-    if (ipValue) {
-      localStorage.setItem('photobooth_server_ip', ipValue);
-      App.serverIP = ipValue;
-    } else {
-      localStorage.removeItem('photobooth_server_ip');
-      App.serverIP = '';
-    }
-    
-    if (portValue) {
-      localStorage.setItem('photobooth_server_port', portValue);
-      App.serverPort = portValue;
-    } else {
-      localStorage.removeItem('photobooth_server_port');
-      App.serverPort = '';
-    }
-
-    App.setupSocket();
-    App.showNotification('Pengaturan disimpan', 'success');
-  },
-
-  updateStream(imageData) {
-    const previewOverlay = document.getElementById('previewOverlay');
-    const previewStatus = document.getElementById('previewStatus');
-    const previewStatusText = document.getElementById('previewStatusText');
-    const captureBtn = document.getElementById('captureBtn');
-    const streamVideo = document.getElementById('streamVideo');
-    const streamImage = document.getElementById('streamImage');
-
-    if (imageData) {
-      if (streamVideo) {
-        streamVideo.pause();
-        streamVideo.classList.add('hidden');
-      }
-      if (streamImage) {
-        streamImage.src = imageData;
-        streamImage.classList.remove('hidden');
-      }
-      if (previewOverlay) previewOverlay.classList.add('hidden');
-      if (previewStatus) previewStatus.className = 'status-dot online';
-      if (previewStatusText) previewStatusText.textContent = 'Video stream aktif';
-      if (captureBtn) captureBtn.disabled = false;
-    }
-  },
-
-  handlePhotoReady() {
-    const captureBtn = document.getElementById('captureBtn');
-    if (captureBtn) {
-      captureBtn.classList.add('flash');
-      setTimeout(() => captureBtn.classList.remove('flash'), 500);
-    }
-  },
-
-  showCapturedPhoto(imageData) {
-    console.log('[DEBUG] showCapturedPhoto called, image length:', imageData ? imageData.length : 0);
-    
-    this.currentPhoto = imageData;
-    
-    const streamImage = document.getElementById('streamImage');
-    const streamVideo = document.getElementById('streamVideo');
-    const previewOverlay = document.getElementById('previewOverlay');
-    const retakeBtn = document.getElementById('retakeBtn');
-    const doneBtn = document.getElementById('doneBtn');
-    
-    if (streamVideo) {
-      streamVideo.pause();
-      streamVideo.classList.add('hidden');
-    }
-    
-    if (streamImage) {
-      streamImage.src = imageData;
-      streamImage.classList.remove('hidden');
-    }
-    
-    if (previewOverlay) previewOverlay.classList.add('hidden');
-    if (retakeBtn) retakeBtn.disabled = false;
-    if (doneBtn) doneBtn.disabled = false;
-    
-    // Also send to PhotoEditor for editing
-    if (typeof PhotoEditor !== 'undefined') {
-      PhotoEditor.setImage(imageData);
-    }
-    
-    this.updatePhotoDisplay(imageData);
-    
-    App.showNotification('Foto berhasil diambil!', 'success');
   }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
   App.init();
-
-  if (document.getElementById('cameraVideo')) {
-    PhotoboothCamera.init();
-  }
-
   if (document.getElementById('streamVideo')) {
     PhotoboothPreview.init();
+    if (typeof LayoutManager !== 'undefined') LayoutManager.init();
   }
 });
 
 window.App = App;
-window.PhotoboothCamera = PhotoboothCamera;
 window.PhotoboothPreview = PhotoboothPreview;

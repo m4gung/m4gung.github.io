@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>My Photobooth - Edit</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/edit.css">
+</head>
+<body>
+  <div class="edit-container">
+    <!-- Header -->
+    <div class="edit-header">
+      <button class="btn btn-secondary" style="padding: 8px 12px;" onclick="history.back()">←</button>
+      <h1>Edit Foto</h1>
+      <div class="edit-header-actions">
+        <button id="saveEditBtn" class="btn btn-primary">Simpan</button>
+      </div>
+    </div>
+
+    <!-- Photo Edit Area -->
+    <div class="edit-photo-area" id="editPhotoArea">
+      <canvas id="editCanvas"></canvas>
+      <div id="stickerLayer"></div>
+    </div>
+
+    <!-- Photo Slots -->
+    <div class="photo-slots" id="photoSlots">
+      <!-- Slots will be generated dynamically -->
+    </div>
+
+    <!-- Toolbar -->
+    <div class="edit-toolbar">
+      <button class="tool-btn" id="stickerBtn">
+        <span>⭐</span>
+        <span>Stiker</span>
+      </button>
+      <button class="tool-btn" id="layoutBtn">
+        <span>📐</span>
+        <span>Layout</span>
+      </button>
+      <button class="tool-btn" id="retakeAllBtn">
+        <span>📷</span>
+        <span>Ambil Ulang</span>
+      </button>
+      <button class="tool-btn" id="deleteStickerBtn">
+        <span>🗑️</span>
+        <span>Hapus Stiker</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sticker Panel -->
+  <div class="sticker-panel" id="stickerPanel">
+    <div class="sticker-panel-header">
+      <h3>Pilih Stiker</h3>
+      <button class="sticker-close-btn" id="closeStickerPanel">×</button>
+    </div>
+    <div class="sticker-grid" id="stickerGrid">
+      <div class="sticker-item" data-emoji="❤️">❤️</div>
+      <div class="sticker-item" data-emoji="⭐">⭐</div>
+      <div class="sticker-item" data-emoji="🎉">🎉</div>
+      <div class="sticker-item" data-emoji="🎊">🎊</div>
+      <div class="sticker-item" data-emoji="🥳">🥳</div>
+      <div class="sticker-item" data-emoji="😍">😍</div>
+      <div class="sticker-item" data-emoji="🔥">🔥</div>
+      <div class="sticker-item" data-emoji="💖">💖</div>
+      <div class="sticker-item" data-emoji="✨">✨</div>
+      <div class="sticker-item" data-emoji="🎈">🎈</div>
+      <div class="sticker-item" data-emoji="🎁">🎁</div>
+      <div class="sticker-item" data-emoji="💕">💕</div>
+    </div>
+  </div>
+
+  <!-- Layout Selector -->
+  <div class="edit-layout-selector" id="editLayoutSelector">
+    <div class="edit-layout-grid">
+      <div class="edit-layout-card selected" data-layout="strip-3">
+        <div class="preview">3 Foto</div>
+        <div class="name">Strip 3</div>
+      </div>
+      <div class="edit-layout-card" data-layout="strip-4">
+        <div class="preview">4 Foto</div>
+        <div class="name">Strip 4</div>
+      </div>
+      <div class="edit-layout-card" data-layout="grid-4">
+        <div class="preview">2×2</div>
+        <div class="name">Grid 4</div>
+      </div>
+      <div class="edit-layout-card" data-layout="single">
+        <div class="preview">1 Foto</div>
+        <div class="name">Single</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Capture Modal -->
+  <div class="capture-modal" id="captureModal">
+    <div class="capture-modal-header">
+      <h2>Ambil Foto</h2>
+      <button class="btn btn-secondary" onclick="EditPage.closeCaptureModal()">×</button>
+    </div>
+    <div class="capture-modal-preview">
+      <video id="captureModalVideo" autoplay playsinline muted></video>
+    </div>
+    <div class="capture-modal-actions">
+      <button class="btn btn-secondary" onclick="EditPage.closeCaptureModal()">Batal</button>
+      <button class="btn btn-primary" id="captureModalBtn">📷 Jepret</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="js/socket-client.js"></script>
+  <script src="js/webrtc-core.js"></script>
+  <script src="js/edit-page.js"></script>
+</body>
+</html>

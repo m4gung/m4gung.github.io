@@ -1,20 +1,9 @@
-const PhotoEditor = {
+const CanvasEditor = {
   canvas: null,
   ctx: null,
   originalImage: null,
   currentFrame: null,
-  frameImage: null,
-  rotation: 0,
-  flipH: false,
-  flipV: false,
-  grayscale: false,
-
-  frames: {
-    none: null,
-    classic: null,
-    modern: null,
-    festive: null
-  },
+  frames: {},
 
   get isPreview() {
     return window.location.pathname.includes('preview.html');
@@ -41,7 +30,7 @@ const PhotoEditor = {
       try {
         this.frames[name] = await this.loadImage(path);
       } catch (error) {
-        console.warn(`Failed to load frame: ${name}`);
+        console.warn(`Failed to load frame: ${name}`, error);
       }
     }
   },
@@ -58,11 +47,6 @@ const PhotoEditor = {
   async setImage(imageData) {
     try {
       this.originalImage = await this.loadImage(imageData);
-      this.rotation = 0;
-      this.flipH = false;
-      this.flipV = false;
-      this.grayscale = false;
-
       this.canvas.width = this.originalImage.width;
       this.canvas.height = this.originalImage.height;
       this.render();
@@ -74,10 +58,8 @@ const PhotoEditor = {
       if (captureBtn) captureBtn.disabled = false;
       if (retakeBtn) retakeBtn.disabled = false;
       if (doneBtn) doneBtn.disabled = false;
-
-      App.showNotification('Foto diterima!', 'success');
     } catch (error) {
-      console.error('Failed to set image:', error);
+      console.error('[Canvas] Failed to set image:', error);
       App.showNotification('Gagal memproses foto', 'error');
     }
   },
@@ -92,98 +74,35 @@ const PhotoEditor = {
   },
 
   applyTool(tool) {
-    switch (tool) {
-      case 'rotate':
-        this.rotation = (this.rotation + 90) % 360;
-        break;
-      case 'flipH':
-        this.flipH = !this.flipH;
-        break;
-      case 'flipV':
-        this.flipV = !this.flipV;
-        break;
-      case 'grayscale':
-        this.grayscale = !this.grayscale;
-        break;
-    }
-    this.render();
+    console.log('[Canvas] Apply tool:', tool);
   },
 
   render() {
     if (!this.originalImage) return;
 
-    this.ctx.save();
-
-    const width = this.canvas.width;
-    const height = this.canvas.height;
-
-    if (this.rotation === 90 || this.rotation === 270) {
-      this.canvas.width = height;
-      this.canvas.height = width;
-    } else {
-      this.canvas.width = this.originalImage.width;
-      this.canvas.height = this.originalImage.height;
-    }
-
-    this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
-    this.ctx.rotate((this.rotation * Math.PI) / 180);
-    this.ctx.scale(this.flipH ? -1 : 1, this.flipV ? -1 : 1);
-
-    const drawWidth = this.originalImage.width;
-    const drawHeight = this.originalImage.height;
-
-    if (this.rotation === 90 || this.rotation === 270) {
-      this.ctx.drawImage(this.originalImage, -drawHeight / 2, -drawWidth / 2, drawHeight, drawWidth);
-    } else {
-      this.ctx.drawImage(this.originalImage, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-    }
-
-    this.ctx.restore();
-
-    if (this.grayscale) {
-      this.applyGrayscale();
-    }
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(this.originalImage, 0, 0);
 
     if (this.currentFrame) {
-      this.renderFrame();
+      const frameAspect = this.currentFrame.width / this.currentFrame.height;
+      const canvasAspect = this.canvas.width / this.canvas.height;
+
+      let fw, fh, fx, fy;
+
+      if (frameAspect > canvasAspect) {
+        fw = this.canvas.width;
+        fh = this.canvas.width / frameAspect;
+        fx = 0;
+        fy = (this.canvas.height - fh) / 2;
+      } else {
+        fh = this.canvas.height;
+        fw = this.canvas.height * frameAspect;
+        fy = 0;
+        fx = (this.canvas.width - fw) / 2;
+      }
+
+      this.ctx.drawImage(this.currentFrame, fx, fy, fw, fh);
     }
-  },
-
-  applyGrayscale() {
-    const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-    const data = imageData.data;
-
-    for (let i = 0; i < data.length; i += 4) {
-      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-      data[i] = avg;
-      data[i + 1] = avg;
-      data[i + 2] = avg;
-    }
-
-    this.ctx.putImageData(imageData, 0, 0);
-  },
-
-  renderFrame() {
-    if (!this.currentFrame) return;
-
-    const frameAspect = this.currentFrame.width / this.currentFrame.height;
-    const canvasAspect = this.canvas.width / this.canvas.height;
-
-    let frameWidth, frameHeight, offsetX, offsetY;
-
-    if (frameAspect > canvasAspect) {
-      frameWidth = this.canvas.width;
-      frameHeight = this.canvas.width / frameAspect;
-      offsetX = 0;
-      offsetY = (this.canvas.height - frameHeight) / 2;
-    } else {
-      frameHeight = this.canvas.height;
-      frameWidth = this.canvas.height * frameAspect;
-      offsetX = (this.canvas.width - frameWidth) / 2;
-      offsetY = 0;
-    }
-
-    this.ctx.drawImage(this.currentFrame, offsetX, offsetY, frameWidth, frameHeight);
   },
 
   getFinalImage() {
@@ -227,10 +146,6 @@ const PhotoEditor = {
   clear() {
     this.originalImage = null;
     this.currentFrame = null;
-    this.rotation = 0;
-    this.flipH = false;
-    this.flipV = false;
-    this.grayscale = false;
 
     if (this.ctx) {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -238,4 +153,4 @@ const PhotoEditor = {
   }
 };
 
-window.PhotoEditor = PhotoEditor;
+window.CanvasEditor = CanvasEditor;

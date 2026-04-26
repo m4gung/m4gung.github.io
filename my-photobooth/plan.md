@@ -1,81 +1,73 @@
-# My Photobooth
+# Prompt Spesifik: Arsitektur "Hybrid Offline Photobooth" (PWA + Local Node.js + WebRTC + 5GHz Network)
 
 ## 1. Ringkasan Proyek
-Membangun sistem *photobooth* DIY yang berjalan 100% di jaringan WiFi lokal (tanpa internet).
-* **Perangkat Utama:** iPhone (sebagai Kamera), iPad (sebagai Layar Preview & Editing), Laptop (sebagai Server Lokal & Penyimpanan File).
-* **Tujuan Utama:** *Live preview* tanpa *lag* dari iPhone ke iPad, menjepret foto resolusi tinggi, mengedit di iPad (tambah bingkai), dan menyimpan hasil akhir secara otomatis ke *hard drive* laptop.
-* **Syarat Khusus:** Front-end harus berupa file statis (HTML/JS/CSS) agar bisa di-*host* di GitHub Pages untuk kemudahan distribusi, namun saat acara berlangsung, file tersebut dilayani oleh server lokal di laptop. Harus mengatasi masalah HTTPS iOS pada jaringan lokal agar kamera bisa menyala.
+Membangun sistem *photobooth* DIY profesional yang berjalan 100% *offline* di jaringan nirkabel lokal dengan latensi sangat rendah (Zero-Delay).
+* **Perangkat Utama:** iPhone (Kamera Utama), iPad (Layar Preview/Kaca & Panel Edit), Laptop (Server Lokal & Penyimpanan File), dan Router WiFi 5GHz (Khusus Lokal).
+* **Tujuan Utama:** Menghasilkan *live preview* video dari iPhone ke iPad tanpa *lag* (< 150ms), menjepret foto resolusi tinggi dari jarak jauh, mengedit/menambahkan bingkai di iPad, dan menyimpan hasil akhir secara otomatis ke *hard drive* laptop.
+* **Syarat Khusus:** Front-end harus berupa file PWA statis (HTML/JS/CSS) agar kompatibel di-host di GitHub Pages (untuk kemudahan pembaruan/distribusi), namun saat acara dilayani oleh server lokal Node.js. Wajib mem-bypass blokir keamanan iOS (harus HTTPS) di jaringan lokal agar kamera iPhone bisa diakses.
 
-## 2. Arsitektur & Teknologi (Stack)
-Sistem ini menggunakan pendekatan **Hybrid**. Kode front-end bersifat statis, namun membutuhkan *backend* lokal sebagai perantara.
+## 2. Arsitektur & Teknologi (Software & Hardware)
 
-| Komponen | Perangkat | Teknologi | Peran |
+| Komponen | Perangkat / Alat | Teknologi & Konfigurasi | Peran |
 | :--- | :--- | :--- | :--- |
-| **Front-End (UI)** | iPhone & iPad | **PWA (HTML5, CSS3, Vanilla JS)**. Statis, kompatibel dengan GitHub Pages. | Tampilan bagi tamu, akses kamera (iPhone), kanvas editing (iPad). |
-| **Back-End (Server Lokal)** | Laptop | **Node.js + Express** + **Socket.io**. | Melayani file statis PWA, Signaling WebRTC, menangkap unggahan foto, menyimpan ke disk. |
-| **Real-time Stream** | iPhone ➔ iPad | **WebRTC (Native Browser API)**. | *Live feed* video dengan *zero delay*. |
-| **Real-time Command** | Antar Perangkat | **Socket.io (WebSockets)**. | Mengirim perintah "Jepret", "Foto Siap", dll. |
-| **Keamanan Lokal** | Laptop | **mkcert** (Sangat Penting). | Membuat sertifikat SSL lokal buatan sendiri yang dipercayai oleh iOS, agar server lokal bisa berjalan di HTTPS penuh secara *offline*. |
+| **Jaringan Utama** | Dedicated Router | **Sinyal 5GHz Saja (WPA2)**. Tanpa koneksi internet, *password* tertutup (hanya untuk alat photobooth). | Memastikan *bandwidth* WebRTC maksimal dan bebas interferensi. |
+| **Front-End (UI)** | iPhone & iPad | **PWA (HTML5, CSS3, Vanilla JS)**. | Layar antarmuka pengguna, akses kamera, dan manipulasi HTML5 Canvas. |
+| **Back-End (Server)**| Laptop Windows/Mac| **Node.js + Express + Socket.io**. | Melayani file PWA lokal, proses *Signaling* WebRTC, dan API penyimpanan file lokal. |
+| **Video Stream** | iPhone ➔ iPad | **WebRTC (Native P2P)**. | *Live feed* P2P. Dioptimalkan untuk koneksi lokal murni (tanpa STUN/TURN server eksternal). |
+| **Command & Control**| Antar Perangkat | **WebSockets (Socket.io)**. | Trigger perintah "TAKE_PHOTO", "PHOTO_READY", dll seketika. |
+| **Local HTTPS** | Laptop | **mkcert**. | *Certificate Authority* (CA) lokal agar server Node.js berjalan dengan HTTPS hijau yang dipercaya oleh iOS. |
 
 ## 3. Cetak Biru Struktur Folder Proyek
 
 ```text
 my-photobooth/
-├── backend-server/          <-- Berjalan di Laptop
-│   ├── uploads/             <-- Folder hasil foto disimpan (bisa dibuka di laptop)
-│   ├── server.js            <-- Kode Node.js (Express, Socket.io, File Upload)
+├── backend-server/          
+│   ├── uploads/             <-- Folder hasil foto resolusi tinggi & hasil edit disimpan
+│   ├── server.js            <-- Node.js Express (HTTPS), Socket.io, & logika Multer (Upload)
 │   ├── package.json
-│   ├── cert.pem             <-- Dibuat pakai mkcert
-│   └── key.pem              <-- Dibuat pakai mkcert
-└── frontend-pwa/            <-- Ini yang di-upload ke GitHub Pages (UI)
-    ├── index.html           <-- Halaman utama (Pilih mode: Kamera/Preview)
-    ├── camera.html          <-- UI untuk iPhone
-    ├── preview.html         <-- UI untuk iPad (Preview & Edit Canvas)
+│   ├── cert.pem             <-- Sertifikat mkcert
+│   └── key.pem              <-- Kunci mkcert
+└── frontend-pwa/            <-- Dapat dipindahkan ke GitHub Pages
+    ├── index.html           <-- Landing page (Pilih peran: Mode Kamera / Mode Layar)
+    ├── camera.html          <-- UI iPhone (WebRTC Sender, Ambil Frame Resolusi Tinggi)
+    ├── preview.html         <-- UI iPad (WebRTC Receiver, UI Shutter, HTML5 Canvas)
     ├── js/
-    │   ├── app.js           <-- Logika Socket.io & UI umum
-    │   ├── webrtc-handshake.js <-- Logika koneksi video iPhone-iPad
-    │   └── edit-canvas.js    <-- Logika editing/tambah bingkai di iPad
+    │   ├── socket-client.js <-- Menangani koneksi ke server laptop
+    │   ├── webrtc-core.js   <-- Logika P2P handshake & streaming video
+    │   └── canvas-editor.js <-- Logika penggabungan foto mentah dengan bingkai transparan
     ├── css/
-    │   └── style.css
+    │   └── main.css
     ├── assets/
-    │   └── overlay.png      <-- File bingkai transparan
-    └── manifest.json        <-- Agar bisa di-install jadi PWA
+    │   └── frame-overlay.png <-- File bingkai (ukuran cetak standar, misal 4x6 atau 2x6)
+    └── manifest.json        <-- PWA config agar bisa di-install ke Home Screen iOS
 ```
 
-## 4. Alur Kerja Teknis (Step-by-Step)
+## 4. Alur Kerja Teknis (Workflow)
 
-### Tahap 1: Setup (Di lokasi acara - Tanpa Internet)
-1.  Laptop menyalakan WiFi Router lokal. iPhone dan iPad tersambung ke WiFi tersebut.
-2.  Laptop menjalankan Server Node.js (HTTPS) menggunakan sertifikat lokal buatan `mkcert`.
-3.  iPhone dan iPad membuka browser Safari ke IP laptop (misal: `https://192.168.1.10:3000`). Karena sertifikat `mkcert` sudah diinstal di iOS, browser menganggap koneksi ini aman (HTTPS Hijau).
+### Tahap 1: Setup Lingkungan (Offline)
+1. Router 5GHz dinyalakan. Laptop, iPhone, dan iPad terhubung ke SSID router tersebut.
+2. Server Node.js (HTTPS) berjalan di laptop di *port* 3000 (contoh: `https://192.168.1.100:3000`).
+3. Profil sertifikat `mkcert` sudah diinstal dan dipercaya (Trusted) di pengaturan iOS iPhone & iPad.
+4. iPhone dan iPad membuka URL lokal tersebut via Safari dan menginstalnya ke *Home Screen* (PWA).
 
-### Tahap 2: Koneksi Video (Zero Delay)
-1.  iPhone membuka `camera.html` ➔ Berperan sebagai **"Sender"**.
-2.  iPad membuka `preview.html` ➔ Berperan sebagai **"Receiver"**.
-3.  Keduanya saling bertukar "salam" (SDP/ICE Candidates) via Socket.io di server laptop (Proses Signaling).
-4.  Koneksi **WebRTC Peer-to-Peer** terbentuk. Video *live* dari iPhone mengalir langsung ke iPad via WiFi tanpa *lag*.
+### Tahap 2: Zero-Delay WebRTC Connection
+1. iPhone (`camera.html`) bertindak sebagai WebRTC *Sender*. Meminta akses kamera (`getUserMedia`).
+2. iPad (`preview.html`) bertindak sebagai WebRTC *Receiver*.
+3. Keduanya melakukan *Signaling* (tukar SDP & ICE Candidates) melalui Socket.io di laptop.
+4. Karena berada di jaringan 5GHz lokal, WebRTC akan membentuk koneksi *Host-to-Host* murni. Layar iPad menampilkan tangkapan kamera iPhone dengan jeda < 150ms.
 
-### Tahap 3: Penjepretan & Penyimpanan
-1.  Tamu menekan tombol "Jepret" di iPad.
-2.  iPad mengirim sinyal "TAKE_PHOTO" via Socket.io ke iPhone.
-3.  iPhone menangkap *frame* video resolusi tinggi, mengubahnya menjadi *Base64* atau *Blob*, dan mengirimkannya ke Server Laptop via HTTP POST.
-4.  Server Laptop menyimpan foto mentah tersebut ke folder `uploads/` di *hard drive*.
-5.  Server Laptop mengirim sinyal "PHOTO_SAVED" ke iPad beserta URL foto lokalnya.
+### Tahap 3: Trigger & Simpan Foto
+1. Tamu menekan tombol UI di iPad. iPad mengirim sinyal `CAPTURE` ke server via Socket.io, yang diteruskan ke iPhone.
+2. iPhone menghentikan video sejenak, menangkap gambar resolusi maksimal via `<canvas>`, lalu mengirim blob gambar via `HTTP POST /upload` ke server laptop.
+3. Node.js menyimpan file mentah ke folder `/uploads/raw/` dan menyiarkan sinyal `IMAGE_READY` beserta URL lokal gambar tersebut ke iPad.
 
-### Tahap 4: Editing & Hasil Akhir (di iPad)
-1.  iPad mengunduh foto mentah dari server laptop dan menggambarnya di HTML5 `<canvas>`.
-2.  iPad menumpuk gambar bingkai (`overlay.png`) di atas foto tamu di dalam kanvas.
-3.  Tamu menekan "Selesai". iPad mengubah isi kanvas menjadi *Blob* gambar final.
-4.  iPad mengunggah gambar final hasil edit ke Server Laptop via HTTP POST.
-5.  Server Laptop menyimpan gambar final ke folder `uploads/` dengan nama berbeda.
+### Tahap 4: Rendering Frame & Finalisasi
+1. iPad menarik foto mentah tersebut dari URL lokal.
+2. Menggunakan HTML5 Canvas, iPad menumpuk foto mentah ke bawah lapisan `frame-overlay.png`.
+3. Setelah *preview* akhir disetujui tamu (tekan "Selesai"), iPad mengekstrak Canvas menjadi blob dan mengirimkannya via `HTTP POST /upload/final`.
+4. Node.js menyimpan hasil akhir ke folder `/uploads/final/` (folder ini nantinya bisa disinkronisasi ke Google Drive secara otomatis via aplikasi desktop saat ada internet, atau di-print langsung dari laptop).
 
-## 5. Rencana Aksi Pembuatan (Action Plan)
-
-1.  **Backend:** Buat server Node.js dasar (Express + HTTPS + Socket.io).
-2.  **SSL Lokal:** Pelajari dan gunakan `mkcert` untuk membuat sertifikat HTTPS lokal agar koneksi dari iOS ke Laptop tidak diblokir. Ini kunci utama sistem *offline* iOS.
-3.  **Signaling:** Implementasikan logika bertukar pesan WebRTC dasar via Socket.io.
-4.  **Frontend (iPhone):** Buat HTML untuk akses kamera dan *stream* WebRTC.
-5.  **Frontend (iPad):** Buat HTML untuk menerima *stream* WebRTC dan menampilkannya di layar penuh.
-6.  **Sistem Upload:** Buat fungsi jepret di iPhone dan kirim hasilnya ke laptop.
-7.  **Sistem Edit:** Buat logika Canvas di iPad untuk menggabungkan foto dengan bingkai lokal.
-8.  **GitHub Pages:** Setelah semua berjalan lancar di server lokal, folder `frontend-pwa/` bisa di-*upload* ke GitHub Pages sebagai cadangan atau untuk distribusi kode, sementara saat acara tetap disajikan oleh server lokal laptop.
+## 5. Instruksi Khusus untuk Pengembang (Developer Notes)
+* **Kamera iPhone:** Pastikan `getUserMedia` menggunakan spesifikasi `facingMode: "environment"` untuk kamera belakang dan set parameter `video: { width: { ideal: 1920 }, height: { ideal: 1080 } }` untuk kejernihan stream maksimal. 
+* **Tangkapan Resolusi Tinggi:** Resolusi stream WebRTC (1080p) berbeda dengan resolusi jepretan foto. Saat menerima perintah `CAPTURE`, pastikan logika iPhone mengambil gambar dari sensor penuh menggunakan *ImageCapture API* atau menarik dari kanvas tersembunyi beresolusi tinggi, bukan sekadar men-screenshot *stream* 1080p.
+* **CORS:** Atur konfigurasi CORS dengan benar di Express agar tidak memblokir permintaan POST dari PWA.

@@ -2,143 +2,127 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#0d0d0d">
   <title>My Photobooth - Preview</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="preview-page">
-  <div class="preview-container">
-    <div class="preview-header">
-      <h1>📸 Mode Preview</h1>
-      <div class="status-bar">
-        <span id="previewStatus" class="status-dot offline"></span>
-        <span id="previewStatusText">Menunggu koneksi kamera...</span>
-      </div>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>My Photobooth</h1>
+      <p class="subtitle">Mode Preview</p>
     </div>
 
-    <div class="preview-wrapper">
-      <video id="streamVideo" autoplay playsinline></video>
+    <!-- Status -->
+    <div class="status">
+      <span id="previewStatus" class="status-dot offline"></span>
+      <span id="previewStatusText">Menunggu kamera...</span>
+    </div>
+
+    <!-- Preview 1:1 / Fullscreen -->
+    <div class="preview-box" id="previewBox">
+      <button class="fullscreen-btn" id="fullscreenBtn">⛶</button>
+      <video id="streamVideo" autoplay playsinline muted></video>
       <img id="streamImage" class="hidden" alt="Live Stream">
-      <div id="previewOverlay" class="preview-overlay">
-        <div class="overlay-content">
-          <div class="spinner"></div>
-          <p>Menunggu video stream...</p>
-        </div>
-      </div>
-      <canvas id="previewCanvas" class="hidden"></canvas>
-    </div>
-
-    <div class="preview-controls">
-      <div class="capture-section">
-        <button id="captureBtn" class="btn btn-capture btn-large" disabled>
-          <span class="btn-icon">📷</span>
-          <span class="btn-text">Jepret!</span>
-        </button>
-      </div>
-
-      <div class="action-section">
-        <div class="btn-group">
-          <button id="retakeBtn" class="btn btn-secondary" disabled>
-            <span>🔄</span> Ambil Ulang
-          </button>
-          <button id="doneBtn" class="btn btn-success" disabled>
-            <span>✓</span> Selesai
-          </button>
-        </div>
-      </div>
-
-      <div class="photo-section">
-        <div class="thumbnail-container">
-          <img id="photoThumbnail" alt="Foto" class="hidden">
-          <div id="photoPlaceholder">
-            <span>📸</span>
-            <p>Foto akan muncul di sini</p>
-          </div>
-        </div>
+      <div id="previewOverlay" class="overlay">
+        <div class="spinner"></div>
+        <p>Menunggu video stream...</p>
       </div>
     </div>
 
-    <div class="preview-tabs">
-      <button class="tab-btn active" data-tab="edit">Edit</button>
-      <button class="tab-btn" data-tab="gallery">Galeri</button>
-      <button class="tab-btn" data-tab="settings">Pengaturan</button>
+    <!-- Counter -->
+    <div class="counter" id="captureCounter"></div>
+
+    <!-- Capture Button -->
+    <div class="controls">
+      <button id="captureBtn" class="btn btn-primary btn-large" disabled>
+        📷 Ambil Foto
+      </button>
     </div>
 
-    <div class="tab-content active" id="editTab">
-      <div class="frame-selection">
-        <h3>Pilih Bingkai</h3>
-        <div class="frame-grid" id="frameGrid">
-          <div class="frame-item selected" data-frame="none">
-            <img src="assets/frame-none.svg" alt="Tanpa Bingkai">
-            <span>Tanpa</span>
-          </div>
-          <div class="frame-item" data-frame="classic">
-            <img src="assets/frame-classic.svg" alt="Klasik">
-            <span>Klasik</span>
-          </div>
-          <div class="frame-item" data-frame="modern">
-            <img src="assets/frame-modern.svg" alt="Modern">
-            <span>Modern</span>
-          </div>
-          <div class="frame-item" data-frame="festive">
-            <img src="assets/frame-festive.svg" alt="Pesta">
-            <span>Pesta</span>
-          </div>
-        </div>
-      </div>
+    <!-- Action Buttons -->
+    <div class="action-row">
+      <button id="retakeBtn" class="btn btn-secondary" disabled>🔄</button>
+      <button id="editBtn" class="btn btn-secondary">✏️ Edit</button>
+      <button id="doneBtn" class="btn btn-secondary" disabled>✓</button>
+      <button id="downloadBtn" class="btn btn-primary">⬇️</button>
+    </div>
 
-      <div class="edit-tools">
-        <h3>Tools Edit</h3>
-        <div class="tool-buttons">
-          <button class="tool-btn" data-tool="rotate" title="Putar">↻</button>
-          <button class="tool-btn" data-tool="flipH" title="Balik Horizontal">↔</button>
-          <button class="tool-btn" data-tool="flipV" title="Balik Vertical">↕</button>
-          <button class="tool-btn" data-tool="grayscale" title="Hitam Putih">🎨</button>
+    <!-- Strip Preview -->
+    <div id="stripPreview" class="strip-preview hidden">
+      <div class="header-text">📸 My Photobooth</div>
+      <div class="photos" id="stripPhotos"></div>
+      <div class="footer-text" id="stripDate"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="layout">Layout</button>
+      <button class="tab" data-tab="frame">Bingkai</button>
+      <button class="tab" data-tab="gallery">Galeri</button>
+    </div>
+
+    <!-- Layout Tab -->
+    <div class="tab-content active" id="layoutTab">
+      <div class="layout-grid" id="layoutGrid">
+        <div class="layout-card selected" data-layout="strip-3">
+          <div class="preview">3</div>
+          <div class="name">Strip 3</div>
+        </div>
+        <div class="layout-card" data-layout="strip-4">
+          <div class="preview">4</div>
+          <div class="name">Strip 4</div>
+        </div>
+        <div class="layout-card" data-layout="grid-4">
+          <div class="preview">2×2</div>
+          <div class="name">Grid 4</div>
+        </div>
+        <div class="layout-card" data-layout="single">
+          <div class="preview">1</div>
+          <div class="name">Single</div>
         </div>
       </div>
     </div>
 
+    <!-- Frame Tab -->
+    <div class="tab-content" id="frameTab">
+      <div class="frame-grid" id="frameGrid">
+        <div class="frame-card selected" data-frame="none">
+          <img src="assets/frame-none.svg" alt="None">
+          <span>None</span>
+        </div>
+        <div class="frame-card" data-frame="classic">
+          <img src="assets/frame-classic.svg" alt="Classic">
+          <span>Klasik</span>
+        </div>
+        <div class="frame-card" data-frame="modern">
+          <img src="assets/frame-modern.svg" alt="Modern">
+          <span>Modern</span>
+        </div>
+        <div class="frame-card" data-frame="festive">
+          <img src="assets/frame-festive.svg" alt="Festive">
+          <span>Pesta</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gallery Tab -->
     <div class="tab-content" id="galleryTab">
-      <div class="gallery-grid" id="galleryGrid">
+      <div class="gallery" id="galleryGrid">
         <p class="empty-state">Belum ada foto</p>
-      </div>
-    </div>
-
-    <div class="tab-content" id="settingsTab">
-      <div class="settings-form">
-        <h3>Pengaturan</h3>
-        
-        <div class="setting-group">
-          <label for="serverIP">IP Server:</label>
-          <input type="text" id="serverIP" value="" placeholder="192.168.1.10 (kosongkan untuk auto)">
-        </div>
-        
-        <div class="setting-group">
-          <label for="serverPort">Port:</label>
-          <input type="text" id="serverPort" value="" placeholder="3000 (kosongkan untuk auto)">
-        </div>
-        
-        <div class="setting-group">
-          <label for="photoQuality">Kualitas Foto:</label>
-          <select id="photoQuality">
-            <option value="0.5">Rendah</option>
-            <option value="0.8" selected>Sedang</option>
-            <option value="1.0">Tinggi</option>
-          </select>
-        </div>
-        
-        <button id="autoDetectBtn" class="btn btn-secondary">Deteksi Otomatis (untuk ngrok)</button>
-        <button id="saveSettingsBtn" class="btn btn-primary">Simpan Pengaturan</button>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="js/socket-client.js"></script>
+  <script src="js/webrtc-core.js"></script>
+  <script src="js/layout-manager.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/edit-canvas.js"></script>
 </body>
 </html>
