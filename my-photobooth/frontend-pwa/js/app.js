@@ -73,6 +73,8 @@ const PhotoboothPreview = {
   init() {
     this.bindEvents();
     this.loadSettings();
+    if (typeof FilterManager !== 'undefined') FilterManager.init();
+    if (typeof StickerManager !== 'undefined') StickerManager.init();
   },
 
   loadSettings() {
@@ -142,6 +144,11 @@ const PhotoboothPreview = {
       });
     }
 
+    const downloadAllBtn = document.getElementById('downloadAllBtn');
+    if (downloadAllBtn) {
+      downloadAllBtn.addEventListener('click', () => this.downloadAll());
+    }
+
     if (fullscreenBtn) {
       fullscreenBtn.addEventListener('click', () => {
         const box = document.getElementById('previewBox');
@@ -202,6 +209,32 @@ const PhotoboothPreview = {
       };
       grid.appendChild(div);
     });
+  },
+
+  async downloadAll() {
+    const grid = document.getElementById('galleryGrid');
+    if (!grid) return;
+    const photos = await App.getPhotos();
+    if (photos.length === 0) {
+      App.showNotification('Tidak ada foto untuk didownload', 'info');
+      return;
+    }
+    for (const p of photos) {
+      try {
+        const response = await fetch(p.url);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = p.filename;
+        link.click();
+        URL.revokeObjectURL(url);
+        await new Promise(r => setTimeout(r, 300));
+      } catch (err) {
+        console.error('Download error:', err);
+      }
+    }
+    App.showNotification(`${photos.length} foto didownload!`, 'success');
   }
 };
 

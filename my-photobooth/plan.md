@@ -71,3 +71,72 @@ my-photobooth/
 * **Kamera iPhone:** Pastikan `getUserMedia` menggunakan spesifikasi `facingMode: "environment"` untuk kamera belakang dan set parameter `video: { width: { ideal: 1920 }, height: { ideal: 1080 } }` untuk kejernihan stream maksimal. 
 * **Tangkapan Resolusi Tinggi:** Resolusi stream WebRTC (1080p) berbeda dengan resolusi jepretan foto. Saat menerima perintah `CAPTURE`, pastikan logika iPhone mengambil gambar dari sensor penuh menggunakan *ImageCapture API* atau menarik dari kanvas tersembunyi beresolusi tinggi, bukan sekadar men-screenshot *stream* 1080p.
 * **CORS:** Atur konfigurasi CORS dengan benar di Express agar tidak memblokir permintaan POST dari PWA.
+
+⏺ Integrasi WebRTC dan WebSocket untuk Streaming Video Real-Time                              
+                                                                                              
+  Arsitektur Sistem                                                                           
+                                                                                              
+  ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐                       
+  │   iPhone (PWA)  │      │   Node.js       │      │   Laptop        │                       
+  │                 │      │   Server        │      │   (Viewer)      │                       
+  │  ┌───────────┐  │      │                 │      │                 │                       
+  │  │ Kamera    │──┼─────▶│  WebSocket      │◀─────│──▶ WebRTC       │                       
+  │  │ (Sender)  │  │      │  Signaling      │      │   (Receiver)    │                        
+  │  └───────────┘  │      └─────────────────┘      └─────────────────┘                       
+  │                 │              │                        │                                 
+  │  ┌───────────┐  │      ┌─────────────────┐                                                
+  │  │ WebSocket │──┼─────▶│  Room Manager   │                                                 
+  │  │ Client    │  │      │  & State        │                                                
+  │  └───────────┘  │      └─────────────────┘                                                
+  └─────────────────┘                                                                         
+                                                                                              
+  Alur Kerja                                                                                  
+                                                                                              
+  1. Fase Koneksi:                                                                            
+    - PWA di iPhone terhubung ke server melalui WebSocket
+    - Laptop (viewer) juga terhubung ke server yang sama                                      
+    - Server menyimpan kedua koneksi dalam "room" yang sama                                   
+  2. Fase SDP Offer/answer:                                                                   
+    - iPhone membuat SDP Offer dan mengirimkannya ke server                                   
+    - Server meneruskan ke laptop                                                             
+    - Laptop membuat SDP Answer dan mengirimkannya ke server                                  
+    - Server meneruskan ke iPhone                                                             
+  3. Fase ICE Candidate Exchange:                                                             
+    - iPhone dan laptop bertukar ICE Candidate secara langsung melalui server                 
+    - Koneksi peer-to-peer terbentuk                                                          
+  4. Fase Streaming:                                                                          
+    - Video stream dari iPhone ke laptop melalui WebRTC                                       
+    - Kontrol perintah (CAPTURE, ZOOM) dikirim melalui WebSocket                              
+
+⏺ Photo Booth App - Workflow Lengkap
+
+  Alur Aplikasi
+
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │                         PHOTO BOOTH WORKFLOW                                │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │                                                                             │
+  │   ┌──────────┐     ┌──────────────┐     ┌─────────────┐                     │
+  │   │  1.MULAI │ ──▶ │ 2.AMBIL FOTO │ ──▶ │3.PILIH FRAME│                     │
+  │   │          │     │              │     │             │                     │
+  │   │  ┌────┐  │     │  ○ ○ ○ ○ ○   │     │  ┌───────┐  │                     │
+  │   │  │MULAI│ │     │  1 2 3 4 5   │     │  │ FRAME │  │                     │
+  │   │  └────┘  │     │              │     │  │  1    │  │                     │
+  │   └──────────┘     │  ⏱️ 3-10dtk  │     │  │  FRAME │  │                    │
+  │                    │  🎨 Filter   │     │  │  2     │  │                    │
+  │                    └──────────────┘     │  │  ...  │  │                     │
+  │                                         └─────────────┘                     │
+  │                                                 │                           │
+  │                                                 ▼                           │
+  │   ┌──────────┐     ┌──────────────┐     ┌─────────────┐                     │
+  │   │ 6.UNDUH  │ ◀── │5.TAMBAH STIKER│ ◀─ │4.FILTER     │                     │
+  │   │          │     │              │     │             │                     │
+  │   │ 📥 Final │     │  ┌───────┐   │     │  ┌───────┐  │                     │
+  │   │ 📥 All   │     │  │ STIKER│   │     │  │ COOL  │  │                     │
+  │   │   Photos │     │  │  1   │    │     │  │FILTER │  │                     │
+  │   └──────────┘     │  │ STIKER│   │     │  │  1    │  │                     │
+  │                    │  │  2   │    │     │  │ COOL  │  │                     │
+  │                    │  │ ...  │    │     │  │FILTER │  │                     │
+  │                    └──────────────┘     │  │  2    │  │                     │
+  │                                         └─────────────┘                     │
+  └─────────────────────────────────────────────────────────────────────────────┘

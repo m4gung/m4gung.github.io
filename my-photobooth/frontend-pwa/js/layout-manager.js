@@ -41,8 +41,28 @@ const LayoutManager = {
 
     this.isCapturing = true;
     this.updateCounter();
-    
+    await this.showCountdown();
     SocketClient.emit('take_photo');
+  },
+
+  async showCountdown() {
+    return new Promise((resolve) => {
+      const counter = document.getElementById('captureCounter');
+      if (!counter) return resolve();
+
+      let count = 3;
+      const updateCountdown = () => {
+        if (count > 0) {
+          counter.innerHTML = `<div class="countdown-number">${count}</div>`;
+          count--;
+          setTimeout(updateCountdown, 1000);
+        } else {
+          counter.innerHTML = '';
+          resolve();
+        }
+      };
+      updateCountdown();
+    });
   },
 
   onPhotoTaken(imageData) {
@@ -155,12 +175,23 @@ const LayoutManager = {
 
       let loaded = 0;
       const total = this.photos.length;
+      const filter = typeof FilterManager !== 'undefined' ? FilterManager.getFilterStyle() : '';
+      const stickers = typeof StickerManager !== 'undefined' ? StickerManager.getStickersData() : [];
       
       const drawAll = () => {
         loaded++;
         if (loaded >= total) {
+          this.drawStickers(ctx, canvas.width, canvas.height, stickers);
           resolve(canvas.toDataURL('image/jpeg', 0.92));
         }
+      };
+      
+      const drawPhoto = (img, x, y, w, h) => {
+        if (filter) {
+          ctx.filter = filter;
+        }
+        ctx.drawImage(img, x, y, w, h);
+        ctx.filter = 'none';
       };
       
       if (this.currentLayout === 'strip-3' || this.currentLayout === 'strip-4') {
@@ -168,7 +199,7 @@ const LayoutManager = {
           const img = new Image();
           img.onload = () => {
             const y = pad * 2 + headerH + i * (photoH + pad);
-            ctx.drawImage(img, pad, y, photoW, photoH);
+            drawPhoto(img, pad, y, photoW, photoH);
             drawAll();
           };
           img.onerror = () => drawAll();
@@ -183,7 +214,7 @@ const LayoutManager = {
           
           const img = new Image();
           img.onload = () => {
-            ctx.drawImage(img, x, y, photoW, photoH);
+            drawPhoto(img, x, y, photoW, photoH);
             drawAll();
           };
           img.onerror = () => drawAll();
@@ -194,7 +225,7 @@ const LayoutManager = {
           const img = new Image();
           img.onload = () => {
             const y = pad * 2 + headerH;
-            ctx.drawImage(img, pad, y, photoW, photoH);
+            drawPhoto(img, pad, y, photoW, photoH);
             drawAll();
           };
           img.onerror = () => drawAll();
@@ -203,6 +234,23 @@ const LayoutManager = {
           resolve(canvas.toDataURL('image/jpeg', 0.92));
         }
       }
+    });
+  },
+
+  drawStickers(ctx, w, h, stickers) {
+    stickers.forEach(s => {
+      const x = (s.x / 100) * w;
+      const y = (s.y / 100) * h;
+      const size = (s.size / 100) * Math.min(w, h) * 0.5;
+      
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate((s.rotation * Math.PI) / 180);
+      ctx.font = `${size}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(s.emoji, 0, 0);
+      ctx.restore();
     });
   },
 

@@ -287,6 +287,21 @@ body.fullscreen .counter {
   background: var(--success);
 }
 
+/* Countdown Animation */
+.countdown-number {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--accent);
+  animation: countdownPulse 1s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(255, 51, 102, 0.5);
+}
+
+@keyframes countdownPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 /* Tabs */
 .tabs {
   display: flex;
@@ -414,6 +429,140 @@ body.fullscreen .counter {
   color: var(--text-muted);
 }
 
+/* Filter Grid */
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.filter-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-card:active {
+  transform: scale(0.95);
+}
+
+.filter-card.selected {
+  border-color: var(--accent);
+}
+
+.filter-preview {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1, #96c93d);
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.filter-card span {
+  display: block;
+  font-size: 0.55rem;
+  color: var(--text-muted);
+}
+
+/* Sticker Section */
+.sticker-section {
+  margin-bottom: 16px;
+}
+
+.sticker-section h3,
+.added-stickers h3 {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.sticker-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  text-align: center;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sticker-item:active {
+  transform: scale(0.9);
+  background: var(--bg-card-hover);
+}
+
+.added-stickers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 40px;
+}
+
+.added-stickers-list .empty-state {
+  padding: 10px;
+}
+
+/* Preview Sticker Layer */
+.preview-sticker-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.preview-sticker-layer .sticker-element {
+  position: absolute;
+  font-size: 40px;
+  pointer-events: auto;
+  cursor: move;
+  user-select: none;
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+}
+
+.preview-sticker-layer .sticker-element.selected {
+  outline: 2px dashed var(--accent);
+  outline-offset: 4px;
+}
+
+.preview-sticker-layer .sticker-controls {
+  display: none;
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 4px;
+}
+
+.preview-sticker-layer .sticker-element.selected .sticker-controls {
+  display: flex;
+}
+
+.preview-sticker-layer .sticker-control-btn {
+  width: 24px;
+  height: 24px;
+  background: rgba(0,0,0,0.7);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Strip Preview */
 .strip-preview {
   background: white;
@@ -492,6 +641,17 @@ body.fullscreen .counter {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
+}
+
+.gallery-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 0.75rem;
 }
 
 .gallery-item {
@@ -644,5 +804,24 @@ body.fullscreen .counter {
   
   .tabs {
     margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .filter-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .sticker-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .sticker-item {
+    font-size: 1.2rem;
+    padding: 6px;
+  }
+  
+  .preview-sticker-layer .sticker-element {
+    font-size: 30px;
   }
 }
