@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 cURL to Code Converter (Java, JS, Python, Go)</title>
+    <meta name="description"
+        content="Konversi perintah cURL menjadi kode HTTP client Java (HttpClient, Spring RestTemplate, WebClient, OkHttp), JavaScript (Fetch, Axios), Python (Requests), Go, dan PHP secara instan. 100% di browser.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <a href="../" class="btn back-btn" title="Kembali ke Daftar Tools">⬅️ Tools</a>
+            <div class="logo">
+                <h1>🔄 cURL ➡️ Code Converter</h1>
+            </div>
+        </div>
+        <div class="header-right">
+            <div id="statusBadge" class="status-badge">Siap</div>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema">☀️</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <!-- PANE KIRI: INPUT CURL -->
+        <div class="pane">
+            <div class="pane-toolbar">
+                <div class="toolbar-left">
+                    <span class="pane-title">Input cURL Command</span>
+                </div>
+                <div class="btn-group">
+                    <button id="sampleGetBtn" class="btn" title="Muat contoh GET">GET Sample</button>
+                    <button id="samplePostBtn" class="btn" title="Muat contoh POST JSON">POST JSON</button>
+                    <button id="clearBtn" class="btn danger" title="Hapus input">Clear</button>
+                </div>
+            </div>
+            <textarea id="curlInput" spellcheck="false"
+                placeholder="Paste perintah cURL di sini...&#10;&#10;Contoh:&#10;curl -X POST https://api.example.com/v1/users \&#10;  -H 'Content-Type: application/json' \&#10;  -H 'Authorization: Bearer secret-token' \&#10;  -d '{&#10;    &quot;name&quot;: &quot;Budi Santoso&quot;,&#10;    &quot;email&quot;: &quot;budi@example.com&quot;&#10;  }'"></textarea>
+            <div class="pane-statusbar">
+                <span id="parseStatus">Masukkan cURL untuk mengonversi</span>
+            </div>
+        </div>
+
+        <!-- PANE KANAN: OUTPUT CODE -->
+        <div class="pane">
+            <div class="pane-toolbar">
+                <div class="toolbar-left lang-select-wrapper">
+                    <label for="langSelect" class="lang-label">Target:</label>
+                    <select id="langSelect" class="select-input">
+                        <optgroup label="Java / Spring">
+                            <option value="java-httpclient" selected>☕ Java (java.net.http.HttpClient)</option>
+                            <option value="java-resttemplate">🍃 Java (Spring RestTemplate)</option>
+                            <option value="java-webclient">🍃 Java (Spring WebClient)</option>
+                            <option value="java-okhttp">☕ Java (OkHttp)</option>
+                        </optgroup>
+                        <optgroup label="JavaScript / TypeScript">
+                            <option value="js-fetch">🟨 JavaScript (Fetch API)</option>
+                            <option value="js-axios">🟨 JavaScript (Axios)</option>
+                        </optgroup>
+                        <optgroup label="Python">
+                            <option value="python-requests">🐍 Python (Requests)</option>
+                            <option value="python-httpx">🐍 Python (HTTPX)</option>
+                        </optgroup>
+                        <optgroup label="Go & PHP">
+                            <option value="go-nethttp">🐹 Go (net/http)</option>
+                            <option value="php-curl">🐘 PHP (cURL)</option>
+                        </optgroup>
+                    </select>
+                    <label class="checkbox-label" title="Sertakan class/main/import lengkap">
+                        <input type="checkbox" id="fullSnippetToggle" checked> Full Snippet
+                    </label>
+                </div>
+                <div class="btn-group">
+                    <button id="copyBtn" class="btn success">📋 Salin Kode</button>
+                </div>
+            </div>
+            <textarea id="codeOutput" spellcheck="false" readonly
+                placeholder="Kode hasil konversi akan otomatis muncul di sini..."></textarea>
+            <div class="pane-statusbar">
+                <span id="outputStatus">Otomatis diperbarui saat cURL diubah</span>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

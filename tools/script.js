@@ -40,7 +40,14 @@ const translations = {
         encryptDecryptHash: "Encrypt-Decrypt & Hash Generator",
         encryptDecryptHashDesc: "Encrypt and decrypt text with ease.",
         focusTaskTracker: "Focus & Task Tracker",
-        focusTaskTrackerDesc: "Pomodoro and To-Do List that can be installed on mobile and PC."
+        focusTaskTrackerDesc: "Pomodoro and To-Do List that can be installed on mobile and PC.",
+        curlToCode: "cURL to Code Converter",
+        curlToCodeDesc: "Convert cURL commands to Java (HttpClient, RestTemplate, WebClient, OkHttp), JS, Python, and Go instantly.",
+        searchPlaceholder: "Search tools (e.g. JSON, JWT, cURL, Spring, SQL)...",
+        searchResultCount: "Showing {count} of {total} tools",
+        noResultsTitle: "No tools found",
+        noResultsDesc: "Try another keyword or check your spelling.",
+        resetSearchBtn: "Show All Tools"
     },
     id: {
         welcomeTitle: "Selamat Datang di Tools",
@@ -82,7 +89,14 @@ const translations = {
         encryptDecryptHash: "Encrypt-Decrypt & Hash Generator",
         encryptDecryptHashDesc: "Encrypt dan decrypt teks dengan mudah.",
         focusTaskTracker: "Focus & Task Tracker",
-        focusTaskTrackerDesc: "Aplikasi Pomodoro dan To-Do List yang bisa di-install di HP dan PC."
+        focusTaskTrackerDesc: "Aplikasi Pomodoro dan To-Do List yang bisa di-install di HP dan PC.",
+        curlToCode: "cURL to Code Converter",
+        curlToCodeDesc: "Konversi perintah cURL ke Java (HttpClient, RestTemplate, WebClient, OkHttp), JS, Python, dan Go secara instan.",
+        searchPlaceholder: "Cari tools (misal: JSON, JWT, cURL, Spring, SQL)...",
+        searchResultCount: "Menampilkan {count} dari {total} tools",
+        noResultsTitle: "Tidak ada tools yang cocok",
+        noResultsDesc: "Coba gunakan kata kunci lain atau periksa ejaan Anda.",
+        resetSearchBtn: "Tampilkan Semua Tools"
     }
 };
 
@@ -114,6 +128,13 @@ const translations = {
         if (el('about-title')) el('about-title').textContent = t.aboutTitle;
         if (el('about-desc')) el('about-desc').textContent = t.aboutDesc;
 
+        // Search bar translations
+        if (el('toolSearch')) el('toolSearch').setAttribute('placeholder', t.searchPlaceholder);
+        if (el('noResultsTitle')) el('noResultsTitle').textContent = t.noResultsTitle;
+        if (el('noResultsDesc')) el('noResultsDesc').textContent = t.noResultsDesc;
+        if (el('resetSearchBtn')) el('resetSearchBtn').textContent = t.resetSearchBtn;
+        if (window.updateSearchResults) window.updateSearchResults();
+
 
         // Tool cards
         const toolTitles = {
@@ -133,7 +154,8 @@ const translations = {
             'tool-jwt': t.jwtDecoderValidator,
             'tool-csv-excel': t.csvExcelProcessor,
             'tool-encrypt-decrypt-hash': t.encryptDecryptHash,
-            'tool-focus-task': t.focusTaskTracker
+            'tool-focus-task': t.focusTaskTracker,
+            'tool-curl-to-code': t.curlToCode
         };
 
         const toolDescs = {
@@ -153,7 +175,8 @@ const translations = {
             'tool-jwt': t.jwtDecoderValidatorDesc,
             'tool-csv-excel': t.csvExcelProcessorDesc,
             'tool-encrypt-decrypt-hash': t.encryptDecryptHashDesc,
-            'tool-focus-task': t.focusTaskTrackerDesc
+            'tool-focus-task': t.focusTaskTrackerDesc,
+            'tool-curl-to-code': t.curlToCodeDesc
         };
 
         for (const [id, title] of Object.entries(toolTitles)) {
@@ -226,4 +249,100 @@ const translations = {
 
     // Touch improvements
     document.addEventListener('touchstart', function () { }, { passive: true });
+})();
+
+// === SEARCH FILTER ===
+(function () {
+    const searchInput = document.getElementById('toolSearch');
+    const clearBtn = document.getElementById('clearSearch');
+    const searchMeta = document.getElementById('searchMeta');
+    const resultCountEl = document.getElementById('searchResultCount');
+    const noResults = document.getElementById('noResults');
+    const resetSearchBtn = document.getElementById('resetSearchBtn');
+    const toolsGrid = document.querySelector('.tools-grid');
+    const toolCards = Array.from(document.querySelectorAll('.tool-card'));
+
+    if (!searchInput || !toolsGrid) return;
+
+    function doSearch() {
+        const rawQuery = searchInput.value.trim().toLowerCase();
+        clearBtn.style.display = rawQuery.length > 0 ? 'inline-flex' : 'none';
+
+        // Split query into terms to support multi-word search (e.g., "spring yaml")
+        const terms = rawQuery ? rawQuery.split(/\s+/).filter(Boolean) : [];
+
+        let matchCount = 0;
+        toolCards.forEach(card => {
+            const title = (card.querySelector('.tool-title')?.textContent || '').toLowerCase();
+            const desc = (card.querySelector('.tool-desc')?.textContent || '').toLowerCase();
+            const id = (card.id || '').toLowerCase().replace(/^tool-/, '').replace(/-/g, ' ');
+            const href = (card.getAttribute('href') || '').toLowerCase().replace(/[\.\/-]/g, ' ');
+
+            const cardSearchText = `${title} ${desc} ${id} ${href}`;
+
+            // All search terms must match somewhere in the card's text
+            const isMatch = terms.length === 0 || terms.every(term => cardSearchText.includes(term));
+
+            if (isMatch) {
+                card.classList.remove('is-hidden');
+                matchCount++;
+            } else {
+                card.classList.add('is-hidden');
+            }
+        });
+
+        const currentLang = localStorage.getItem('lang') || 'id';
+        const t = (typeof translations !== 'undefined' && translations[currentLang]) ? translations[currentLang] : (translations?.id || {});
+
+        if (terms.length > 0) {
+            searchMeta.style.display = 'flex';
+            if (resultCountEl && t.searchResultCount) {
+                resultCountEl.textContent = t.searchResultCount
+                    .replace('{count}', matchCount)
+                    .replace('{total}', toolCards.length);
+            }
+        } else {
+            searchMeta.style.display = 'none';
+        }
+
+        if (matchCount === 0) {
+            noResults.style.display = 'block';
+            toolsGrid.style.display = 'none';
+        } else {
+            noResults.style.display = 'none';
+            toolsGrid.style.display = '';
+        }
+    }
+
+    window.updateSearchResults = doSearch;
+
+    searchInput.addEventListener('input', doSearch);
+
+    clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchInput.focus();
+        doSearch();
+    });
+
+    if (resetSearchBtn) {
+        resetSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.focus();
+            doSearch();
+        });
+    }
+
+    // Keyboard shortcut: press '/' to focus search, and 'Escape' to clear
+    document.addEventListener('keydown', (e) => {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        if (e.key === '/' && document.activeElement !== searchInput && !['input', 'textarea', 'select'].includes(activeTag)) {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        } else if (e.key === 'Escape' && document.activeElement === searchInput) {
+            searchInput.value = '';
+            searchInput.blur();
+            doSearch();
+        }
+    });
 })();

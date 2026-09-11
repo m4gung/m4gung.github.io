@@ -72,6 +72,29 @@
             Setiap alat dirancang dengan antarmuka pengguna yang intuitif dan responsif.
         </p>
 
+        <!-- Search Tools Section -->
+        <div class="search-section">
+            <div class="search-box">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input type="text" id="toolSearch" class="search-input"
+                    placeholder="Cari tools (misal: JSON, JWT, cURL, Spring, SQL)..."
+                    autocomplete="off" spellcheck="false" aria-label="Cari alat developer">
+                <button id="clearSearch" class="clear-search-btn" title="Hapus pencarian" aria-label="Hapus pencarian" style="display: none;">✕</button>
+                <span class="search-kbd" title="Tekan '/' untuk fokus pencarian">/</span>
+            </div>
+            <div id="searchMeta" class="search-meta" style="display: none;">
+                <span id="searchResultCount"></span>
+            </div>
+        </div>
+
+        <!-- No Results Fallback -->
+        <div id="noResults" class="no-results" style="display: none;">
+            <div class="no-results-icon">🔎</div>
+            <h3 id="noResultsTitle">Tidak ada tools yang cocok</h3>
+            <p id="noResultsDesc">Coba gunakan kata kunci lain atau periksa ejaan Anda.</p>
+            <button id="resetSearchBtn" class="btn primary-btn">Tampilkan Semua Tools</button>
+        </div>
+
         <div class="tools-grid">
             <a href="./json-formatter/" class="tool-card" id="tool-json">
                 <div class="tool-icon">{ }</div>
@@ -220,6 +243,14 @@
                 <div class="tool-content">
                     <h3 class="tool-title">Focus & Task Tracker</h3>
                     <p class="tool-desc">Aplikasi Pomodoro dan To-Do List yang bisa di-install di HP dan PC.</p>
+                </div>
+            </a>
+
+            <a href="./curl-to-code/" class="tool-card" id="tool-curl-to-code">
+                <div class="tool-icon">🔄</div>
+                <div class="tool-content">
+                    <h3 class="tool-title">cURL to Code Converter</h3>
+                    <p class="tool-desc">Konversi perintah cURL ke Java (HttpClient, Spring RestTemplate, WebClient, OkHttp), JavaScript (Fetch, Axios), Python, dan Go secara instan.</p>
                 </div>
             </a>
 
