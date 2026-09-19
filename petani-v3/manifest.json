@@ -1,0 +1,16 @@
+{
+    "name": "TaniPintar",
+    "short_name": "TaniPintar",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#15803d",
+    "theme_color": "#15803d",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}
