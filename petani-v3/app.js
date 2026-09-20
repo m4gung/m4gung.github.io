@@ -11,10 +11,10 @@ function getNumericValue(input) {
   return parseInt(input.value.replace(/[^\d]/g, '')) || 0;
 }
 
-// Inisialisasi Database Dexie Versi 4
+// Inisialisasi Database Dexie Versi 5 (Mendukung custom umur & varietas bibit)
 const db = new Dexie("TaniPintarSabbangparuDB");
-db.version(4).stores({
-  lahan: '++id, nama, status, luas, lokasi, varietas, tglTanam',
+db.version(5).stores({
+  lahan: '++id, nama, status, luas, lokasi, varietas, umurHari, tglTanam',
   transaksi: '++id, lahanId, desc, amount, type, date, syncStatus',
   utang: '++id, nama, amount, type, desc, status, date',
   settings: 'id, value'
@@ -67,7 +67,7 @@ function showSectionTransaksi(type) {
 }
 
 // ========================================================
-// LOGIKA HST & REKOMENDASI PADI SABBANGPARU
+// LOGIKA HST & REKOMENDASI PADI PROPORSIONAL (CUSTOM UMUR)
 // ========================================================
 function hitungHST(tglTanamStr) {
   if (!tglTanamStr) return 0;
@@ -77,71 +77,80 @@ function hitungHST(tglTanamStr) {
   return Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
 }
 
-function getRekomendasiHST(hst) {
-  if (hst <= 14) {
+function getRekomendasiHST(hst, umurPanen = 115) {
+  // Hitung persentase fase hidup tanaman berdasarkan total hari bibit
+  const rasio = hst / umurPanen;
+  const progress = Math.min(100, Math.round(rasio * 100));
+
+  if (rasio <= 0.15) {
+    // Fase Vegetatif Awal (contoh: 0 - 17 hari pada bibit 115 hari)
     return {
-      fase: 'Vegetatif Awal (Akar & Anakan)',
+      fase: 'Vegetatif Awal (Akar & Pemulihan)',
       tag: 'Pemupukan Dasar',
-      progress: Math.min(100, Math.round((hst / 115) * 100)),
+      progress,
       html: `
-        <p class="font-bold text-slate-800">🌱 Jadwal Pemupukan Dasar (7 - 14 HST):</p>
+        <p class="font-bold text-slate-800">🌱 Pemupukan Dasar (Usia 7–14 HST):</p>
         <ul class="list-disc pl-4 space-y-1 text-slate-600">
-          <li>Aplikasikan <b>Urea (75 kg/Ha)</b> + <b>SP-36 / NPK Phonska (100 kg/Ha)</b> untuk memicu perakaran.</li>
-          <li>Jaga tinggi air sawah macak-macak (1 - 2 cm), jangan biarkan tergenang dalam agar anakan tumbuh leluasa.</li>
+          <li>Aplikasikan <b>Urea (75 kg/Ha)</b> + <b>SP-36 / NPK Phonska (100 kg/Ha)</b> untuk memacu pertumbuhan akar.</li>
+          <li>Ketinggian air sawah cukup macak-macak (1–2 cm) agar bibit tidak lemas dan anakan leluasa tumbuh.</li>
         </ul>
       `
     };
-  } else if (hst <= 35) {
+  } else if (rasio <= 0.35) {
+    // Fase Anakan Aktif (contoh: 18 - 40 hari pada bibit 115 hari)
     return {
-      fase: 'Vegetatif Aktif (Banyak Anakan)',
+      fase: 'Vegetatif Aktif (Pembentukan Anakan)',
       tag: 'Pemupukan II & Gulma',
-      progress: Math.min(100, Math.round((hst / 115) * 100)),
+      progress,
       html: `
-        <p class="font-bold text-slate-800">🌾 Pemupukan Susulan II (20 - 25 HST):</p>
+        <p class="font-bold text-slate-800">🌾 Pemupukan Susulan II:</p>
         <ul class="list-disc pl-4 space-y-1 text-slate-600">
-          <li>Tambahkan <b>Urea (100 kg/Ha) + NPK (50 kg/Ha)</b> untuk memaksimalkan jumlah batang anakan produktif.</li>
-          <li>Lakukan penyiangan rumput/gulma sebelum pupuk ditabur agar nutrisi tidak dicuri gulma.</li>
-          <li>Waspadai serangan ulat penggerek batang (Sundep) di pucuk daun.</li>
+          <li>Taburkan <b>Urea (100 kg/Ha) + NPK (50 kg/Ha)</b> untuk memperbanyak anakan produktif.</li>
+          <li>Lakukan penyiangan gulma (matun) sebelum pupuk ditebar agar serapan hara maksimal.</li>
+          <li>Waspadai hama penggerek batang (Sundep) pada pucuk pelepah daun.</li>
         </ul>
       `
     };
-  } else if (hst <= 65) {
+  } else if (rasio <= 0.60) {
+    // Fase Bunting / Generatif Awal (contoh: 41 - 70 hari)
     return {
-      fase: 'Fase Bunting (Generatif)',
+      fase: 'Fase Bunting (Generatif Awal)',
       tag: 'Kritis Kalium & Air',
-      progress: Math.min(100, Math.round((hst / 115) * 100)),
+      progress,
       html: `
-        <p class="font-bold text-slate-800">⚠️ Perhatian Khusus Fase Bunting (45 - 60 HST):</p>
+        <p class="font-bold text-slate-800">⚠️ Perhatian Khusus Fase Bunting:</p>
         <ul class="list-disc pl-4 space-y-1 text-slate-600">
-          <li>Hindari pupuk tinggi Nitrogen (Urea berlebih) agar tanaman tidak mudah rebah dan tidak diserang jamur wereng.</li>
-          <li>Semprot nutrisi daun tinggi <b>Kalium (K) & Boron</b> agar malai padi keluar serempak dan bernas.</li>
-          <li><b>Air Wajib Tergenang 3 - 5 cm</b>. Jangan biarkan sawah kekeringan pada fase pembentukan buntingan padi.</li>
+          <li>Air wajib tergenang setinggi 3–5 cm. Jangan biarkan sawah kekeringan saat bunting muda.</li>
+          <li>Stop pemakaian Urea tunggal. Semprotkan nutrisi daun berkandungan <b>Kalium (K) & Boron</b> agar malai keluar serempak.</li>
+          <li>Waspadai serangan jamur wereng dan bercak daun.</li>
         </ul>
       `
     };
-  } else if (hst <= 85) {
+  } else if (rasio <= 0.85) {
+    // Fase Pengisian Butir (contoh: 71 - 98 hari)
     return {
-      fase: 'Pengisian Butir Susu',
+      fase: 'Pengisian Butir (Fase Masak Susu)',
       tag: 'Proteksi Walang Sangit',
-      progress: Math.min(100, Math.round((hst / 115) * 100)),
+      progress,
       html: `
-        <p class="font-bold text-slate-800">🛡️ Proteksi Butir Susu & Matang:</p>
+        <p class="font-bold text-slate-800">🛡️ Proteksi Malai & Butir:</p>
         <ul class="list-disc pl-4 space-y-1 text-slate-600">
-          <li>Waspada hama <b>Walang Sangit</b> dan wereng coklat di pagi & sore hari. Semprot repellent nabati/insektisida terdaftar jika populasi melebihi ambang batas.</li>
-          <li>Pertahankan air teratur sampai butir padi mulai menguning dari ujung malai.</li>
+          <li>Amati serangan <b>Walang Sangit</b> di pagi dan sore hari. Lakukan pengasapan atau semprot insektisida bila perlu.</li>
+          <li>Pertahankan kelembapan tanah sampai bulir padi merunduk dan mulai menguning.</li>
         </ul>
       `
     };
   } else {
+    // Fase Pematangan / Panen (> 85% umur)
     return {
-      fase: 'Pematangan / Siap Panen',
-      tag: 'Keringkan Sawah & Booking Mesin',
+      fase: 'Pematangan & Menjelang Panen',
+      tag: 'Keringkan Sawah & Booking Alsintan',
       progress: 100,
       html: `
         <p class="font-bold text-slate-800">🚜 Persiapan Panen Raya:</p>
         <ul class="list-disc pl-4 space-y-1 text-slate-600">
-          <li><b>Keringkan air sawah 10 - 12 hari sebelum panen</b> agar tanah keras dan mempermudah roda mesin <i>combine harvester</i> bermanuver.</li>
-          <li>Hubungi penyedia mesin potong padi (lihat tab 'Pasar') untuk mengamankan nomor antrean sebelum panen raya serentak.</li>
+          <li><b>Keringkan petak sawah 10–12 hari sebelum panen</b> agar tanah mengeras dan memudahkan manuver roda <i>combine harvester</i>.</li>
+          <li>Segera amankan jadwal antrean mesin panen di tab 'Pasar' agar panen tidak molor saat musim hujan.</li>
         </ul>
       `
     };
@@ -149,7 +158,7 @@ function getRekomendasiHST(hst) {
 }
 
 // ========================================================
-// MANAJEMEN LAHAN
+// MANAJEMEN LAHAN (MENDUKUNG CUSTOM VARIETAS & HARI)
 // ========================================================
 document.getElementById('form-lahan').onsubmit = async (e) => {
   e.preventDefault();
@@ -159,7 +168,8 @@ document.getElementById('form-lahan').onsubmit = async (e) => {
     luas: getNumericValue(document.getElementById('luas-lahan')),
     lokasi: document.getElementById('lokasi-lahan').value,
     status: document.getElementById('status-lahan').value,
-    varietas: document.getElementById('varietas-lahan').value,
+    varietas: document.getElementById('varietas-lahan').value.trim() || 'Ciherang',
+    umurHari: parseInt(document.getElementById('umur-lahan').value) || 115,
     tglTanam: document.getElementById('tgl-tanam-lahan').value
   };
 
@@ -172,11 +182,13 @@ document.getElementById('form-lahan').onsubmit = async (e) => {
   renderLahan();
   refreshDashboard();
   e.target.reset();
+  document.getElementById('umur-lahan').value = 115;
 };
 
 function batalEditLahan() {
   document.getElementById('lahan-edit-id').value = '';
   document.getElementById('form-lahan').reset();
+  document.getElementById('umur-lahan').value = 115;
   document.getElementById('btn-save-lahan').innerText = 'Tambah Lahan';
   document.getElementById('btn-cancel-lahan').classList.add('hidden');
 }
@@ -189,6 +201,7 @@ async function editLahan(id) {
   document.getElementById('lokasi-lahan').value = l.lokasi || '';
   document.getElementById('status-lahan').value = l.status;
   document.getElementById('varietas-lahan').value = l.varietas || 'Ciherang';
+  document.getElementById('umur-lahan').value = l.umurHari || 115;
   document.getElementById('tgl-tanam-lahan').value = l.tglTanam || '';
 
   document.getElementById('btn-save-lahan').innerText = 'Simpan Perubahan';
@@ -212,6 +225,7 @@ async function renderLahan() {
   }
 
   container.innerHTML = data.map(l => {
+    const umur = l.umurHari || 115;
     const hst = hitungHST(l.tglTanam);
     return `
       <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
@@ -221,10 +235,11 @@ async function renderLahan() {
               <span class="font-bold text-xs text-slate-900">${l.nama}</span>
               <span class="text-[9px] font-semibold px-2 py-0.5 rounded ${l.status === 'Milik Sendiri' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}">${l.status}</span>
             </div>
-            <p class="text-[11px] text-slate-500 mt-0.5">${l.lokasi || 'Sabbangparu'} • ${l.luas || '-'} are • ${l.varietas || 'Ciherang'}</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">${l.lokasi || 'Sabbangparu'} • ${l.luas || '-'} are • Bibit: <b>${l.varietas || 'Ciherang'}</b> (${umur} Hari)</p>
           </div>
           <div class="text-right">
             <span class="text-xs font-extrabold text-amber-600">${hst} HST</span>
+            <span class="text-[9px] text-slate-400 block">Target: ${umur} H</span>
           </div>
         </div>
         <div class="flex gap-2 justify-end mt-2 pt-2 border-t border-slate-100">
@@ -466,7 +481,7 @@ async function renderUtang() {
 }
 
 // ========================================================
-// DASHBOARD BERANDA (HST, STATISTIK, & CHART)
+// DASHBOARD BERANDA (STATISTIK, HST, & GRAFIK)
 // ========================================================
 let myChart;
 
@@ -506,7 +521,7 @@ async function refreshDashboard() {
     selectLahan.innerHTML = '<option>Belum ada lahan</option>';
     document.getElementById('home-nama-lahan').innerText = 'Belum Ada Lahan';
     document.getElementById('home-val-hst').innerText = '0';
-    document.getElementById('rekomendasi-konten').innerHTML = '<p class="text-slate-500">Silakan tambahkan petak sawah di menu Lahan terlebih dahulu.</p>';
+    document.getElementById('rekomendasi-konten').innerHTML = '<p class="text-slate-500">Silakan daftarkan petak sawah di menu Lahan.</p>';
     return;
   }
 
@@ -517,22 +532,24 @@ async function refreshDashboard() {
   ).join('');
 
   const currentLahan = lahans.find(l => l.id == activeId) || lahans[0];
+  const umurPanen = parseInt(currentLahan.umurHari) || 115;
   const hst = hitungHST(currentLahan.tglTanam);
-  const rec = getRekomendasiHST(hst);
+  const rec = getRekomendasiHST(hst, umurPanen);
 
+  // Estimasi Tanggal Panen Berdasarkan Umur Hari Bibit
   if (currentLahan.tglTanam) {
     const tglPanen = new Date(currentLahan.tglTanam);
-    tglPanen.setDate(tglPanen.getDate() + 115);
+    tglPanen.setDate(tglPanen.getDate() + umurPanen);
     document.getElementById('home-tgl-panen').innerText = `Panen: ${tglPanen.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`;
   } else {
     document.getElementById('home-tgl-panen').innerText = 'Panen: -';
   }
 
-  // 4. Update Card HST & Rekomendasi Sesuai Permintaan
+  // 4. Update Card HST & Rekomendasi
   document.getElementById('home-nama-lahan').innerText = currentLahan.nama;
   document.getElementById('home-lokasi-lahan').innerText = `${currentLahan.lokasi || 'Sabbangparu'} • ${currentLahan.luas || '-'} are`;
   document.getElementById('home-badge-status').innerText = currentLahan.status;
-  document.getElementById('home-badge-varietas').innerText = currentLahan.varietas || 'Ciherang';
+  document.getElementById('home-badge-varietas').innerText = `${currentLahan.varietas || 'Padi'} (${umurPanen} Hari)`;
   document.getElementById('home-val-hst').innerText = hst;
   document.getElementById('home-fase-nama').innerText = rec.fase;
   document.getElementById('home-progress-bar').style.width = `${rec.progress}%`;
