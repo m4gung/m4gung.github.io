@@ -43,6 +43,12 @@ const translations = {
         focusTaskTrackerDesc: "Pomodoro and To-Do List that can be installed on mobile and PC.",
         curlToCode: "cURL to Code Converter",
         curlToCodeDesc: "Convert cURL commands to Java (HttpClient, RestTemplate, WebClient, OkHttp), JS, Python, and Go instantly.",
+        uuidUlidStudio: "UUID & ULID Studio",
+        uuidUlidStudioDesc: "Generator & Inspector for UUID v7 (time-ordered), UUID v4, ULID, and NanoID with timestamp extraction and bit breakdown.",
+        hmacSignatureStudio: "HMAC & API Signature Studio",
+        hmacSignatureStudioDesc: "Generator & Verifier for API Signatures (HMAC-SHA256/512), webhook testing, string-to-sign builder, and payment gateway presets.",
+        dockerComposeConverter: "Docker Run to Compose Converter",
+        dockerComposeConverterDesc: "Convert CLI docker run commands to docker-compose.yml files (and vice versa) automatically with backend database presets.",
         searchPlaceholder: "Search tools (e.g. JSON, JWT, cURL, Spring, SQL)...",
         searchResultCount: "Showing {count} of {total} tools",
         noResultsTitle: "No tools found",
@@ -92,6 +98,12 @@ const translations = {
         focusTaskTrackerDesc: "Aplikasi Pomodoro dan To-Do List yang bisa di-install di HP dan PC.",
         curlToCode: "cURL to Code Converter",
         curlToCodeDesc: "Konversi perintah cURL ke Java (HttpClient, RestTemplate, WebClient, OkHttp), JS, Python, dan Go secara instan.",
+        uuidUlidStudio: "UUID & ULID Studio",
+        uuidUlidStudioDesc: "Generator & Inspector UUID v7 (time-ordered), UUID v4, ULID, dan NanoID lengkap dengan ekstraksi timestamp dan breakdown bit.",
+        hmacSignatureStudio: "HMAC & API Signature Studio",
+        hmacSignatureStudioDesc: "Generator & Verifier API Signature (HMAC-SHA256/512), pengujian webhook, string-to-sign builder, dan preset payment gateway.",
+        dockerComposeConverter: "Docker Run to Compose Converter",
+        dockerComposeConverterDesc: "Konversi perintah CLI docker run ke file docker-compose.yml (dan sebaliknya) secara otomatis dengan preset database backend.",
         searchPlaceholder: "Cari tools (misal: JSON, JWT, cURL, Spring, SQL)...",
         searchResultCount: "Menampilkan {count} dari {total} tools",
         noResultsTitle: "Tidak ada tools yang cocok",
@@ -155,7 +167,10 @@ const translations = {
             'tool-csv-excel': t.csvExcelProcessor,
             'tool-encrypt-decrypt-hash': t.encryptDecryptHash,
             'tool-focus-task': t.focusTaskTracker,
-            'tool-curl-to-code': t.curlToCode
+            'tool-curl-to-code': t.curlToCode,
+            'tool-uuid-ulid': t.uuidUlidStudio,
+            'tool-hmac-sig': t.hmacSignatureStudio,
+            'tool-docker-compose': t.dockerComposeConverter
         };
 
         const toolDescs = {
@@ -176,7 +191,10 @@ const translations = {
             'tool-csv-excel': t.csvExcelProcessorDesc,
             'tool-encrypt-decrypt-hash': t.encryptDecryptHashDesc,
             'tool-focus-task': t.focusTaskTrackerDesc,
-            'tool-curl-to-code': t.curlToCodeDesc
+            'tool-curl-to-code': t.curlToCodeDesc,
+            'tool-uuid-ulid': t.uuidUlidStudioDesc,
+            'tool-hmac-sig': t.hmacSignatureStudioDesc,
+            'tool-docker-compose': t.dockerComposeConverterDesc
         };
 
         for (const [id, title] of Object.entries(toolTitles)) {

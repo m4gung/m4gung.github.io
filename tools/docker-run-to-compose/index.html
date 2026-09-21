@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐳 Docker Run to Docker Compose Converter | DevTools</title>
+    <meta name="description"
+        content="Konversi perintah CLI 'docker run' menjadi file 'docker-compose.yml' secara otomatis dan instan. Lengkap dengan port, volume, env, network, restart policy, dan reverse conversion (Compose to Run). 100% di browser.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <a href="../" class="btn back-btn" title="Kembali ke Daftar Tools">⬅️ Tools</a>
+            <div class="logo">
+                <h1>🐳 Docker Run ⇄ Compose Studio</h1>
+            </div>
+        </div>
+        <div class="header-right">
+            <div id="statusBadge" class="status-badge">Compose Specification</div>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema" aria-label="Ubah Tema">🌙</button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="nav-tabs" aria-label="Mode Navigasi">
+        <button class="nav-tab active" data-tab="tab-run-to-compose">
+            <span class="tab-icon">🔄</span>
+            <span>Docker Run ➔ Compose</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-compose-to-run">
+            <span class="tab-icon">🔁</span>
+            <span>Compose ➔ Docker Run</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-presets">
+            <span class="tab-icon">📦</span>
+            <span>Backend Database Presets</span>
+        </button>
+    </nav>
+
+    <main class="main-content">
+        <!-- ================= TAB 1: RUN TO COMPOSE ================= -->
+        <section id="tab-run-to-compose" class="tab-pane active">
+            <!-- PRESETS BAR -->
+            <div class="presets-bar">
+                <span class="presets-label">Contoh Cepat:</span>
+                <button type="button" class="btn btn-xs preset-btn" data-preset="postgres">🐘 PostgreSQL</button>
+                <button type="button" class="btn btn-xs preset-btn" data-preset="mysql">🐬 MySQL 8</button>
+                <button type="button" class="btn btn-xs preset-btn" data-preset="redis">🔴 Redis Stack</button>
+                <button type="button" class="btn btn-xs preset-btn" data-preset="nginx">🌐 Nginx Proxy</button>
+                <button type="button" class="btn btn-xs preset-btn" data-preset="rabbitmq">🐇 RabbitMQ</button>
+                <button type="button" class="btn btn-xs preset-btn" data-preset="mongo">🍃 MongoDB</button>
+                <button type="button" class="btn btn-xs danger-btn" id="btnClearRunInput">Bersihkan</button>
+            </div>
+
+            <div class="workspace-grid">
+                <!-- PANE KIRI: INPUT DOCKER RUN -->
+                <div class="pane">
+                    <div class="pane-toolbar">
+                        <div class="toolbar-left">
+                            <span class="pane-title">Input Perintah <code>docker run</code></span>
+                        </div>
+                        <div class="toolbar-right">
+                            <button type="button" id="btnPasteRun" class="btn btn-sm secondary-btn">📋 Paste</button>
+                        </div>
+                    </div>
+                    <div class="textarea-wrapper">
+                        <textarea id="dockerRunInput" class="code-textarea" spellcheck="false"
+                            placeholder="Paste perintah docker run di sini...&#10;&#10;Contoh:&#10;docker run -d \&#10;  --name my-postgres \&#10;  -p 5432:5432 \&#10;  -v pgdata:/var/lib/postgresql/data \&#10;  -e POSTGRES_USER=admin \&#10;  -e POSTGRES_PASSWORD=secret \&#10;  -e POSTGRES_DB=mydb \&#10;  --restart unless-stopped \&#10;  postgres:16-alpine">docker run -d \
+  --name my-postgres \
+  -p 5432:5432 \
+  -v pgdata:/var/lib/postgresql/data \
+  -e POSTGRES_USER=admin \
+  -e POSTGRES_PASSWORD=secret \
+  -e POSTGRES_DB=mydb \
+  --restart unless-stopped \
+  postgres:16-alpine</textarea>
+                    </div>
+                    <div class="pane-statusbar">
+                        <span id="runInputStats">Mendukung multi-line dengan tanda backslash (\) atau backtick (`)</span>
+                    </div>
+                </div>
+
+                <!-- PANE KANAN: OUTPUT DOCKER COMPOSE -->
+                <div class="pane">
+                    <div class="pane-toolbar">
+                        <div class="toolbar-left compose-options">
+                            <label class="checkbox-label" title="Sertakan versi compose (e.g. version: '3.8')">
+                                <input type="checkbox" id="optIncludeVersion" checked> version: '3.8'
+                            </label>
+                            <label class="checkbox-label" title="Deklarasikan named volumes di bagian bawah">
+                                <input type="checkbox" id="optIncludeVolumesBlock" checked> Blok volumes:
+                            </label>
+                            <label class="checkbox-label" title="Deklarasikan custom networks di bagian bawah">
+                                <input type="checkbox" id="optIncludeNetworksBlock" checked> Blok networks:
+                            </label>
+                        </div>
+                        <div class="toolbar-right">
+                            <button type="button" id="btnCopyCompose" class="btn btn-sm success-btn">📋 Salin YAML</button>
+                            <button type="button" id="btnDownloadCompose" class="btn btn-sm secondary-btn">💾 Unduh .yml</button>
+                        </div>
+                    </div>
+                    <div class="textarea-wrapper">
+                        <textarea id="composeOutput" class="code-textarea compose-output" spellcheck="false" readonly
+                            placeholder="File docker-compose.yml akan otomatis muncul di sini..."></textarea>
+                    </div>
+                    <div class="pane-statusbar">
+                        <span id="composeOutputStats">Otomatis diperbarui saat perintah diketik</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: COMPOSE TO RUN ================= -->
+        <section id="tab-compose-to-run" class="tab-pane">
+            <div class="workspace-grid">
+                <!-- PANE KIRI: INPUT COMPOSE YAML -->
+                <div class="pane">
+                    <div class="pane-toolbar">
+                        <div class="toolbar-left">
+                            <span class="pane-title">Input <code>docker-compose.yml</code></span>
+                        </div>
+                        <div class="toolbar-right">
+                            <button type="button" id="btnSampleCompose" class="btn btn-sm secondary-btn">Contoh</button>
+                            <button type="button" id="btnClearComposeInput" class="btn btn-sm danger-btn">Bersihkan</button>
+                        </div>
+                    </div>
+                    <div class="textarea-wrapper">
+                        <textarea id="composeToRunInput" class="code-textarea" spellcheck="false"
+                            placeholder="Paste isi docker-compose.yml di sini...&#10;&#10;Contoh:&#10;services:&#10;  redis:&#10;    image: redis:7-alpine&#10;    container_name: redis-cache&#10;    ports:&#10;      - '6379:6379'&#10;    command: redis-server --requirepass secret&#10;    restart: always">services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=secret123
+    restart: always
+    command: redis-server --appendonly yes</textarea>
+                    </div>
+                    <div class="pane-statusbar">
+                        <span>Pilih service yang ingin dikonversi jika terdapat banyak service</span>
+                    </div>
+                </div>
+
+                <!-- PANE KANAN: OUTPUT DOCKER RUN -->
+                <div class="pane">
+                    <div class="pane-toolbar">
+                        <div class="toolbar-left">
+                            <label for="selectServiceToRun" class="pane-title">Service:</label>
+                            <select id="selectServiceToRun" class="select-input select-service-compact">
+                                <option value="">(Otomatis)</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-right">
+                            <button type="button" id="btnCopyRunCommand" class="btn btn-sm success-btn">📋 Salin Perintah</button>
+                        </div>
+                    </div>
+                    <div class="textarea-wrapper">
+                        <textarea id="runCommandOutput" class="code-textarea run-output" spellcheck="false" readonly
+                            placeholder="Perintah CLI docker run akan muncul di sini..."></textarea>
+                    </div>
+                    <div class="pane-statusbar">
+                        <span>Dapat langsung dieksekusi di terminal bash / zsh / command prompt</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: BACKEND PRESETS ================= -->
+        <section id="tab-presets" class="tab-pane">
+            <div class="presets-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📦 Koleksi Template Docker Compose Siap Pakai untuk Backend</h2>
+                        <span class="badge-pill rec">Teruji untuk Development & Production</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="preset-cards-grid">
+                            <!-- PostgreSQL + pgAdmin -->
+                            <div class="preset-card">
+                                <div class="preset-card-header">
+                                    <span class="preset-icon">🐘</span>
+                                    <div>
+                                        <h4>PostgreSQL 16 + pgAdmin 4</h4>
+                                        <p>Database relasional populer dengan web UI GUI pgAdmin siap pakai.</p>
+                                    </div>
+                                </div>
+                                <div class="preset-card-actions">
+                                    <button type="button" class="btn btn-sm primary-btn load-full-preset" data-id="postgres-pgadmin">Gunakan Template Ini</button>
+                                </div>
+                            </div>
+
+                            <!-- MySQL 8 + phpMyAdmin -->
+                            <div class="preset-card">
+                                <div class="preset-card-header">
+                                    <span class="preset-icon">🐬</span>
+                                    <div>
+                                        <h4>MySQL 8.0 + phpMyAdmin</h4>
+                                        <p>RDBMS standar industri lengkap dengan phpMyAdmin untuk manajemen skema.</p>
+                                    </div>
+                                </div>
+                                <div class="preset-card-actions">
+                                    <button type="button" class="btn btn-sm primary-btn load-full-preset" data-id="mysql-phpmyadmin">Gunakan Template Ini</button>
+                                </div>
+                            </div>
+
+                            <!-- Redis 7 + Redis Commander -->
+                            <div class="preset-card">
+                                <div class="preset-card-header">
+                                    <span class="preset-icon">🔴</span>
+                                    <div>
+                                        <h4>Redis 7 + Redis Commander</h4>
+                                        <p>In-memory cache & Pub/Sub broker cepat dengan web management GUI.</p>
+                                    </div>
+                                </div>
+                                <div class="preset-card-actions">
+                                    <button type="button" class="btn btn-sm primary-btn load-full-preset" data-id="redis-commander">Gunakan Template Ini</button>
+                                </div>
+                            </div>
+
+                            <!-- RabbitMQ + Management -->
+                            <div class="preset-card">
+                                <div class="preset-card-header">
+                                    <span class="preset-icon">🐇</span>
+                                    <div>
+                                        <h4>RabbitMQ 3 Management</h4>
+                                        <p>Message broker AMQP lengkap dengan panel dashboard manajemen di port 15672.</p>
+                                    </div>
+                                </div>
+                                <div class="preset-card-actions">
+                                    <button type="button" class="btn btn-sm primary-btn load-full-preset" data-id="rabbitmq-mgmt">Gunakan Template Ini</button>
+                                </div>
+                            </div>
+
+                            <!-- MongoDB + Mongo Express -->
+                            <div class="preset-card">
+                                <div class="preset-card-header">
+                                    <span class="preset-icon">🍃</span>
+                                    <div>
+                                        <h4>MongoDB 7 + Mongo Express</h4>
+                                        <p>NoSQL document store dengan interface administrasi web di port 8081.</p>
+                                    </div>
+                                </div>
+                                <div class="preset-card-actions">
+                                    <button type="button" class="btn btn-sm primary-btn load-full-preset" data-id="mongo-express">Gunakan Template Ini</button>
+                                </div>
+                            </div>
+
+                            <!-- Nginx Reverse Proxy with SSL -->
+                            <div class="preset-card">
+                                <div class="preset-card-header">
+                                    <span class="preset-icon">🌐</span>
+                                    <div>
+                                        <h4>Nginx Reverse Proxy</h4>
+                                        <p>HTTP server & reverse proxy untuk routing microservices backend.</p>
+                                    </div>
+                                </div>
+                                <div class="preset-card-actions">
+                                    <button type="button" class="btn btn-sm primary-btn load-full-preset" data-id="nginx-proxy">Gunakan Template Ini</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

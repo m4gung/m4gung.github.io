@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🆔 UUID v4 / v7 & ULID Generator & Inspector | DevTools</title>
+    <meta name="description"
+        content="Generator dan Inspector UUID v7 (time-ordered), UUID v4, ULID, NanoID, dan UUID v1. Cek timestamp tersembunyi, breakdown bit, validasi, dan export format SQL/JSON. 100% di browser.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <a href="../" class="btn back-btn" title="Kembali ke Daftar Tools">⬅️ Tools</a>
+            <div class="logo">
+                <h1>🆔 UUID & ULID Studio</h1>
+            </div>
+        </div>
+        <div class="header-right">
+            <div id="statusBadge" class="status-badge">RFC 9562 / RFC 4122</div>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema" aria-label="Ubah Tema">🌙</button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="nav-tabs" aria-label="Mode Navigasi">
+        <button class="nav-tab active" data-tab="tab-generator">
+            <span class="tab-icon">⚡</span>
+            <span>Batch Generator</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-inspector">
+            <span class="tab-icon">🔍</span>
+            <span>Inspector & Decoder</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-guide">
+            <span class="tab-icon">📖</span>
+            <span>Backend Guide & Cheat Sheet</span>
+        </button>
+    </nav>
+
+    <main class="main-content">
+        <!-- ================= TAB 1: GENERATOR ================= -->
+        <section id="tab-generator" class="tab-pane active">
+            <div class="grid-container">
+                <!-- PANEL KONTROL KIRI -->
+                <div class="card control-panel">
+                    <div class="card-header">
+                        <h2>⚙️ Pengaturan Generator</h2>
+                    </div>
+
+                    <!-- Type Selector -->
+                    <div class="form-group">
+                        <label class="form-label">Tipe Identifier:</label>
+                        <div class="type-selector-grid">
+                            <label class="type-radio-card active">
+                                <input type="radio" name="idType" value="uuidv7" checked>
+                                <div class="type-info">
+                                    <span class="type-title">UUID v7 <span class="badge-pill rec">Rekomendasi DB</span></span>
+                                    <span class="type-desc">Time-ordered (RFC 9562), ramah B-Tree Index</span>
+                                </div>
+                            </label>
+
+                            <label class="type-radio-card">
+                                <input type="radio" name="idType" value="uuidv4">
+                                <div class="type-info">
+                                    <span class="type-title">UUID v4 <span class="badge-pill">Standar</span></span>
+                                    <span class="type-desc">122-bit Pure Cryptographic Random</span>
+                                </div>
+                            </label>
+
+                            <label class="type-radio-card">
+                                <input type="radio" name="idType" value="ulid">
+                                <div class="type-info">
+                                    <span class="type-title">ULID <span class="badge-pill info">26 Karakter</span></span>
+                                    <span class="type-desc">Sortable Crockford Base32, URL-safe</span>
+                                </div>
+                            </label>
+
+                            <label class="type-radio-card">
+                                <input type="radio" name="idType" value="nanoid">
+                                <div class="type-info">
+                                    <span class="type-title">NanoID <span class="badge-pill info">Ringkas</span></span>
+                                    <span class="type-desc">21 karakter compact ID ramah URL</span>
+                                </div>
+                            </label>
+
+                            <label class="type-radio-card">
+                                <input type="radio" name="idType" value="uuidv1">
+                                <div class="type-info">
+                                    <span class="type-title">UUID v1 <span class="badge-pill">Legacy</span></span>
+                                    <span class="type-desc">Gregorian time & node-based</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="form-group">
+                        <label for="quantitySelect" class="form-label">Jumlah (Quantity):</label>
+                        <div class="quantity-wrapper">
+                            <div class="qty-chips">
+                                <button type="button" class="qty-chip" data-qty="1">1</button>
+                                <button type="button" class="qty-chip active" data-qty="5">5</button>
+                                <button type="button" class="qty-chip" data-qty="10">10</button>
+                                <button type="button" class="qty-chip" data-qty="25">25</button>
+                                <button type="button" class="qty-chip" data-qty="50">50</button>
+                                <button type="button" class="qty-chip" data-qty="100">100</button>
+                            </div>
+                            <input type="number" id="customQtyInput" min="1" max="1000" value="5" class="custom-qty" title="Kustom jumlah (1-1000)">
+                        </div>
+                    </div>
+
+                    <!-- Format Options -->
+                    <div class="form-group">
+                        <label class="form-label">Opsi Format:</label>
+                        <div class="options-grid">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="optUppercase">
+                                <span>Uppercase (A-F)</span>
+                            </label>
+                            <label class="checkbox-option" id="wrapperOptHyphens">
+                                <input type="checkbox" id="optHyphens" checked>
+                                <span>Gunakan Tanda Hubung (-)</span>
+                            </label>
+                            <label class="checkbox-option" id="wrapperOptBraces">
+                                <input type="checkbox" id="optBraces">
+                                <span>Kurung Kurawal { ... }</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Enclosing & Output Format -->
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="outputFormatSelect" class="form-label">Format Output:</label>
+                            <select id="outputFormatSelect" class="select-input">
+                                <option value="lines" selected>Baris Baru (Plain Text)</option>
+                                <option value="json">JSON Array ["id1", "id2"]</option>
+                                <option value="sql">SQL IN Clause ('id1', 'id2')</option>
+                                <option value="comma">Koma (Comma-separated)</option>
+                                <option value="quoted-comma">Koma dengan Kutip ('id1', 'id2')</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Primary Action -->
+                    <button type="button" id="btnGenerate" class="btn primary-btn btn-lg w-full">
+                        <span>⚡ Generate ID Baru</span>
+                    </button>
+                </div>
+
+                <!-- PANEL OUTPUT KANAN -->
+                <div class="card output-panel">
+                    <div class="card-header">
+                        <div class="header-meta">
+                            <h2>Hasil Generate</h2>
+                            <span id="outputMetaBadge" class="meta-tag">5 ID dibuat</span>
+                        </div>
+                        <div class="actions-group">
+                            <button type="button" id="btnCopyAll" class="btn success-btn btn-sm" title="Salin semua hasil">
+                                📋 Salin Semua
+                            </button>
+                            <button type="button" id="btnCopyFirst" class="btn secondary-btn btn-sm" title="Salin ID pertama">
+                                1️⃣ Salin Pertama
+                            </button>
+                            <button type="button" id="btnDownload" class="btn secondary-btn btn-sm" title="Unduh hasil sebagai file .txt">
+                                💾 Unduh (.txt)
+                            </button>
+                            <button type="button" id="btnClearOutput" class="btn danger-btn btn-sm" title="Bersihkan">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="output-body">
+                        <div class="output-wrapper">
+                            <textarea id="outputArea" spellcheck="false" readonly
+                                placeholder="Klik 'Generate ID Baru' untuk melihat hasil..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="footer-left">
+                            <span id="genSpeedInfo">⚡ Siap digenerate via Web Crypto API</span>
+                        </div>
+                        <div class="footer-right">
+                            <button type="button" id="btnInspectFirst" class="link-btn">
+                                🔍 Buka ID pertama di Inspector &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: INSPECTOR & DECODER ================= -->
+        <section id="tab-inspector" class="tab-pane">
+            <div class="inspector-container">
+                <!-- INPUT INSPECTOR -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🔍 Input UUID / ULID untuk Diinspeksi</h2>
+                        <div class="samples-group">
+                            <span class="samples-label">Coba Contoh:</span>
+                            <button type="button" class="btn btn-xs sample-btn" id="sampleV7Btn">UUID v7</button>
+                            <button type="button" class="btn btn-xs sample-btn" id="sampleV4Btn">UUID v4</button>
+                            <button type="button" class="btn btn-xs sample-btn" id="sampleUlidBtn">ULID</button>
+                            <button type="button" class="btn btn-xs sample-btn" id="sampleV1Btn">UUID v1</button>
+                            <button type="button" class="btn btn-xs danger-btn" id="clearInspectBtn">Bersihkan</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="inspect-input-wrapper">
+                            <input type="text" id="inspectInput" class="inspect-input"
+                                placeholder="Paste UUID (v1, v4, v7) atau ULID di sini... (contoh: 01921382-748a-78b1-912a-8995392cf99a)"
+                                autocomplete="off" spellcheck="false">
+                            <button type="button" id="btnPasteInspect" class="btn secondary-btn" title="Paste dari Clipboard">
+                                📋 Paste
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HASIL INSPEKSI -->
+                <div id="inspectResultContainer" class="inspect-results">
+                    <!-- Status Header Card -->
+                    <div class="card result-status-card" id="inspectStatusCard">
+                        <div class="status-icon" id="inspectStatusIcon">❓</div>
+                        <div class="status-details">
+                            <h3 id="inspectStatusTitle">Masukkan identifier untuk memulai</h3>
+                            <p id="inspectStatusDesc">Mendukung UUID v7 (RFC 9562), UUID v4 (RFC 4122), UUID v1, ULID, dan format hex 128-bit.</p>
+                        </div>
+                        <div class="status-tags" id="inspectStatusTags">
+                            <!-- Dynamic tags -->
+                        </div>
+                    </div>
+
+                    <!-- Timestamp Analysis (jika v7, ULID, atau v1) -->
+                    <div class="card hidden" id="timestampCard">
+                        <div class="card-header">
+                            <h3>⏱️ Timestamp yang Tertanam (Embedded Time)</h3>
+                            <span class="badge-pill rec">Terekstraksi dari Bit ID</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="timestamp-grid">
+                                <div class="timestamp-item">
+                                    <span class="ts-label">Waktu Lokal (Browser):</span>
+                                    <span class="ts-value highlight" id="tsLocal">-</span>
+                                </div>
+                                <div class="timestamp-item">
+                                    <span class="ts-label">UTC / ISO 8601:</span>
+                                    <span class="ts-value code" id="tsIso">-</span>
+                                </div>
+                                <div class="timestamp-item">
+                                    <span class="ts-label">Waktu Relatif:</span>
+                                    <span class="ts-value" id="tsRelative">-</span>
+                                </div>
+                                <div class="timestamp-item">
+                                    <span class="ts-label">Unix Epoch (ms / sec):</span>
+                                    <span class="ts-value code" id="tsEpoch">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Anatomy Breakdown -->
+                    <div class="card hidden" id="anatomyCard">
+                        <div class="card-header">
+                            <h3>🧬 Anatomi & Struktur Bit (Bit Breakdown)</h3>
+                            <span class="badge-pill info">128 Bits (16 Bytes)</span>
+                        </div>
+                        <div class="card-body">
+                            <!-- Visual Segments -->
+                            <div class="anatomy-visual" id="anatomyVisual">
+                                <!-- Generated visually with colors -->
+                            </div>
+
+                            <!-- Anatomy Table -->
+                            <div class="table-responsive">
+                                <table class="anatomy-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Komponen / Field</th>
+                                            <th>Ukuran</th>
+                                            <th>Nilai Hex / Representasi</th>
+                                            <th>Keterangan / Fungsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="anatomyTableBody">
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alternative Representations -->
+                    <div class="card hidden" id="altRepCard">
+                        <div class="card-header">
+                            <h3>🔄 Berbagai Format Representasi</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="representations-list" id="repList">
+                                <!-- Dynamic representations with copy buttons -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: BACKEND GUIDE & CHEAT SHEET ================= -->
+        <section id="tab-guide" class="tab-pane">
+            <div class="guide-container">
+                <!-- Quick Comparison Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📊 Perbandingan: UUID v4 vs UUID v7 vs ULID vs NanoID</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="guide-table">
+                                <thead>
+                                    <tr>
+                                        <th>Identifier</th>
+                                        <th>Panjang</th>
+                                        <th>Karakter / Format</th>
+                                        <th>Sortable?</th>
+                                        <th>Standar / RFC</th>
+                                        <th>Penggunaan Terbaik di Backend</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="highlight-row">
+                                        <td><strong>UUID v7</strong> ⭐</td>
+                                        <td>36 char (128-bit)</td>
+                                        <td>Hex + Hyphens (UUID standar)</td>
+                                        <td>✅ Ya (Time-ordered 48-bit ms)</td>
+                                        <td>RFC 9562 (Resmi 2024)</td>
+                                        <td><strong>Primary Key Database modern</strong> (Postgres, MySQL). Menghindari fragmentasi B-Tree!</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>UUID v4</strong></td>
+                                        <td>36 char (128-bit)</td>
+                                        <td>Hex + Hyphens (UUID standar)</td>
+                                        <td>❌ Tidak (Acak murni)</td>
+                                        <td>RFC 4122 / RFC 9562</td>
+                                        <td>Token sesi, Request ID, Correlation ID, Tracing Distributed system.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>ULID</strong></td>
+                                        <td>26 char (128-bit)</td>
+                                        <td>Crockford Base32 (A-Z, 0-9 tanpa I, L, O, U)</td>
+                                        <td>✅ Ya (Time-ordered 48-bit ms)</td>
+                                        <td>De-facto Open Spec</td>
+                                        <td>Public API Identifier, URL path parameter, NoSQL key (MongoDB/Redis).</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>NanoID</strong></td>
+                                        <td>21 char (default)</td>
+                                        <td>A-Za-z0-9_- (URL safe)</td>
+                                        <td>❌ Tidak (Acak murni)</td>
+                                        <td>Open Source Community</td>
+                                        <td>URL shortener, invite code, ID file upload publik yang ringkas.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>UUID v1</strong></td>
+                                        <td>36 char (128-bit)</td>
+                                        <td>Hex + Hyphens</td>
+                                        <td>⚠️ Ya (Time 60-bit 100ns)</td>
+                                        <td>RFC 4122 (Legacy)</td>
+                                        <td>Sistem legacy / Cassandra DB. <em>(Hindari untuk sistem baru karena membocorkan MAC address).</em></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Performance Explanation -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>💡 Mengapa Backend Wajib Beralih dari UUIDv4 ke UUIDv7 untuk Database?</h2>
+                    </div>
+                    <div class="card-body guide-content">
+                        <div class="explanation-grid">
+                            <div class="explain-card danger-card">
+                                <h4>❌ Masalah UUID v4 sebagai Primary Key:</h4>
+                                <ul>
+                                    <li><strong>Fragmentasi B-Tree Index:</strong> Karena UUIDv4 nilainya acak total, setiap operasi `INSERT` baru harus menyisip ke halaman index (B-tree leaf page) secara acak.</li>
+                                    <li><strong>Page Splits Masif:</strong> Database harus sering membagi halaman memory/disk, menyebabkan cache I/O jebol dan ukuran indeks membengkak hingga 3x lipat.</li>
+                                    <li><strong>Performa Write Drop:</strong> Pada jutaan baris data, write throughput database bisa anjlok hingga 50-80%.</li>
+                                </ul>
+                            </div>
+                            <div class="explain-card success-card">
+                                <h4>✅ Keunggulan UUID v7 (RFC 9562):</h4>
+                                <ul>
+                                    <li><strong>Sequential / Monotonik:</strong> 48-bit pertama adalah Unix timestamp dalam milidetik. Data baru selalu di-insert di bagian akhir index B-tree (*append-only*).</li>
+                                    <li><strong>Zero Page Splits:</strong> Sangat ramah engine storage seperti PostgreSQL, MySQL (InnoDB), CockroachDB, dan SQLite.</li>
+                                    <li><strong>Kompatibilitas Penuh:</strong> Tipe data di database tetap `UUID` (PostgreSQL) atau `BINARY(16)` / `CHAR(36)` (MySQL). Tidak perlu ubah library ORM!</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Snippets for Backend Developers -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>💻 Contoh Implementasi di Berbagai Bahasa Backend</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="snippets-tabs">
+                            <div class="snippet-buttons">
+                                <button type="button" class="btn btn-sm snippet-tab-btn active" data-lang="java">Java / Spring Boot</button>
+                                <button type="button" class="btn btn-sm snippet-tab-btn" data-lang="go">Go (Golang)</button>
+                                <button type="button" class="btn btn-sm snippet-tab-btn" data-lang="python">Python</button>
+                                <button type="button" class="btn btn-sm snippet-tab-btn" data-lang="node">Node.js / TypeScript</button>
+                                <button type="button" class="btn btn-sm snippet-tab-btn" data-lang="sql">SQL (Postgres & MySQL)</button>
+                            </div>
+
+                            <!-- Snippet Java -->
+                            <div class="snippet-content active" id="snippet-java">
+                                <div class="snippet-header">
+                                    <span>Java 8+ / Spring Boot (Hibernate 6.2+ & FasterXML JUG)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code>// 1. Menggunakan library com.fasterxml.uuid:java-uuid-generator:5.1.0
+import com.fasterxml.uuid.Generators;
+import java.util.UUID;
+
+// Generate UUID v7 (Time-based sequential)
+UUID uuidV7 = Generators.timeBasedEpochGenerator().generate();
+System.out.println("UUID v7: " + uuidV7);
+
+// 2. Di Entity JPA / Hibernate 6.2+:
+import jakarta.persistence.*;
+import org.hibernate.annotations.UuidGenerator;
+
+@Entity
+@Table(name = "orders")
+public class Order {
+    @Id
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME) // Otomatis menggunakan UUIDv7 di Hibernate terbaru
+    @Column(columnDefinition = "uuid")
+    private UUID id;
+
+    // fields, getters, setters...
+}</code></pre>
+                            </div>
+
+                            <!-- Snippet Go -->
+                            <div class="snippet-content" id="snippet-go">
+                                <div class="snippet-header">
+                                    <span>Go (github.com/google/uuid & github.com/oklog/ulid/v2)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code>package main
+
+import (
+    "fmt"
+    "github.com/google/uuid"
+    "github.com/oklog/ulid/v2"
+    "time"
+    "math/rand"
+)
+
+func main() {
+    // 1. UUID v7 dengan google/uuid (v1.6.0+)
+    idV7, err := uuid.NewV7()
+    if err != nil {
+        panic(err)
+    }
+    fmt.Printf("UUID v7: %s\n", idV7.String())
+
+    // 2. ULID dengan oklog/ulid/v2
+    entropy := ulid.Monotonic(rand.New(rand.NewSource(time.Now().UnixNano())), 0)
+    ulidId := ulid.MustNew(ulid.Timestamp(time.Now()), entropy)
+    fmt.Printf("ULID:    %s\n", ulidId.String())
+}</code></pre>
+                            </div>
+
+                            <!-- Snippet Python -->
+                            <div class="snippet-content" id="snippet-python">
+                                <div class="snippet-header">
+                                    <span>Python 3.10+ (uuid_utils atau uuid-utils)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code># pip install uuid-utils
+import uuid_utils as uuid
+import datetime
+
+# Generate UUID v7
+id_v7 = uuid.uuid7()
+print(f"UUID v7: {id_v7}")
+
+# Ekstrak timestamp dari UUID v7
+ts_ms = id_v7.timestamp
+dt = datetime.datetime.fromtimestamp(ts_ms / 1000.0, tz=datetime.timezone.utc)
+print(f"Dibuat pada: {dt.isoformat()}")
+
+# ULID (pip install ulid-py)
+import ulid
+id_ulid = ulid.new()
+print(f"ULID: {id_ulid.str}")
+print(f"ULID Timestamp: {id_ulid.datetime}")</code></pre>
+                            </div>
+
+                            <!-- Snippet Node.js -->
+                            <div class="snippet-content" id="snippet-node">
+                                <div class="snippet-header">
+                                    <span>Node.js / TypeScript (npm i uuid ulid)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code>import { v7 as uuidv7, v4 as uuidv4 } from 'uuid';
+import { ulid } from 'ulid';
+
+// Generate UUID v7
+const idV7 = uuidv7();
+console.log('UUID v7:', idV7);
+
+// Generate ULID
+const idUlid = ulid();
+console.log('ULID:   ', idUlid);
+
+// Decode timestamp UUID v7 (Native TypeScript/JS tanpa library)
+function getUUIDv7Timestamp(uuid: string): Date {
+  const cleanHex = uuid.replace(/-/g, '');
+  const timestampHex = cleanHex.substring(0, 12); // 48-bit timestamp
+  const ms = parseInt(timestampHex, 16);
+  return new Date(ms);
+}
+console.log('Timestamp:', getUUIDv7Timestamp(idV7).toISOString());</code></pre>
+                            </div>
+
+                            <!-- Snippet SQL -->
+                            <div class="snippet-content" id="snippet-sql">
+                                <div class="snippet-header">
+                                    <span>SQL (PostgreSQL & MySQL)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code>-- 1. PostgreSQL (Postgres 17+ native uuid_generate_v7 atau pgcrypto)
+-- Di Postgres 17+:
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Ekstrak timestamp dari UUIDv7 di PostgreSQL (semua versi):
+SELECT 
+    id, 
+    to_timestamp(('x' || lpad(substr(replace(id::text, '-', ''), 1, 12), 16, '0'))::bit(64)::bigint / 1000.0) AS created_at
+FROM users;
+
+-- 2. MySQL (Disimpan sebagai BINARY(16) untuk efisiensi index maksimal)
+CREATE TABLE users (
+    id BINARY(16) PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+-- Insert UUID string menjadi binary:
+INSERT INTO users (id, email) VALUES (UUID_TO_BIN('01921382-748a-78b1-912a-8995392cf99a'), 'user@example.com');</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

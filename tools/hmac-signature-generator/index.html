@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 HMAC & API Signature Studio (SHA256, SHA512, Webhook Verifier)</title>
+    <meta name="description"
+        content="Generator dan Verifier API Signature & HMAC (SHA256, SHA512, SHA384, SHA1). Uji webhook signature, format Hex & Base64, string-to-sign builder, dan template payment gateway. 100% di browser.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <a href="../" class="btn back-btn" title="Kembali ke Daftar Tools">⬅️ Tools</a>
+            <div class="logo">
+                <h1>🔐 HMAC & API Signature Studio</h1>
+            </div>
+        </div>
+        <div class="header-right">
+            <div id="statusBadge" class="status-badge">Web Crypto Native</div>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema" aria-label="Ubah Tema">🌙</button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="nav-tabs" aria-label="Mode Navigasi">
+        <button class="nav-tab active" data-tab="tab-generator">
+            <span class="tab-icon">⚡</span>
+            <span>Signature Generator</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-verifier">
+            <span class="tab-icon">⚖️</span>
+            <span>Signature Verifier & Matcher</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-builder">
+            <span class="tab-icon">🧩</span>
+            <span>String-to-Sign Builder</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-code">
+            <span class="tab-icon">💻</span>
+            <span>Backend Code Snippets</span>
+        </button>
+    </nav>
+
+    <main class="main-content">
+        <!-- ================= TAB 1: GENERATOR ================= -->
+        <section id="tab-generator" class="tab-pane active">
+            <div class="grid-container">
+                <!-- PANEL KIRI: INPUT DATA & SECRET -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>⚙️ Parameter Signature</h2>
+                        <div class="presets-wrapper">
+                            <span class="presets-label">Preset:</span>
+                            <button type="button" class="btn btn-xs preset-btn" id="presetStandard">Standard</button>
+                            <button type="button" class="btn btn-xs preset-btn" id="presetMidtrans">Midtrans</button>
+                            <button type="button" class="btn btn-xs preset-btn" id="presetStripe">Stripe</button>
+                            <button type="button" class="btn btn-xs preset-btn" id="presetSnapBi">SNAP BI</button>
+                            <button type="button" class="btn btn-xs danger-btn" id="btnClearGen">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Algorithm Selector -->
+                        <div class="form-group">
+                            <label for="algoSelect" class="form-label">Algoritma Hash / HMAC:</label>
+                            <select id="algoSelect" class="select-input">
+                                <option value="SHA-256" selected>HMAC-SHA256 (Paling Populer untuk Webhook & API)</option>
+                                <option value="SHA-512">HMAC-SHA512 (Standar Perbankan & Kripto)</option>
+                                <option value="SHA-384">HMAC-SHA384</option>
+                                <option value="SHA-1">HMAC-SHA1 (Legacy AWS v2 & GitHub)</option>
+                                <option value="PLAIN-SHA256">Plain SHA-256 (Digest Hash tanpa Key)</option>
+                                <option value="PLAIN-SHA512">Plain SHA-512 (Digest Hash tanpa Key)</option>
+                            </select>
+                        </div>
+
+                        <!-- Secret Key Input -->
+                        <div class="form-group" id="groupSecretKey">
+                            <div class="label-row">
+                                <label for="secretKeyInput" class="form-label">Secret Key / Private Secret:</label>
+                                <div class="key-format-options">
+                                    <label class="radio-inline"><input type="radio" name="keyEncoding" value="utf8" checked> UTF-8 Text</label>
+                                    <label class="radio-inline"><input type="radio" name="keyEncoding" value="hex"> Hex</label>
+                                    <label class="radio-inline"><input type="radio" name="keyEncoding" value="base64"> Base64</label>
+                                </div>
+                            </div>
+                            <div class="input-with-action">
+                                <input type="text" id="secretKeyInput" class="code-input"
+                                    placeholder="Masukkan secret key (misal: my-secret-api-key)..."
+                                    autocomplete="off" spellcheck="false" value="secret-api-key-2026">
+                                <button type="button" id="btnToggleKeyVisibility" class="btn secondary-btn btn-sm" title="Sembunyikan/Tampilkan Key">👁️</button>
+                                <button type="button" id="btnGenRandomKey" class="btn secondary-btn btn-sm" title="Generate Secret Key Acak">🎲</button>
+                            </div>
+                        </div>
+
+                        <!-- Message / Payload Input -->
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="messageInput" class="form-label">Payload / Pesan / String-to-Sign:</label>
+                                <span id="payloadStats" class="meta-tag">0 bytes</span>
+                            </div>
+                            <textarea id="messageInput" class="code-textarea" rows="8" spellcheck="false"
+                                placeholder="Masukkan teks, string-to-sign, atau JSON payload yang ingin di-sign...">{
+  "order_id": "INV-2026-0921-001",
+  "gross_amount": 250000,
+  "payment_type": "qris",
+  "transaction_time": "2026-09-21 14:00:00"
+}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL KANAN: HASIL SIGNATURE -->
+                <div class="card output-card">
+                    <div class="card-header">
+                        <h2>🎯 Hasil Signature</h2>
+                        <span id="calcTimeBadge" class="badge-pill rec">Realtime</span>
+                    </div>
+
+                    <div class="card-body signatures-container">
+                        <!-- Result 1: Hex (Lowercase) -->
+                        <div class="sig-result-item">
+                            <div class="sig-header">
+                                <span class="sig-label">HEXADECIMAL (Lowercase)</span>
+                                <span class="badge-pill">Standar Umum API</span>
+                            </div>
+                            <div class="sig-display">
+                                <input type="text" id="outHexLower" class="sig-input" readonly>
+                                <button type="button" class="btn btn-sm success-btn copy-btn" data-target="outHexLower">📋 Salin</button>
+                            </div>
+                        </div>
+
+                        <!-- Result 2: Hex (Uppercase) -->
+                        <div class="sig-result-item">
+                            <div class="sig-header">
+                                <span class="sig-label">HEXADECIMAL (Uppercase)</span>
+                                <span class="badge-pill">Midtrans / SNAP BI</span>
+                            </div>
+                            <div class="sig-display">
+                                <input type="text" id="outHexUpper" class="sig-input" readonly>
+                                <button type="button" class="btn btn-sm secondary-btn copy-btn" data-target="outHexUpper">📋 Salin</button>
+                            </div>
+                        </div>
+
+                        <!-- Result 3: Base64 -->
+                        <div class="sig-result-item">
+                            <div class="sig-header">
+                                <span class="sig-label">BASE64</span>
+                                <span class="badge-pill">AWS / Xendit / GCP</span>
+                            </div>
+                            <div class="sig-display">
+                                <input type="text" id="outBase64" class="sig-input" readonly>
+                                <button type="button" class="btn btn-sm secondary-btn copy-btn" data-target="outBase64">📋 Salin</button>
+                            </div>
+                        </div>
+
+                        <!-- Result 4: Base64URL -->
+                        <div class="sig-result-item">
+                            <div class="sig-header">
+                                <span class="sig-label">BASE64URL (URL-Safe, No Padding)</span>
+                                <span class="badge-pill">JWT Signature</span>
+                            </div>
+                            <div class="sig-display">
+                                <input type="text" id="outBase64Url" class="sig-input" readonly>
+                                <button type="button" class="btn btn-sm secondary-btn copy-btn" data-target="outBase64Url">📋 Salin</button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Verification Header Preview -->
+                        <div class="sig-result-item header-preview-box">
+                            <div class="sig-header">
+                                <span class="sig-label">Contoh HTTP Header Siap Pakai:</span>
+                            </div>
+                            <pre class="header-pre"><code id="httpHeaderSnippet">X-Signature: ...</code></pre>
+                            <div class="footer-actions">
+                                <button type="button" id="btnSendToVerifier" class="link-btn">
+                                    ⚖️ Uji Signature ini di Verifier &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: VERIFIER & MATCHER ================= -->
+        <section id="tab-verifier" class="tab-pane">
+            <div class="verifier-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>⚖️ Verifikasi Signature (Mencocokkan Signature Webhook / API)</h2>
+                        <span class="badge-pill info">Timing-Safe Matcher</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="verifier-grid">
+                            <!-- Left: Expected Signature & Options -->
+                            <div class="verifier-col">
+                                <div class="form-group">
+                                    <label for="verifyExpectedSig" class="form-label">Signature yang Diterima (Expected Signature dari Header):</label>
+                                    <input type="text" id="verifyExpectedSig" class="inspect-input"
+                                        placeholder="Paste signature dari header (misal: 7a8f9c..., t=17..., v1=...)"
+                                        autocomplete="off" spellcheck="false">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="verifySecretKey" class="form-label">Secret Key yang Digunakan:</label>
+                                    <input type="text" id="verifySecretKey" class="inspect-input"
+                                        placeholder="Secret Key yang disepakati..." autocomplete="off" spellcheck="false">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="verifyAlgoSelect" class="form-label">Algoritma HMAC:</label>
+                                    <select id="verifyAlgoSelect" class="select-input">
+                                        <option value="SHA-256" selected>HMAC-SHA256</option>
+                                        <option value="SHA-512">HMAC-SHA512</option>
+                                        <option value="SHA-384">HMAC-SHA384</option>
+                                        <option value="SHA-1">HMAC-SHA1</option>
+                                        <option value="PLAIN-SHA256">Plain SHA-256</option>
+                                        <option value="PLAIN-SHA512">Plain SHA-512</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Right: Raw Message / Payload -->
+                            <div class="verifier-col">
+                                <div class="form-group">
+                                    <label for="verifyPayload" class="form-label">Raw Payload / Body Webhook Persis Seperti Diterima:</label>
+                                    <textarea id="verifyPayload" class="code-textarea" rows="9" spellcheck="false"
+                                        placeholder="Paste body webhook asli di sini (hati-hati spasi dan karakter newline)..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VERIFICATION RESULT BANNER -->
+                        <div id="verifyResultBanner" class="verify-banner idle">
+                            <div class="verify-icon" id="verifyIcon">❓</div>
+                            <div class="verify-text">
+                                <h3 id="verifyTitle">Menunggu Data Verifikasi</h3>
+                                <p id="verifyMessage">Masukkan Expected Signature, Secret Key, dan Payload untuk mencocokkan signature.</p>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Comparison Box (When mismatch or match) -->
+                        <div id="verifyComparisonBox" class="comparison-box hidden">
+                            <div class="comparison-row">
+                                <span class="comp-label">Diterima (Expected):</span>
+                                <span class="comp-value code" id="compExpected">-</span>
+                            </div>
+                            <div class="comparison-row">
+                                <span class="comp-label">Dihitung (Computed):</span>
+                                <span class="comp-value code" id="compComputed">-</span>
+                            </div>
+                            <div id="verifyTroubleshootTip" class="troubleshoot-tip"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: STRING-TO-SIGN BUILDER ================= -->
+        <section id="tab-builder" class="tab-pane">
+            <div class="builder-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🧩 Canonical String-to-Sign Builder</h2>
+                        <span class="badge-pill info">Standar REST API & Gateway</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="section-desc">
+                            Banyak gateway API (seperti SNAP BI ASPI, AWS SigV4, atau DOKU) tidak langsung melakukan HMAC pada body JSON mentah,
+                            melainkan menggabungkan <code>HTTP METHOD + PATH + TIMESTAMP + MINIFIED_BODY_HASH</code>.
+                        </p>
+
+                        <div class="builder-form-grid">
+                            <div class="form-group">
+                                <label for="buildMethod" class="form-label">HTTP Method:</label>
+                                <select id="buildMethod" class="select-input">
+                                    <option value="POST" selected>POST</option>
+                                    <option value="GET">GET</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                    <option value="PATCH">PATCH</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="buildPath" class="form-label">Endpoint Path / URL:</label>
+                                <input type="text" id="buildPath" class="inspect-input" value="/api/v1.0/transfer-va" placeholder="/v1/payments/charge">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="buildTimestamp" class="form-label">ISO8601 Timestamp / Epoch:</label>
+                                <div class="input-with-action">
+                                    <input type="text" id="buildTimestamp" class="inspect-input" placeholder="2026-09-21T14:00:00Z">
+                                    <button type="button" id="btnNowTimestamp" class="btn secondary-btn btn-sm" title="Gunakan waktu sekarang">⏱️ Sekarang</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="buildBody" class="form-label">Request Body (JSON):</label>
+                            <textarea id="buildBody" class="code-textarea" rows="5" placeholder='{"amount": 100000, "partnerReferenceNo": "REF-001"}'>{"amount": 100000, "partnerReferenceNo": "REF-001"}</textarea>
+                        </div>
+
+                        <!-- Hasil String-to-sign -->
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label class="form-label">Hasil String-to-Sign (Canonical String):</label>
+                                <button type="button" id="btnCopyCanonical" class="btn btn-xs secondary-btn">📋 Salin</button>
+                            </div>
+                            <pre class="canonical-preview"><code id="outCanonicalString">-</code></pre>
+                        </div>
+
+                        <div class="builder-actions">
+                            <button type="button" id="btnApplyCanonicalToGen" class="btn primary-btn">
+                                🚀 Gunakan String Ini di Tab Generator &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: BACKEND CODE SNIPPETS ================= -->
+        <section id="tab-code" class="tab-pane">
+            <div class="snippets-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>💻 Kode Verifikasi HMAC di Berbagai Bahasa Backend</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="snippets-tabs">
+                            <div class="snippet-buttons">
+                                <button type="button" class="btn btn-sm snippet-tab-btn active" data-lang="java">Java (Spring Boot)</button>
+                                <button type="button" class="btn btn-sm snippet-tab-btn" data-lang="go">Go (Golang)</button>
+                                <button type="button" class="btn btn-sm snippet-tab-btn" data-lang="python">Python</button>
+                                <button type="button" class="btn btn-sm snippet-tab-btn" data-lang="node">Node.js (Express/NestJS)</button>
+                                <button type="button" class="btn btn-sm snippet-tab-btn" data-lang="php">PHP (Laravel)</button>
+                            </div>
+
+                            <!-- Snippet Java -->
+                            <div class="snippet-content active" id="snippet-java">
+                                <div class="snippet-header">
+                                    <span>Java 8+ / javax.crypto.Mac (Standard JRE)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code>import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat; // Java 17+ atau gunakan apache commons Hex.encodeHexString
+
+public class HmacUtils {
+
+    public static String calculateHmacSHA256(String data, String key) throws Exception {
+        Mac mac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        mac.init(secretKeySpec);
+        byte[] hmacBytes = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+        
+        // Java 17+:
+        return HexFormat.of().formatHex(hmacBytes);
+    }
+
+    // Timing-safe equals untuk mencegah timing attack saat verifikasi webhook
+    public static boolean verifySignature(String expectedSig, String data, String key) {
+        try {
+            String calculated = calculateHmacSHA256(data, key);
+            return MessageDigest.isEqual(
+                expectedSig.getBytes(StandardCharsets.UTF_8),
+                calculated.getBytes(StandardCharsets.UTF_8)
+            );
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}</code></pre>
+                            </div>
+
+                            <!-- Snippet Go -->
+                            <div class="snippet-content" id="snippet-go">
+                                <div class="snippet-header">
+                                    <span>Go (crypto/hmac & crypto/subtle)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code>package main
+
+import (
+    "crypto/hmac"
+    "crypto/sha256"
+    "crypto/subtle"
+    "encoding/hex"
+)
+
+// CalculateHmacSHA256 menghitung signature dalam format hex
+func CalculateHmacSHA256(message, secret string) string {
+    h := hmac.New(sha256.New, []byte(secret))
+    h.Write([]byte(message))
+    return hex.EncodeToString(h.Sum(nil))
+}
+
+// VerifySignature memverifikasi signature dengan timing-safe subtle.ConstantTimeCompare
+func VerifySignature(expectedSig, message, secret string) bool {
+    calculated := CalculateHmacSHA256(message, secret)
+    return subtle.ConstantTimeCompare([]byte(expectedSig), []byte(calculated)) == 1
+}</code></pre>
+                            </div>
+
+                            <!-- Snippet Python -->
+                            <div class="snippet-content" id="snippet-python">
+                                <div class="snippet-header">
+                                    <span>Python 3 (hmac & hashlib)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code>import hmac
+import hashlib
+
+def calculate_hmac_sha256(message: str, secret: str) -> str:
+    key_bytes = secret.encode('utf-8')
+    msg_bytes = message.encode('utf-8')
+    return hmac.new(key_bytes, msg_bytes, hashlib.sha256).hexdigest()
+
+def verify_signature(expected_sig: str, message: str, secret: str) -> bool:
+    calculated = calculate_hmac_sha256(message, secret)
+    # Gunakan hmac.compare_digest untuk mencegah timing attack
+    return hmac.compare_digest(expected_sig, calculated)</code></pre>
+                            </div>
+
+                            <!-- Snippet Node.js -->
+                            <div class="snippet-content" id="snippet-node">
+                                <div class="snippet-header">
+                                    <span>Node.js (crypto.createHmac & timingSafeEqual)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code>const crypto = require('crypto');
+
+function calculateHmacSHA256(message, secret) {
+    return crypto
+        .createHmac('sha256', secret)
+        .update(message, 'utf8')
+        .digest('hex');
+}
+
+function verifySignature(expectedSig, message, secret) {
+    const calculated = calculateHmacSHA256(message, secret);
+    
+    // Cegah timing attacks dengan crypto.timingSafeEqual
+    const expectedBuf = Buffer.from(expectedSig);
+    const calculatedBuf = Buffer.from(calculated);
+    
+    if (expectedBuf.length !== calculatedBuf.length) {
+        return false;
+    }
+    return crypto.timingSafeEqual(expectedBuf, calculatedBuf);
+}</code></pre>
+                            </div>
+
+                            <!-- Snippet PHP -->
+                            <div class="snippet-content" id="snippet-php">
+                                <div class="snippet-header">
+                                    <span>PHP (hash_hmac & hash_equals)</span>
+                                    <button type="button" class="btn btn-xs copy-snippet-btn">📋 Salin</button>
+                                </div>
+                                <pre><code>&lt;?php
+
+function calculateHmacSHA256(string $message, string $secret): string {
+    return hash_hmac('sha256', $message, $secret);
+}
+
+function verifySignature(string $expectedSig, string $message, string $secret): bool {
+    $calculated = calculateHmacSHA256($message, $secret);
+    // Selalu gunakan hash_equals untuk membandingkan hash/signature
+    return hash_equals($expectedSig, $calculated);
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
