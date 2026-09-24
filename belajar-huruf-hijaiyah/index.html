@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Belajar & Bermain Hijaiyah</title>
+
+    <!-- Font ramah anak -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Nunito:wght@700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'nunito': ['Nunito', 'sans-serif'],
+                        'arabic': ['Amiri', 'serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            1: '#FFB3BA', // Pink
+                            2: '#FFDFBA', // Orange
+                            3: '#FFFFBA', // Yellow
+                            4: '#BAFFC9', // Green
+                            5: '#BAE1FF', // Blue
+                            6: '#E8BAFF', // Purple
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #334155;
+        }
+
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Animasi */
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.15) translateY(-10px);
+            }
+
+            60% {
+                transform: scale(0.95) translateY(5px);
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px) rotate(-5deg);
+            }
+
+            75% {
+                transform: translateX(10px) rotate(5deg);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s infinite ease-in-out;
+        }
+
+        /* Style Tombol 3D */
+        .btn-3d {
+            transition: all 0.1s;
+        }
+
+        .btn-3d:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 0 currentcolor !important;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center no-select pb-12">
+
+    <!-- SCREEN: MENU UTAMA -->
+    <div id="screen-menu"
+        class="w-full max-w-lg flex flex-col items-center justify-center min-h-screen p-6 text-center">
+        <div
+            class="bg-white/90 backdrop-blur-sm p-8 rounded-[3rem] shadow-2xl border-8 border-white w-full animate-float">
+            <h1 class="text-5xl font-black text-indigo-500 mb-2 drop-shadow-sm leading-tight">
+                Halo Anak Pintar! 👋
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 font-bold">Pilih mode yang kamu inginkan</p>
+
+            <div class="flex flex-col gap-6">
+                <button onclick="goToLearnMode()"
+                    class="btn-3d w-full bg-pastel-4 hover:bg-green-300 text-gray-800 text-3xl font-black py-5 px-8 rounded-full shadow-[0_8px_0_#86efac] border-4 border-white flex justify-center items-center gap-3">
+                    📖 Mulai Belajar
+                </button>
+                <button onclick="goToGameMode()"
+                    class="btn-3d w-full bg-pastel-2 hover:bg-orange-300 text-gray-800 text-3xl font-black py-5 px-8 rounded-full shadow-[0_8px_0_#fdba74] border-4 border-white flex justify-center items-center gap-3">
+                    🎮 Mulai Bermain
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN: MODE BELAJAR -->
+    <div id="screen-learn" class="hidden w-full max-w-5xl flex-col items-center pt-6 px-4">
+        <header class="text-center mb-8 relative w-full flex flex-col items-center gap-4">
+            <div class="flex items-center justify-between w-full max-w-5xl px-4">
+                <button onclick="goToMenu()"
+                    class="btn-3d bg-white text-gray-600 font-bold py-2 px-6 rounded-full shadow-[0_4px_0_#cbd5e1] border-2 border-gray-100 flex items-center gap-2">
+                    ⬅️ Kembali
+                </button>
+                <button onclick="speak('Ayo belajar huruf Hijaiyah, klik hurufnya ya!')"
+                    class="btn-3d bg-pastel-3 text-yellow-800 font-bold py-2 px-6 rounded-full shadow-[0_4px_0_#fde047] border-2 border-white flex items-center gap-2">
+                    🔊 Bantuan
+                </button>
+            </div>
+            <h1
+                class="text-4xl md:text-5xl font-black text-white bg-indigo-500 inline-block px-10 py-4 rounded-full border-4 border-white shadow-lg">
+                Mode Belajar 📖
+            </h1>
+        </header>
+
+        <!-- Container Grid Hijaiyah -->
+        <div id="hijaiyah-grid"
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 md:gap-6 w-full px-2" dir="rtl">
+            <!-- Isi dibuat lewat JS -->
+        </div>
+    </div>
+
+    <!-- SCREEN: MODE BERMAIN -->
+    <div id="screen-game" class="hidden w-full max-w-4xl flex-col items-center justify-center min-h-screen p-4">
+        <header class="w-full flex items-center justify-between mb-8">
+            <button onclick="goToMenu()"
+                class="btn-3d bg-white text-gray-600 font-bold py-2 px-6 rounded-full shadow-[0_4px_0_#cbd5e1] border-2 border-gray-100 flex items-center gap-2">
+                ⬅️ Kembali
+            </button>
+            <h2
+                class="text-2xl md:text-3xl font-black text-white bg-orange-400 px-6 py-2 rounded-full border-4 border-white shadow-md">
+                Tebak Huruf 🎮
+            </h2>
+        </header>
+
+        <div
+            class="bg-white/95 p-6 md:p-10 rounded-[3rem] shadow-2xl border-8 border-white w-full text-center flex flex-col items-center">
+
+            <p class="text-2xl md:text-3xl text-gray-700 font-bold mb-4">Temukan huruf:</p>
+            <div class="flex items-center gap-4 mb-10">
+                <h1 id="game-question" class="text-5xl md:text-7xl font-black text-indigo-600 drop-shadow-sm">
+                    ?
+                </h1>
+                <button onclick="repeatQuestion()"
+                    class="btn-3d bg-pastel-3 hover:bg-yellow-300 text-yellow-800 font-bold p-3 md:p-4 rounded-full shadow-[0_6px_0_#fde047] border-4 border-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 md:h-10 md:w-10" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Opsi Jawaban Game -->
+            <div id="game-options" class="flex flex-row justify-center gap-4 md:gap-8 w-full flex-wrap" dir="rtl">
+                <!-- Tombol jawaban dibuat lewat JS -->
+            </div>
+
+            <div id="game-feedback" class="mt-8 text-2xl font-bold h-8 transition-all"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data Huruf Hijaiyah Lengkap
+        const hijaiyahData = [
+            { a: 'ا', l: 'Alif' }, { a: 'ب', l: 'Ba' }, { a: 'ت', l: 'Ta' },
+            { a: 'ث', l: 'Tsa' }, { a: 'ج', l: 'Jim' }, { a: 'ح', l: 'Ha' },
+            { a: 'خ', l: 'Kho' }, { a: 'د', l: 'Dal' }, { a: 'ذ', l: 'Dzal' },
+            { a: 'ر', l: 'Ro' }, { a: 'ز', l: 'Zai' }, { a: 'س', l: 'Sin' },
+            { a: 'ش', l: 'Syin' }, { a: 'ص', l: 'Shod' }, { a: 'ض', l: 'Dhod' },
+            { a: 'ط', l: 'Tho' }, { a: 'ظ', l: 'Zho' }, { a: 'ع', l: 'Ain' },
+            { a: 'غ', l: 'Ghoin' }, { a: 'ف', l: 'Fa' }, { a: 'ق', l: 'Qof' },
+            { a: 'ك', l: 'Kaf' }, { a: 'ل', l: 'Lam' }, { a: 'م', l: 'Mim' },
+            { a: 'ن', l: 'Nun' }, { a: 'و', l: 'Wau' }, { a: 'هـ', l: 'Ha' },
+            { a: 'ي', l: 'Ya' }
+        ];
+
+        // Palet Warna
+        const colorThemes = [
+            { bg: 'bg-pastel-1', shadow: 'shadow-[0_8px_0_#fca5a5]' },
+            { bg: 'bg-pastel-2', shadow: 'shadow-[0_8px_0_#fdba74]' },
+            { bg: 'bg-pastel-4', shadow: 'shadow-[0_8px_0_#86efac]' },
+            { bg: 'bg-pastel-5', shadow: 'shadow-[0_8px_0_#93c5fd]' },
+            { bg: 'bg-pastel-6', shadow: 'shadow-[0_8px_0_#d8b4fe]' }
+        ];
+
+        let currentTargetLetter = null;
+        let isSpeaking = false;
+
+        function showScreen(screenId) {
+            document.getElementById('screen-menu').classList.add('hidden');
+            document.getElementById('screen-learn').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+
+            document.getElementById('screen-menu').classList.remove('flex');
+            document.getElementById('screen-learn').classList.remove('flex');
+            document.getElementById('screen-game').classList.remove('flex');
+
+            const target = document.getElementById(screenId);
+            target.classList.remove('hidden');
+            target.classList.add('flex');
+        }
+
+        function goToMenu() {
+            window.speechSynthesis.cancel();
+            showScreen('screen-menu');
+        }
+
+        function speak(text, callback = null) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel(); // Stop current speech
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.1;
+
+            utterance.onend = () => {
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function goToLearnMode() {
+            showScreen('screen-learn');
+            renderLearnGrid();
+            speak('Mode belajar. Klik huruf untuk mendengarkan suaranya.');
+        }
+
+        function renderLearnGrid() {
+            const grid = document.getElementById('hijaiyah-grid');
+            grid.innerHTML = '';
+
+            hijaiyahData.forEach((item, index) => {
+                const theme = colorThemes[index % colorThemes.length];
+                const card = document.createElement('div');
+
+                card.id = `learn-card-${index}`;
+                card.className = `btn-3d flex flex-col items-center justify-center p-4 rounded-[2rem] cursor-pointer ${theme.bg} ${theme.shadow} border-4 border-white h-32 md:h-40`;
+                card.dir = "ltr";
+
+                card.innerHTML = `
+                    <div class="font-arabic text-6xl md:text-7xl text-gray-800 mb-2 leading-none mt-2 drop-shadow-md">
+                        ${item.a}
+                    </div>
+                    <div class="font-nunito font-bold text-gray-700 text-lg md:text-xl bg-white/70 px-4 py-1 rounded-full mt-auto shadow-sm">
+                        ${item.l}
+                    </div>
+                `;
+
+                card.onclick = () => {
+                    // Animasi Pop
+                    card.classList.remove('animate-pop');
+                    void card.offsetWidth; // trigger reflow
+                    card.classList.add('animate-pop');
+
+                    speak(item.l);
+                };
+
+                grid.appendChild(card);
+            });
+        }
+
+        function goToGameMode() {
+            showScreen('screen-game');
+            speak('Mode bermain. Ayo tebak hurufnya!', () => {
+                generateQuestion();
+            });
+        }
+
+        function generateQuestion() {
+            document.getElementById('game-feedback').innerText = "";
+            document.getElementById('game-feedback').classList.remove('text-red-500', 'text-green-500');
+
+            // Acak array dan ambil 3 huruf
+            const shuffled = [...hijaiyahData].sort(() => 0.5 - Math.random());
+            const options = shuffled.slice(0, 3);
+
+            // Pilih 1 target
+            currentTargetLetter = options[Math.floor(Math.random() * 3)];
+
+            // Tampilkan pertanyaan
+            document.getElementById('game-question').innerText = currentTargetLetter.l;
+
+            // Render opsi
+            const optionsContainer = document.getElementById('game-options');
+            optionsContainer.innerHTML = '';
+
+            options.forEach((opt, index) => {
+                const theme = colorThemes[index % colorThemes.length];
+                const btn = document.createElement('div');
+                btn.id = `opt-btn-${index}`;
+                btn.className = `btn-3d flex items-center justify-center cursor-pointer ${theme.bg} ${theme.shadow} border-4 border-white rounded-[2.5rem] w-28 h-28 md:w-40 md:h-40`;
+
+                btn.innerHTML = `
+                    <span class="font-arabic text-7xl md:text-8xl text-gray-800 drop-shadow-md pb-2">
+                        ${opt.a}
+                    </span>
+                `;
+
+                btn.onclick = () => checkAnswer(opt, btn.id);
+                optionsContainer.appendChild(btn);
+            });
+
+            repeatQuestion();
+        }
+
+        function repeatQuestion() {
+            if (currentTargetLetter) {
+                speak(`Temukan huruf ${currentTargetLetter.l}`);
+            }
+        }
+
+        function checkAnswer(selectedOption, btnId) {
+            const btn = document.getElementById(btnId);
+            const feedback = document.getElementById('game-feedback');
+
+            if (selectedOption.l === currentTargetLetter.l) {
+                // Jawaban Benar
+                btn.classList.add('animate-pop');
+                feedback.innerText = "Yey! Benar! 🎉";
+                feedback.className = "mt-8 text-2xl font-bold h-8 text-green-500 animate-pop";
+
+                speak(`Pintar! Itu huruf ${currentTargetLetter.l}`, () => {
+                    setTimeout(generateQuestion, 800);
+                });
+            } else {
+                // Jawaban Salah
+                btn.classList.remove('animate-shake');
+                void btn.offsetWidth;
+                btn.classList.add('animate-shake');
+
+                feedback.innerText = "Ups! Coba lagi ya 🤔";
+                feedback.className = "mt-8 text-2xl font-bold h-8 text-red-500 animate-pop";
+
+                speak("Ups, coba lagi");
+            }
+        }
+    </script>
+</body>
+
+</html>
