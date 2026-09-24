@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pintar Emosi</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            blue: '#bfdbfe',
+                            pink: '#ffc6ff',
+                            orange: '#ffdfba'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+            transition: background-color 0.5s ease;
+        }
+
+        .btn-bouncy {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:active:not(:disabled) {
+            transform: translateY(8px) scale(0.95);
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+            transform: none !important;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.4s ease-out;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-10px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s;
+        }
+
+        @keyframes successPop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2) rotate(5deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .animate-success {
+            animation: successPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body id="main-body" class="bg-indigo-50 min-h-screen text-gray-800 flex flex-col font-sans">
+
+    <div class="max-w-4xl mx-auto px-4 py-6 flex flex-col w-full flex-1">
+
+        <header class="text-center mb-6 z-10 relative">
+            <h1 class="text-4xl md:text-5xl font-black text-indigo-500 mb-6 drop-shadow-sm animate-float">
+                💖 Pintar Emosi 😊
+            </h1>
+
+            <div class="flex justify-center gap-4 bg-white/80 p-2 rounded-full shadow-sm max-w-sm mx-auto">
+                <button onclick="switchMode('learn')" id="btn-mode-learn"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-indigo-400 text-white shadow-[0_4px_0_#818cf8] transition-all btn-bouncy">
+                    Belajar
+                </button>
+                <button onclick="switchMode('play')" id="btn-mode-play"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all">
+                    Bermain
+                </button>
+            </div>
+        </header>
+
+        <main id="mode-learn" class="flex-1 flex flex-col z-10">
+            <div class="text-center mb-6">
+                <p
+                    class="text-xl font-bold text-gray-600 bg-white inline-block px-6 py-2 rounded-full shadow-sm border-2 border-indigo-100">
+                    Tekan wajahnya untuk belajar! 👇
+                </p>
+            </div>
+
+            <div id="learn-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 pb-10 max-w-3xl mx-auto w-full">
+                <!-- Diisi otomatis oleh JavaScript -->
+            </div>
+        </main>
+
+        <main id="mode-play" class="flex-1 flex flex-col hidden pb-10 w-full z-10">
+
+            <div
+                class="flex justify-between items-center bg-white/90 p-4 rounded-2xl shadow-sm mb-4 border-4 border-white max-w-2xl mx-auto w-full">
+                <div class="text-xl font-black text-indigo-500 flex items-center gap-2">
+                    <span>⭐ Skor:</span>
+                    <span id="score-display" class="text-2xl">0</span>
+                </div>
+                <button onclick="repeatQuestion()"
+                    class="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-xl font-bold btn-bouncy flex items-center gap-2 border-2 border-white shadow-sm">
+                    🔊 Ulangi Suara
+                </button>
+            </div>
+
+            <div
+                class="bg-white/90 p-6 md:p-8 rounded-[2rem] shadow-sm text-center mb-6 border-b-8 border-white flex-1 flex flex-col justify-center items-center max-w-2xl mx-auto w-full">
+
+                <div class="relative mb-4">
+                    <span id="play-character"
+                        class="text-8xl md:text-9xl drop-shadow-lg animate-float inline-block">🤔</span>
+                </div>
+
+                <p id="instruction-text"
+                    class="text-2xl md:text-3xl font-bold text-gray-700 leading-snug mb-8 min-h-[4rem]">
+                    Mendengarkan...
+                </p>
+
+                <div id="play-choices" class="flex flex-wrap justify-center gap-4 w-full">
+                    <!-- Tombol pilihan dimuat disini -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const emotionsData = [
+            { id: 'senang', name: 'Senang', emoji: '😄', desc: 'Yey, aku merasa gembira!', bgClass: 'bg-yellow-200', bodyColor: '#fef08a' },
+            { id: 'sedih', name: 'Sedih', emoji: '😢', desc: 'Huhu, aku merasa sedih.', bgClass: 'bg-blue-200', bodyColor: '#bfdbfe' },
+            { id: 'marah', name: 'Marah', emoji: '😡', desc: 'Grrr, aku sedang marah!', bgClass: 'bg-red-200', bodyColor: '#fecaca' },
+            { id: 'kaget', name: 'Kaget', emoji: '😲', desc: 'Wah! Aku terkejut!', bgClass: 'bg-orange-200', bodyColor: '#fed7aa' },
+            { id: 'takut', name: 'Takut', emoji: '😨', desc: 'Hii, aku merasa takut.', bgClass: 'bg-teal-200', bodyColor: '#99f6e4' },
+            { id: 'mengantuk', name: 'Mengantuk', emoji: '😴', desc: 'Hoam, aku ingin tidur.', bgClass: 'bg-indigo-200', bodyColor: '#c7d2fe' }
+        ];
+
+        let currentMode = 'learn';
+        let score = 0;
+        let currentTarget = null;
+        let audioCtx = null;
+
+        const mainBody = document.getElementById('main-body');
+        const defaultBodyColor = '#eef2ff'; // indigo-50
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSFX(type) {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            if (type === 'success') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.5, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+                osc.start(now);
+                osc.stop(now + 0.5);
+
+            } else if (type === 'fail') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.setValueAtTime(250, now);
+                osc.frequency.linearRampToValueAtTime(150, now + 0.3);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.3, now + 0.1);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        function speak(text, callback = null) {
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.pitch = 1.3;
+            utterance.rate = 0.9;
+
+            utterance.onend = () => {
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function renderLearnMode() {
+            const grid = document.getElementById('learn-grid');
+            grid.innerHTML = '';
+
+            emotionsData.forEach(emo => {
+                const card = document.createElement('button');
+                card.className = `${emo.bgClass} flex flex-col items-center justify-center p-6 md:p-8 rounded-[2rem] border-4 border-white btn-bouncy`;
+
+                card.innerHTML = `
+                    <span class="text-6xl md:text-8xl mb-4 drop-shadow-md">${emo.emoji}</span>
+                    <span class="text-2xl md:text-3xl font-black text-gray-700 capitalize">${emo.name}</span>
+                `;
+
+                card.onclick = () => {
+                    initAudio();
+                    card.classList.remove('animate-pop');
+                    void card.offsetWidth;
+                    card.classList.add('animate-pop');
+
+                    mainBody.style.backgroundColor = emo.bodyColor;
+
+                    speak(`${emo.name}. ${emo.desc}`);
+                };
+
+                grid.appendChild(card);
+            });
+        }
+
+        function startPlayMode() {
+            initAudio();
+            score = 0;
+            document.getElementById('score-display').textContent = score;
+            mainBody.style.backgroundColor = defaultBodyColor;
+            document.getElementById('play-character').textContent = '🤔';
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            const instructionText = document.getElementById('instruction-text');
+            const playChoices = document.getElementById('play-choices');
+            const playCharacter = document.getElementById('play-character');
+
+            playChoices.innerHTML = '';
+            instructionText.textContent = "Mendengarkan...";
+            mainBody.style.backgroundColor = defaultBodyColor;
+            playCharacter.textContent = '🤔';
+            playCharacter.classList.add('animate-float');
+            playCharacter.classList.remove('animate-success');
+
+            const randomIndex = Math.floor(Math.random() * emotionsData.length);
+            currentTarget = emotionsData[randomIndex];
+
+            let wrongOptions = emotionsData.filter(e => e.id !== currentTarget.id);
+            wrongOptions = wrongOptions.sort(() => 0.5 - Math.random()).slice(0, 2);
+
+            let displayOptions = [currentTarget, ...wrongOptions].sort(() => 0.5 - Math.random());
+
+            displayOptions.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = `bg-white flex-1 min-w-[100px] flex flex-col items-center justify-center p-6 rounded-[2rem] border-4 border-gray-100 shadow-sm btn-bouncy`;
+
+                btn.innerHTML = `
+                    <span class="text-6xl md:text-7xl drop-shadow-sm">${option.emoji}</span>
+                `;
+
+                btn.disabled = true;
+                btn.onclick = () => checkAnswer(option.id, btn);
+                playChoices.appendChild(btn);
+            });
+
+            const questionText = `Coba cari, mana wajah yang sedang ${currentTarget.name}?`;
+            speak(questionText, () => {
+                instructionText.innerHTML = `Mana wajah yang sedang <span class="text-indigo-600 font-black">${currentTarget.name}</span>?`;
+                const btns = playChoices.querySelectorAll('button');
+                btns.forEach(b => b.disabled = false);
+            });
+        }
+
+        function repeatQuestion() {
+            if (currentTarget) {
+                const instructionText = document.getElementById('instruction-text');
+                const playChoices = document.getElementById('play-choices');
+                const btns = playChoices.querySelectorAll('button');
+
+                btns.forEach(b => b.disabled = true);
+                instructionText.textContent = "Mendengarkan...";
+
+                const questionText = `Coba cari, mana wajah yang sedang ${currentTarget.name}?`;
+                speak(questionText, () => {
+                    instructionText.innerHTML = `Mana wajah yang sedang <span class="text-indigo-600 font-black">${currentTarget.name}</span>?`;
+                    btns.forEach(b => b.disabled = false);
+                });
+            }
+        }
+
+        function checkAnswer(selectedId, btnElement) {
+            const btns = document.getElementById('play-choices').querySelectorAll('button');
+            const instructionText = document.getElementById('instruction-text');
+            const playCharacter = document.getElementById('play-character');
+
+            if (selectedId === currentTarget.id) {
+                playSFX('success');
+
+                btnElement.classList.remove('bg-white', 'border-gray-100');
+                btnElement.classList.add('bg-green-300', 'border-green-100', 'animate-success');
+
+                playCharacter.textContent = currentTarget.emoji;
+                playCharacter.classList.remove('animate-float');
+                void playCharacter.offsetWidth;
+                playCharacter.classList.add('animate-success');
+                mainBody.style.backgroundColor = currentTarget.bodyColor;
+
+                btns.forEach(b => { b.disabled = true; b.onclick = null; });
+
+                instructionText.textContent = `🎉 Pintar! Itu wajah ${currentTarget.name}!`;
+
+                speak(`Pintar! Itu wajah ${currentTarget.name}!`, () => {
+                    score += 10;
+                    document.getElementById('score-display').textContent = score;
+                    setTimeout(nextQuestion, 2000);
+                });
+
+            } else {
+                playSFX('fail');
+
+                btnElement.classList.remove('animate-shake');
+                void btnElement.offsetWidth;
+                btnElement.classList.add('animate-shake');
+
+                speak("Ups, kurang tepat, coba lagi!");
+            }
+        }
+
+        function switchMode(mode) {
+            window.speechSynthesis.cancel();
+            currentMode = mode;
+
+            const btnLearn = document.getElementById('btn-mode-learn');
+            const btnPlay = document.getElementById('btn-mode-play');
+            const viewLearn = document.getElementById('mode-learn');
+            const viewPlay = document.getElementById('mode-play');
+
+            if (mode === 'learn') {
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-indigo-400 text-white shadow-[0_4px_0_#818cf8] transition-all btn-bouncy";
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+
+                viewLearn.classList.remove('hidden');
+                viewPlay.classList.add('hidden');
+                mainBody.style.backgroundColor = defaultBodyColor;
+
+                speak("Tekan wajahnya untuk belajar!");
+            } else {
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-teal-400 text-white shadow-[0_4px_0_#2dd4bf] transition-all btn-bouncy";
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+
+                viewLearn.classList.add('hidden');
+                viewPlay.classList.remove('hidden');
+
+                startPlayMode();
+            }
+        }
+
+        // Initialize App
+        window.onload = () => {
+            renderLearnMode();
+        };
+    </script>
+</body>
+
+</html>
