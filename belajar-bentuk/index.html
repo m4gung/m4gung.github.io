@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pintar Bentuk Geometri</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Fredoka+One&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'nunito': ['Nunito', 'sans-serif'],
+                        'display': ['Fredoka One', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            touch-action: none;
+            /* Mencegah pull-to-refresh dan scrolling tak sengaja saat drag di HP */
+            -webkit-tap-highlight-color: transparent;
+            background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+            background-image: radial-gradient(#f0abfc 3px, transparent 3px), radial-gradient(#f0abfc 3px, transparent 3px);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            min-height: 100vh;
+            overflow: hidden;
+            /* Penting untuk game drag & drop */
+            color: #334155;
+        }
+
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.2) translateY(-5px);
+            }
+
+            60% {
+                transform: scale(0.9) translateY(2px);
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0) scale(1);
+            }
+
+            25% {
+                transform: translateX(-10px) rotate(-5deg) scale(1);
+            }
+
+            75% {
+                transform: translateX(10px) rotate(5deg) scale(1);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s infinite ease-in-out;
+        }
+
+        .btn-3d {
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-3d:active:not(.dragging) {
+            transform: translateY(8px) !important;
+            box-shadow: 0 0px 0 0 currentcolor !important;
+        }
+
+        /* Spesifik untuk objek yang bisa di drag */
+        .draggable {
+            touch-action: none;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            /* Transisi kembali ke asal */
+        }
+
+        .draggable.dragging {
+            transition: none;
+            /* Matikan transisi saat ditarik agar responsif mengikuti jari */
+            cursor: grabbing;
+            z-index: 100;
+            filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.2));
+            transform: scale(1.1);
+        }
+
+        .target-slot {
+            transition: all 0.3s ease;
+        }
+
+        .target-active {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center no-select pb-6">
+
+    <!-- SCREEN: MENU UTAMA -->
+    <div id="screen-menu"
+        class="w-full max-w-2xl flex flex-col items-center justify-center min-h-screen p-6 text-center transition-all duration-300">
+        <div
+            class="bg-white/90 backdrop-blur-md p-8 md:p-12 rounded-[3rem] shadow-2xl border-8 border-white w-full animate-float">
+            <h1 class="font-display text-5xl md:text-6xl text-fuchsia-500 mb-4 drop-shadow-sm leading-tight">
+                Bentuk Geometri 🔺
+            </h1>
+            <p class="text-2xl text-gray-600 mb-10 font-bold">Ayo pasangkan bentuknya!</p>
+
+            <div class="flex flex-col md:flex-row justify-center gap-6">
+                <button onclick="goToLearn()"
+                    class="btn-3d flex-1 bg-green-300 hover:bg-green-400 text-green-900 text-3xl font-black py-8 px-4 rounded-[2.5rem] shadow-[0_10px_0_#16a34a] border-4 border-white flex flex-col items-center gap-3">
+                    <span class="text-6xl drop-shadow-md">👀</span> Belajar Bentuk
+                </button>
+                <button onclick="goToGame()"
+                    class="btn-3d flex-1 bg-yellow-300 hover:bg-yellow-400 text-yellow-900 text-3xl font-black py-8 px-4 rounded-[2.5rem] shadow-[0_10px_0_#ca8a04] border-4 border-white flex flex-col items-center gap-3">
+                    <span class="text-6xl drop-shadow-md">🧩</span> Main Puzzle
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN: BELAJAR -->
+    <div id="screen-learn" class="hidden w-full max-w-4xl flex-col items-center pt-8 px-4 min-h-screen">
+        <header class="w-full flex items-center justify-between mb-8">
+            <button onclick="goToMenu()"
+                class="btn-3d bg-white text-gray-600 font-bold text-xl py-3 px-6 rounded-full shadow-[0_8px_0_#cbd5e1] border-4 border-white flex items-center gap-2 z-10">
+                <span>⬅️</span> Kembali
+            </button>
+            <h2
+                class="font-display text-3xl text-white bg-green-500 px-6 py-2 rounded-full border-4 border-white shadow-lg">
+                Belajar!</h2>
+        </header>
+
+        <div id="learn-grid" class="flex flex-wrap justify-center gap-6 w-full pb-10">
+            <!-- Diisi oleh JS -->
+        </div>
+    </div>
+
+    <!-- SCREEN: GAME (PUZZLE DRAG & DROP) -->
+    <div id="screen-game" class="hidden w-full max-w-4xl flex-col items-center pt-8 px-4 min-h-screen flex-1">
+        <header class="w-full flex items-center justify-between mb-4">
+            <button onclick="goToMenu()"
+                class="btn-3d bg-white text-gray-600 font-bold text-xl py-3 px-6 rounded-full shadow-[0_8px_0_#cbd5e1] border-4 border-white flex items-center gap-2 z-10">
+                <span>⬅️</span> Kembali
+            </button>
+            <h2
+                class="font-display text-3xl text-white bg-yellow-500 px-6 py-2 rounded-full border-4 border-white shadow-lg">
+                Pasangkan!</h2>
+            <!-- Spacer for centering -->
+            <div class="w-24 hidden md:block"></div>
+        </header>
+
+        <div class="w-full flex-1 flex flex-col justify-between max-w-3xl pb-6">
+
+            <!-- Tempat Bayangan (Target Zone) -->
+            <div
+                class="bg-white/70 p-6 rounded-[2.5rem] border-4 border-white shadow-inner mb-4 flex-1 flex flex-col justify-center">
+                <p class="text-center text-xl font-bold text-gray-500 mb-4 font-display">Tarik ke cetakannya:</p>
+                <div id="target-zone" class="flex justify-center gap-4 md:gap-8 flex-wrap">
+                    <!-- Cetakan abu-abu dirender disini -->
+                </div>
+            </div>
+
+            <!-- Pesan Balikan -->
+            <div id="game-feedback"
+                class="h-12 text-3xl font-display text-center flex items-center justify-center w-full mb-4"></div>
+
+            <!-- Tempat Bentuk Berwarna (Pick Zone) -->
+            <div
+                class="bg-indigo-100/80 p-6 rounded-[2.5rem] border-4 border-white shadow-xl h-48 md:h-56 relative flex items-center justify-center">
+                <div id="pick-zone" class="flex justify-center gap-4 md:gap-8 flex-wrap w-full absolute">
+                    <!-- Bentuk-bentuk yang bisa didrag dirender disini -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Data Bentuk dengan SVG path murni agar mudah dimanipulasi warnanya
+        // Menggunakan viewBox 0 0 100 100
+        const shapesData = [
+            {
+                id: 'lingkaran', name: 'Lingkaran', color: '#ef4444',
+                svg: '<circle cx="50" cy="50" r="45" fill="currentColor"/>'
+            },
+            {
+                id: 'persegi', name: 'Persegi', color: '#3b82f6',
+                svg: '<rect x="10" y="10" width="80" height="80"  fill="currentColor"/>'
+            },
+            {
+                id: 'segitiga', name: 'Segitiga', color: '#22c55e',
+                svg: '<polygon points="50,10 90,85 10,85" stroke-linejoin="round" fill="currentColor"/>'
+            },
+            {
+                id: 'bintang', name: 'Bintang', color: '#eab308',
+                svg: '<polygon points="50,5 61,35 92,35 67,54 76,85 50,66 24,85 33,54 8,35 39,35" stroke-linejoin="round" fill="currentColor"/>'
+            },
+            {
+                id: 'hati', name: 'Hati', color: '#ec4899',
+                svg: '<polygon points="50.0,29.1 50.0,28.7 50.2,27.7 50.5,26.1 51.2,24.0 52.2,21.6 53.7,19.0 55.7,16.5 58.1,14.1 61.0,12.2 64.1,10.8 67.6,10.0 71.2,10.0 74.8,10.7 78.3,12.1 81.5,14.3 84.4,17.0 86.8,20.2 88.5,23.9 89.6,27.8 90.0,31.9 89.6,36.0 88.5,40.2 86.8,44.2 84.4,48.2 81.5,52.0 78.3,55.8 74.8,59.3 71.2,62.8 67.6,66.2 64.1,69.5 61.0,72.7 58.1,75.8 55.7,78.7 53.7,81.4 52.2,83.9 51.2,86.0 50.5,87.7 50.2,89.0 50.0,89.7 50.0,90.0 50.0,89.7 49.8,89.0 49.5,87.7 48.8,86.0 47.8,83.9 46.3,81.4 44.3,78.7 41.9,75.8 39.0,72.7 35.9,69.5 32.4,66.2 28.8,62.8 25.2,59.3 21.7,55.8 18.5,52.0 15.6,48.2 13.2,44.2 11.5,40.2 10.4,36.0 10.0,31.9 10.4,27.8 11.5,23.9 13.2,20.2 15.6,17.0 18.5,14.3 21.7,12.1 25.2,10.7 28.8,10.0 32.4,10.0 35.9,10.8 39.0,12.2 41.9,14.1 44.3,16.5 46.3,19.0 47.8,21.6 48.8,24.0 49.5,26.1 49.8,27.7 50.0,28.7" fill="currentColor"    stroke-width="1" />'
+            }
+        ];
+
+        let matchedCount = 0;
+        let totalToMatch = 3; // Menampilkan 3 bentuk setiap ronde agar layar tidak penuh
+        let isSpeaking = false;
+
+        // Fungsi Suara (Text-to-Speech)
+        function speak(text, callback = null) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.2;
+
+            utterance.onstart = () => { isSpeaking = true; };
+            utterance.onend = () => {
+                isSpeaking = false;
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Navigasi Layar
+        function hideAllScreens() {
+            ['screen-menu', 'screen-learn', 'screen-game'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+                document.getElementById(id).classList.remove('flex');
+            });
+        }
+
+        function goToMenu() {
+            hideAllScreens();
+            const el = document.getElementById('screen-menu');
+            el.classList.remove('hidden'); el.classList.add('flex');
+            window.speechSynthesis.cancel();
+        }
+
+        /* ================= MODE BELAJAR ================= */
+        function goToLearn() {
+            hideAllScreens();
+            const el = document.getElementById('screen-learn');
+            el.classList.remove('hidden'); el.classList.add('flex');
+
+            speak("Ayo tekan bentuknya!");
+            renderLearnGrid();
+        }
+
+        function renderLearnGrid() {
+            const grid = document.getElementById('learn-grid');
+            grid.innerHTML = '';
+
+            shapesData.forEach(shape => {
+                const btn = document.createElement('button');
+                btn.className = `btn-3d w-36 h-36 md:w-44 md:h-44 bg-white rounded-[2.5rem] border-8 border-white shadow-xl flex items-center justify-center p-4 relative`;
+
+                // Set warna dari currentColor melalui inline style wrapper
+                btn.innerHTML = `
+                    <div style="color: ${shape.color}" class="w-full h-full drop-shadow-md">
+                        <svg viewBox="0 0 100 100" class="w-full h-full animate-float" style="animation-delay: ${Math.random()}s">${shape.svg}</svg>
+                    </div>
+                `;
+
+                btn.onclick = () => {
+                    btn.classList.remove('animate-pop');
+                    void btn.offsetWidth;
+                    btn.classList.add('animate-pop');
+                    speak(`Ini bentuk, ${shape.name}`);
+                };
+
+                grid.appendChild(btn);
+            });
+        }
+
+        /* ================= MODE BERMAIN (DRAG & DROP) ================= */
+        // Variabel untuk sistem Drag & Drop manual
+        let draggedElement = null;
+        let startX = 0, startY = 0;
+        let currentTranslateX = 0, currentTranslateY = 0;
+
+        function goToGame() {
+            hideAllScreens();
+            const el = document.getElementById('screen-game');
+            el.classList.remove('hidden'); el.classList.add('flex');
+
+            generateGameRound();
+        }
+
+        function generateGameRound() {
+            matchedCount = 0;
+            const fb = document.getElementById('game-feedback');
+            fb.innerText = "";
+
+            // Acak semua bentuk dan ambil 'totalToMatch' (misal: 3)
+            let shuffled = [...shapesData].sort(() => 0.5 - Math.random());
+            let currentShapes = shuffled.slice(0, totalToMatch);
+
+            // Render Target (Cetakan abu-abu)
+            const targetZone = document.getElementById('target-zone');
+            targetZone.innerHTML = '';
+
+            currentShapes.forEach(shape => {
+                const slot = document.createElement('div');
+                slot.className = `target-slot w-24 h-24 md:w-32 md:h-32 rounded-3xl border-4 border-dashed border-gray-300 flex items-center justify-center bg-gray-100/50`;
+                slot.setAttribute('data-target-id', shape.id);
+
+                slot.innerHTML = `
+                    <div class="text-gray-300 w-full h-full p-2 opacity-50">
+                        <svg viewBox="0 0 100 100" class="w-full h-full">${shape.svg}</svg>
+                    </div>
+                `;
+                targetZone.appendChild(slot);
+            });
+
+            // Render Draggables (Bentuk Berwarna) - diacak lagi agar tidak sejajar dengan target
+            const pickZone = document.getElementById('pick-zone');
+            pickZone.innerHTML = '';
+            let draggables = [...currentShapes].sort(() => 0.5 - Math.random());
+
+            draggables.forEach(shape => {
+                // Container pembungkus
+                const wrapper = document.createElement('div');
+                wrapper.className = "w-24 h-24 md:w-32 md:h-32 flex items-center justify-center placeholder-wrapper relative";
+
+                // Element yang bisa didrag
+                const item = document.createElement('div');
+                item.className = "draggable absolute w-full h-full rounded-3xl drop-shadow-xl z-10 flex items-center justify-center bg-transparent";
+                item.setAttribute('data-id', shape.id);
+                item.style.color = shape.color;
+                item.innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full">${shape.svg}</svg>`;
+
+                // Event Listeners untuk Touch & Mouse
+                setupDragEvents(item);
+
+                wrapper.appendChild(item);
+                pickZone.appendChild(wrapper);
+            });
+
+            speak("Ayo tarik bentuk warnanya ke cetakan abu-abu!");
+        }
+
+        function setupDragEvents(element) {
+            // Touch Events (HP/Tablet)
+            element.addEventListener('touchstart', dragStart, { passive: false });
+            element.addEventListener('touchmove', dragMove, { passive: false });
+            element.addEventListener('touchend', dragEnd);
+
+            // Mouse Events (Laptop/PC)
+            element.addEventListener('mousedown', dragStart);
+        }
+
+        function dragStart(e) {
+            // Cegah multi-touch drag secara bersamaan
+            if (draggedElement) return;
+            if (e.type === 'touchstart' && e.touches.length > 1) return;
+
+            e.preventDefault(); // Cegah scroll layar
+
+            draggedElement = e.currentTarget;
+            draggedElement.classList.add('dragging');
+
+            // Reset transformasi sebelum membaca posisi klik
+            draggedElement.style.transform = `translate(0px, 0px) scale(1.1)`;
+            currentTranslateX = 0;
+            currentTranslateY = 0;
+
+            if (e.type === 'touchstart') {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            } else {
+                startX = e.clientX;
+                startY = e.clientY;
+                document.addEventListener('mousemove', dragMove);
+                document.addEventListener('mouseup', dragEnd);
+            }
+        }
+
+        function dragMove(e) {
+            if (!draggedElement) return;
+            e.preventDefault();
+
+            let clientX, clientY;
+            if (e.type === 'touchmove') {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            // Hitung perbedaan pergerakan dari titik sentuh awal
+            currentTranslateX = clientX - startX;
+            currentTranslateY = clientY - startY;
+
+            // Terapkan ke element
+            draggedElement.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(1.1)`;
+        }
+
+        function dragEnd(e) {
+            if (!draggedElement) return;
+
+            if (e.type === 'mouseup') {
+                document.removeEventListener('mousemove', dragMove);
+                document.removeEventListener('mouseup', dragEnd);
+            }
+
+            const item = draggedElement;
+            item.classList.remove('dragging');
+            draggedElement = null;
+
+            checkCollision(item);
+        }
+
+        function checkCollision(item) {
+            const itemRect = item.getBoundingClientRect();
+            const itemCenterX = itemRect.left + (itemRect.width / 2);
+            const itemCenterY = itemRect.top + (itemRect.height / 2);
+            const itemId = item.getAttribute('data-id');
+
+            const targets = document.querySelectorAll('.target-slot');
+            let isMatched = false;
+
+            targets.forEach(target => {
+                const targetRect = target.getBoundingClientRect();
+                const targetId = target.getAttribute('data-target-id');
+
+                // Margin deteksi error cukup besar agar ramah untuk jari balita
+                const padding = 30;
+
+                if (
+                    itemCenterX > targetRect.left - padding &&
+                    itemCenterX < targetRect.right + padding &&
+                    itemCenterY > targetRect.top - padding &&
+                    itemCenterY < targetRect.bottom + padding
+                ) {
+                    // Ditaruh di atas target ini. Apakah bentuknya sama?
+                    if (itemId === targetId) {
+                        isMatched = true;
+
+                        // Sukses!
+                        target.innerHTML = ''; // Hapus cetakan abu-abu
+
+                        // Hapus listener agar tidak bisa digeser lagi
+                        item.removeEventListener('touchstart', dragStart);
+                        item.removeEventListener('mousedown', dragStart);
+
+                        // Set posisi mutlak di dalam target
+                        item.style.position = 'static';
+                        item.style.transform = 'translate(0px, 0px) scale(1)';
+                        target.appendChild(item);
+                        target.classList.add('animate-pop');
+
+                        const shapeObj = shapesData.find(s => s.id === itemId);
+
+                        matchedCount++;
+
+                        if (matchedCount === totalToMatch) {
+                            showFeedback("Yey! Kamu Hebat! 🎉", "text-green-500");
+                            speak(`Pintar sekali! Itu ${shapeObj.name}. Horeee!`, () => {
+                                setTimeout(generateGameRound, 1500);
+                            });
+                        } else {
+                            showFeedback("Pintar! ⭐", "text-sky-500");
+                            speak(shapeObj.name);
+                        }
+                    } else {
+                        // Ditaruh di target yang salah
+                        speak("Ups, bukan yang itu");
+                    }
+                }
+            });
+
+            if (!isMatched) {
+                // Animate kembali ke asal
+                item.style.transform = `translate(0px, 0px) scale(1)`;
+                item.classList.add('animate-shake');
+                setTimeout(() => item.classList.remove('animate-shake'), 400);
+            }
+        }
+
+        function showFeedback(text, colorClass) {
+            const fb = document.getElementById('game-feedback');
+            fb.innerText = text;
+            fb.className = `h-12 text-3xl md:text-4xl font-display text-center flex items-center justify-center w-full mb-4 animate-pop ${colorClass}`;
+            setTimeout(() => {
+                if (matchedCount !== totalToMatch) fb.innerText = "";
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>

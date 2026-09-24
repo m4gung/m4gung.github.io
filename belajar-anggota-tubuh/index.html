@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pintar Anggota Tubuh</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Fredoka+One&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'nunito': ['Nunito', 'sans-serif'],
+                        'display': ['Fredoka One', 'cursive'],
+                    },
+                    colors: {
+                        'bear-dark': '#b45309', // amber-700
+                        'bear-main': '#f59e0b', // amber-500
+                        'bear-light': '#fde68a', // amber-200
+                        'bear-nose': '#451a03',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+            background-image: radial-gradient(#c4b5fd 3px, transparent 3px), radial-gradient(#c4b5fd 3px, transparent 3px);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            min-height: 100vh;
+            color: #334155;
+            overflow-x: hidden;
+        }
+
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.15) translateY(-5px);
+            }
+
+            60% {
+                transform: scale(0.95) translateY(2px);
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-8px) rotate(-3deg);
+            }
+
+            75% {
+                transform: translateX(8px) rotate(3deg);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s infinite ease-in-out;
+        }
+
+        .btn-3d {
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-3d:active {
+            transform: translateY(8px) !important;
+            box-shadow: 0 0px 0 0 currentcolor !important;
+        }
+
+        /* CSS Khusus untuk bagian SVG yang bisa diklik */
+        .interactive-part {
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.2s;
+            transform-box: fill-box;
+            transform-origin: center;
+        }
+
+        @media (hover: hover) {
+            .interactive-part:hover {
+                filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) brightness(1.1);
+                transform: scale(1.05);
+            }
+        }
+
+        .interactive-part:active {
+            transform: scale(0.95);
+            filter: brightness(0.9);
+        }
+
+        /* Confetti Styles */
+        .confetti {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #f00;
+            animation: fall 2s linear forwards;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center no-select pb-6">
+
+    <div id="screen-menu"
+        class="w-full max-w-2xl flex flex-col items-center justify-center min-h-screen p-6 text-center transition-all duration-300">
+        <div
+            class="bg-white/90 backdrop-blur-md p-8 md:p-12 rounded-[3rem] shadow-2xl border-8 border-white w-full animate-float">
+            <div class="flex justify-center mb-4">
+                <!-- Miniatur Karakter Anak untuk Logo -->
+                <svg viewBox="0 0 100 100" class="w-24 h-24 drop-shadow-md">
+                    <circle cx="50" cy="50" r="40" fill="#ffcbb3" />
+                    <!-- Rambut Logo -->
+                    <path d="M 10 50 Q 50 -10 90 50 Q 50 10 10 50 Z" fill="#5d4037" />
+                    <!-- Mata Logo -->
+                    <circle cx="35" cy="55" r="5" fill="#333" />
+                    <circle cx="65" cy="55" r="5" fill="#333" />
+                    <!-- Senyum Logo -->
+                    <path d="M 40 70 Q 50 80 60 70" stroke="#d84315" stroke-width="3" stroke-linecap="round"
+                        fill="none" />
+                </svg>
+            </div>
+
+            <h1 class="font-display text-4xl md:text-5xl text-blue-500 mb-2 drop-shadow-sm leading-tight">
+                Pintar Anggota Tubuh
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-600 mb-10 font-bold">Ayo kenali anggota tubuh!</p>
+
+            <div class="flex flex-col md:flex-row justify-center gap-6">
+                <button onclick="startApp('learn')"
+                    class="btn-3d flex-1 bg-green-300 hover:bg-green-400 text-green-900 text-2xl font-black py-6 px-4 rounded-[2rem] shadow-[0_8px_0_#16a34a] border-4 border-white flex flex-col items-center gap-2">
+                    <span class="text-5xl drop-shadow-md">👀</span> Belajar
+                </button>
+                <button onclick="startApp('play')"
+                    class="btn-3d flex-1 bg-yellow-300 hover:bg-yellow-400 text-yellow-900 text-2xl font-black py-6 px-4 rounded-[2rem] shadow-[0_8px_0_#ca8a04] border-4 border-white flex flex-col items-center gap-2">
+                    <span class="text-5xl drop-shadow-md">🎮</span> Bermain
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-main" class="hidden w-full max-w-3xl flex-col items-center pt-6 px-4 min-h-screen">
+
+        <!-- Header (Tombol Kembali & Judul Mode) -->
+        <header class="w-full flex items-center justify-between mb-2">
+            <button onclick="goToMenu()"
+                class="btn-3d bg-white text-gray-600 font-bold text-lg md:text-xl py-2 px-4 md:py-3 md:px-6 rounded-full shadow-[0_6px_0_#cbd5e1] border-4 border-white flex items-center gap-2 z-10">
+                <span>⬅️</span> <span class="hidden md:inline">Kembali</span>
+            </button>
+            <h2 id="mode-title"
+                class="font-display text-2xl md:text-3xl text-white bg-blue-500 px-6 py-2 rounded-full border-4 border-white shadow-lg">
+                Belajar</h2>
+            <div class="w-12 md:w-32"></div> <!-- Spacer -->
+        </header>
+
+        <!-- Papan Instruksi / Umpan Balik -->
+        <div class="w-full mt-4 flex items-center justify-center">
+            <div id="feedback-box"
+                class="bg-white/90 border-4 border-white px-8 py-4 rounded-3xl shadow-xl flex items-center gap-4 transition-all duration-300">
+                <button id="btn-replay-audio"
+                    class="hidden btn-3d bg-yellow-400 text-white rounded-full p-2 shadow-[0_4px_0_#ca8a04] hover:bg-yellow-300">
+                    <svg class="w-8 h-8 text-yellow-900" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <h3 id="feedback-text" class="text-3xl md:text-4xl font-display text-gray-700 text-center flex-1">Sentuh
+                    karakternya!</h3>
+            </div>
+        </div>
+
+        <!-- Wadah Karakter -->
+        <div id="character-container" class="w-full flex-1 flex justify-center items-center mt-6 relative">
+
+            <svg id="character-svg" viewBox="0 0 400 500"
+                class="w-full max-w-[350px] md:max-w-[450px] h-auto drop-shadow-2xl">
+
+                <!-- KAKI (Di belakang) -->
+                <g data-part="kaki" class="interactive-part">
+                    <!-- Celana (Dasar) -->
+                    <rect x="135" y="300" width="65" height="60" rx="15" fill="#1e88e5" />
+                    <rect x="200" y="300" width="65" height="60" rx="15" fill="#1e88e5" />
+
+                    <!-- Kaki Kiri -->
+                    <rect x="155" y="340" width="25" height="70" rx="12" fill="#ffcbb3" />
+                    <!-- Sepatu Kiri -->
+                    <rect x="140" y="390" width="55" height="30" rx="15" fill="#ffb300" />
+                    <rect x="140" y="410" width="55" height="10" rx="5" fill="#ffffff" />
+
+                    <!-- Kaki Kanan -->
+                    <rect x="220" y="340" width="25" height="70" rx="12" fill="#ffcbb3" />
+                    <!-- Sepatu Kanan -->
+                    <rect x="205" y="390" width="55" height="30" rx="15" fill="#ffb300" />
+                    <rect x="205" y="410" width="55" height="10" rx="5" fill="#ffffff" />
+                </g>
+
+                <!-- TANGAN (Di belakang perut) -->
+                <g data-part="tangan" class="interactive-part">
+                    <!-- Lengan Kiri -->
+                    <path d="M 130 240 Q 80 270 95 340" stroke="#ffcbb3" stroke-width="26" stroke-linecap="round"
+                        fill="none" />
+                    <!-- Lengan Kanan -->
+                    <path d="M 270 240 Q 320 270 305 340" stroke="#ffcbb3" stroke-width="26" stroke-linecap="round"
+                        fill="none" />
+                </g>
+
+                <!-- PERUT / BADAN -->
+                <g data-part="perut" class="interactive-part">
+                    <!-- Baju T-Shirt -->
+                    <rect x="130" y="210" width="140" height="110" rx="30" fill="#81d4fa" />
+                    <!-- Lengan Baju Kiri -->
+                    <path d="M 135 220 L 70 260 L 125 285 L 145 240 Z" fill="#81d4fa" />
+                    <!-- Lengan Baju Kanan -->
+                    <path d="M 265 220 L 330 255 L 275 285 L 255 240 Z" fill="#81d4fa" />
+
+                    <!-- Motif Baju (Matahari Lucu) -->
+                    <circle cx="200" cy="265" r="15" fill="#fff9c4" />
+                    <path
+                        d="M 200 240 L 200 245 M 200 290 L 200 285 M 175 265 L 180 265 M 225 265 L 220 265 M 182 247 L 186 251 M 218 283 L 214 279 M 218 247 L 214 251 M 182 283 L 186 279"
+                        stroke="#fff9c4" stroke-width="4" stroke-linecap="round" />
+                </g>
+
+                <!-- KEPALA (Base Layer) -->
+                <g data-part="kepala" class="interactive-part">
+                    <!-- Leher -->
+                    <rect x="180" y="190" width="40" height="40" fill="#e0a993" />
+
+                    <!-- Wajah -->
+                    <circle cx="200" cy="140" r="75" fill="#ffcbb3" />
+                    <!-- Pipi Merona -->
+                    <ellipse cx="145" cy="155" rx="12" ry="8" fill="#ff8a80" opacity="0.4" pointer-events="none" />
+                    <ellipse cx="255" cy="155" rx="12" ry="8" fill="#ff8a80" opacity="0.4" pointer-events="none" />
+
+                    <!-- Rambut Belakang -->
+                    <path d="M 125 140 Q 120 70 200 60 Q 280 70 275 140 Q 250 50 150 50 Z" fill="#5d4037"
+                        pointer-events="none" />
+                    <!-- Gumpalan Rambut Atas -->
+                    <circle cx="200" cy="65" r="35" fill="#5d4037" pointer-events="none" />
+                    <circle cx="160" cy="75" r="30" fill="#5d4037" pointer-events="none" />
+                    <circle cx="240" cy="75" r="30" fill="#5d4037" pointer-events="none" />
+                    <circle cx="135" cy="100" r="25" fill="#5d4037" pointer-events="none" />
+                    <circle cx="265" cy="100" r="25" fill="#5d4037" pointer-events="none" />
+                    <!-- Poni -->
+                    <path d="M 125 120 Q 150 90 200 110 Q 250 90 275 120 Q 200 70 125 120 Z" fill="#5d4037"
+                        pointer-events="none" />
+                </g>
+
+                <!-- TELINGA -->
+                <g data-part="telinga" class="interactive-part">
+                    <!-- Telinga Kiri -->
+                    <ellipse cx="120" cy="145" rx="12" ry="18" fill="#ffcbb3" />
+                    <path d="M 115 140 Q 120 145 115 150" stroke="#e0a993" stroke-width="2" fill="none" />
+                    <!-- Telinga Kanan -->
+                    <ellipse cx="280" cy="145" rx="12" ry="18" fill="#ffcbb3" />
+                    <path d="M 285 140 Q 280 145 285 150" stroke="#e0a993" stroke-width="2" fill="none" />
+                </g>
+
+                <!-- MATA (Layer Paling Atas) -->
+                <!-- Hitbox tersembunyi agar mudah ditekan jari balita -->
+                <g data-part="mata" class="interactive-part">
+                    <circle cx="160" cy="130" r="35" fill="transparent" />
+                    <circle cx="240" cy="130" r="35" fill="transparent" />
+
+                    <!-- Visual Mata Kiri -->
+                    <circle cx="160" cy="135" r="12" fill="#333333" />
+                    <circle cx="164" cy="131" r="4" fill="#ffffff" />
+                    <!-- Alis Kiri -->
+                    <path d="M 145 115 Q 160 105 175 115" stroke="#5d4037" stroke-width="4" fill="none"
+                        stroke-linecap="round" />
+
+                    <!-- Visual Mata Kanan -->
+                    <circle cx="240" cy="135" r="12" fill="#333333" />
+                    <circle cx="244" cy="131" r="4" fill="#ffffff" />
+                    <!-- Alis Kanan -->
+                    <path d="M 225 115 Q 240 105 255 115" stroke="#5d4037" stroke-width="4" fill="none"
+                        stroke-linecap="round" />
+                </g>
+
+                <!-- HIDUNG -->
+                <g data-part="hidung" class="interactive-part">
+                    <!-- Hitbox tersembunyi -->
+                    <ellipse cx="200" cy="155" rx="40" ry="25" fill="transparent" />
+
+                    <!-- Visual Hidung -->
+                    <path d="M 195 155 Q 200 165 205 155" stroke="#e0a993" stroke-width="4" stroke-linecap="round"
+                        fill="none" />
+                </g>
+
+                <!-- MULUT -->
+                <g data-part="mulut" class="interactive-part">
+                    <!-- Hitbox transparan untuk mulut -->
+                    <circle cx="200" cy="180" r="30" fill="transparent" />
+
+                    <!-- Visual Mulut Terbuka/Tersenyum -->
+                    <path d="M 185 175 Q 200 195 215 175 Z" fill="#d84315" />
+                    <!-- Lidah Lucu -->
+                    <path d="M 190 182 Q 200 192 210 182 Z" fill="#ff8a80" />
+                </g>
+
+            </svg>
+        </div>
+
+    </div>
+
+    <script>
+        // Kamus Data Anggota Tubuh
+        const partsData = {
+            'kepala': 'Kepala',
+            'mata': 'Mata',
+            'telinga': 'Telinga',
+            'hidung': 'Hidung',
+            'mulut': 'Mulut',
+            'perut': 'Perut',
+            'tangan': 'Tangan',
+            'kaki': 'Kaki'
+        };
+
+        const partsKeys = Object.keys(partsData);
+        let currentMode = 'menu'; // 'menu', 'learn', 'play'
+        let targetPart = '';
+        let isSpeaking = false;
+
+        // --- SISTEM SUARA (WEB SPEECH API) ---
+        function speak(text, callback = null) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.rate = 0.9;  // Kecepatan ramah anak
+            utterance.pitch = 1.2; // Nada agak tinggi ceria
+
+            utterance.onstart = () => { isSpeaking = true; };
+            utterance.onend = () => {
+                isSpeaking = false;
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- MANAJEMEN LAYAR ---
+        function hideAllScreens() {
+            document.getElementById('screen-menu').classList.add('hidden');
+            document.getElementById('screen-menu').classList.remove('flex');
+
+            document.getElementById('screen-main').classList.add('hidden');
+            document.getElementById('screen-main').classList.remove('flex');
+        }
+
+        function goToMenu() {
+            hideAllScreens();
+            currentMode = 'menu';
+            const el = document.getElementById('screen-menu');
+            el.classList.remove('hidden'); el.classList.add('flex');
+            window.speechSynthesis.cancel();
+        }
+
+        // --- MULAI APLIKASI ---
+        function startApp(mode) {
+            currentMode = mode;
+            hideAllScreens();
+
+            const el = document.getElementById('screen-main');
+            el.classList.remove('hidden'); el.classList.add('flex');
+
+            const titleEl = document.getElementById('mode-title');
+            const replayBtn = document.getElementById('btn-replay-audio');
+
+            // Reset animasi
+            document.getElementById('character-svg').classList.remove('animate-pop', 'animate-shake');
+
+            if (mode === 'learn') {
+                titleEl.innerText = "Belajar Tubuh";
+                titleEl.className = "font-display text-2xl md:text-3xl text-white bg-green-500 px-6 py-2 rounded-full border-4 border-white shadow-lg";
+                replayBtn.classList.add('hidden');
+                updateFeedback("Sentuh karakternya!", "text-gray-700");
+                speak("Ayo kenali anggota tubuh. Sentuh karakternya!");
+            } else if (mode === 'play') {
+                titleEl.innerText = "Game Tubuh";
+                titleEl.className = "font-display text-2xl md:text-3xl text-white bg-yellow-500 px-6 py-2 rounded-full border-4 border-white shadow-lg";
+                replayBtn.classList.remove('hidden');
+                replayBtn.onclick = () => {
+                    if (targetPart) speak(`Coba sentuh, ${partsData[targetPart]}`);
+                };
+                speak("Ayo bermain! Dengarkan baik-baik ya.", () => {
+                    setTimeout(nextPlayQuestion, 500);
+                });
+            }
+        }
+
+        function updateFeedback(text, colorClass) {
+            const fbText = document.getElementById('feedback-text');
+            const fbBox = document.getElementById('feedback-box');
+
+            fbText.innerText = text;
+            fbText.className = `text-3xl md:text-4xl font-display text-center flex-1 ${colorClass}`;
+
+            // Animasi pop kecil di box
+            fbBox.classList.remove('animate-pop');
+            void fbBox.offsetWidth; // trigger reflow
+            fbBox.classList.add('animate-pop');
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                // Warna pastel acak
+                const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa'];
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                confetti.style.opacity = Math.random() + 0.5;
+
+                document.body.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }
+        }
+
+        // --- LOGIKA PERMAINAN (PLAY MODE) ---
+        function nextPlayQuestion() {
+            if (currentMode !== 'play') return;
+
+            // Pilih bagian secara acak
+            targetPart = partsKeys[Math.floor(Math.random() * partsKeys.length)];
+            const partName = partsData[targetPart];
+
+            updateFeedback(`Mana ${partName}?`, "text-blue-600");
+            speak(`Coba sentuh, ${partName}`);
+        }
+
+        // --- EVENT LISTENER UNTUK SVG ---
+        // Setup listener untuk semua grup <g> yang memiliki class interactive-part
+        document.querySelectorAll('.interactive-part').forEach(group => {
+
+            // Fungsi penanganan saat ditekan
+            const handleInteract = (e) => {
+                e.preventDefault(); // Mencegah double tap zoom di mobile
+                e.stopPropagation(); // Mencegah klik tembus ke layer di bawahnya (misal dari mata ke kepala)
+
+                const partId = group.getAttribute('data-part');
+                const partName = partsData[partId];
+
+                // Tambahkan animasi sentuh pada elemen SVG
+                group.classList.remove('animate-pop');
+                void group.offsetWidth;
+                group.classList.add('animate-pop');
+
+                if (currentMode === 'learn') {
+                    // MODE BELAJAR
+                    updateFeedback(partName, "text-green-600");
+                    speak(partName);
+
+                } else if (currentMode === 'play') {
+                    // MODE BERMAIN
+                    if (!targetPart) return; // Belum ada soal
+
+                    if (partId === targetPart) {
+                        // BENAR!
+                        updateFeedback(`Pintar! Itu ${partName} 🌟`, "text-green-500");
+                        speak(`Pintar sekali! Itu ${partName}`);
+                        createConfetti();
+
+                        // Buat karakter keseluruhan melompat girang
+                        const characterSvg = document.getElementById('character-svg');
+                        characterSvg.classList.remove('animate-pop');
+                        void characterSvg.offsetWidth;
+                        characterSvg.classList.add('animate-pop');
+
+                        targetPart = ''; // Kunci jawaban sementara
+
+                        // Lanjut soal berikutnya
+                        setTimeout(() => {
+                            if (currentMode === 'play') nextPlayQuestion();
+                        }, 2500);
+
+                    } else {
+                        // SALAH
+                        updateFeedback("Ups, coba lagi!", "text-red-500");
+                        speak(`Ups, bukan. Mana ${partsData[targetPart]}?`);
+
+                        // Efek getar pada bagian yang salah diklik
+                        group.classList.add('animate-shake');
+                        setTimeout(() => { group.classList.remove('animate-shake'); }, 400);
+                    }
+                }
+            };
+
+            // Dukungan Touch dan Mouse
+            group.addEventListener('touchstart', handleInteract, { passive: false });
+            group.addEventListener('mousedown', (e) => {
+                // Hanya tangani mousedown jika bukan dari perangkat layar sentuh 
+                // untuk mencegah event ganda (touchstart + mousedown)
+                if (e.sourceCapabilities && !e.sourceCapabilities.firesTouchEvents) {
+                    handleInteract(e);
+                } else if (!e.sourceCapabilities) {
+                    // Fallback untuk browser tua
+                    handleInteract(e);
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>
