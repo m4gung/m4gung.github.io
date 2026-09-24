@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pintar Cuaca</title>
+
+    <!-- Memuat Font Ramah Anak -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            yellow: '#fef08a', // Cerah
+                            blue: '#bfdbfe',   // Hujan
+                            teal: '#99f6e4',   // Berawan
+                            white: '#f8fafc',  // Salju
+                            orange: '#ffdfba', // UI
+                            pink: '#ffc6ff'    // UI
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            /* Mencegah highlight biru saat anak-anak menyentuh layar */
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+            transition: background-color 0.5s ease;
+        }
+
+        /* Animasi Tombol Membal (Bouncy) */
+        .btn-bouncy {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:active:not(:disabled) {
+            transform: translateY(8px) scale(0.95);
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+            transform: none !important;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Animasi Pop */
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.4s ease-out;
+        }
+
+        /* Animasi Bergetar (Shake) */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-10px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s;
+        }
+
+        /* Animasi Kemenangan */
+        @keyframes successPop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-success {
+            animation: successPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Animasi Melayang untuk Judul */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body id="main-body" class="bg-orange-50 min-h-screen text-gray-800 flex flex-col font-sans">
+
+    <div class="max-w-4xl mx-auto px-4 py-6 flex flex-col w-full flex-1">
+
+        <!-- Header & Navigasi -->
+        <header class="text-center mb-6 z-10 relative">
+            <h1 class="text-4xl md:text-5xl font-black text-orange-500 mb-6 drop-shadow-sm animate-float">
+                🌈 Pintar Cuaca ☀️
+            </h1>
+
+            <div class="flex justify-center gap-4 bg-white/80 p-2 rounded-full shadow-sm max-w-sm mx-auto">
+                <button onclick="switchMode('learn')" id="btn-mode-learn"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-orange-400 text-white shadow-[0_4px_0_#ea580c] transition-all btn-bouncy">
+                    Belajar
+                </button>
+                <button onclick="switchMode('play')" id="btn-mode-play"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all">
+                    Bermain
+                </button>
+            </div>
+        </header>
+
+        <main id="mode-learn" class="flex-1 flex flex-col z-10">
+            <div class="text-center mb-6">
+                <p
+                    class="text-xl font-bold text-gray-600 bg-white inline-block px-6 py-2 rounded-full shadow-sm border-2 border-orange-100">
+                    Pilih cuaca untuk belajar! 👇
+                </p>
+            </div>
+
+            <!-- Grid Cuaca -->
+            <div id="learn-grid" class="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-8 pb-10 max-w-2xl mx-auto w-full">
+                <!-- Diisi otomatis oleh JavaScript -->
+            </div>
+        </main>
+
+        <main id="mode-play" class="flex-1 flex flex-col hidden pb-10 w-full z-10">
+
+            <div
+                class="flex justify-between items-center bg-white/90 p-4 rounded-2xl shadow-sm mb-4 border-4 border-white max-w-2xl mx-auto w-full">
+                <div class="text-xl font-black text-orange-500 flex items-center gap-2">
+                    <span>⭐ Skor:</span>
+                    <span id="score-display" class="text-2xl">0</span>
+                </div>
+                <button onclick="repeatQuestion()"
+                    class="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-xl font-bold btn-bouncy flex items-center gap-2 border-2 border-white shadow-sm">
+                    🔊 Ulangi Suara
+                </button>
+            </div>
+
+            <!-- Area Interaksi Game -->
+            <div
+                class="bg-white/90 p-6 md:p-8 rounded-[2rem] shadow-sm text-center mb-6 border-b-8 border-white flex-1 flex flex-col justify-center items-center max-w-2xl mx-auto w-full">
+
+                <!-- Display Cuaca -->
+                <div id="play-weather-display" class="text-7xl md:text-8xl mb-4 animate-float">
+                    <!-- Emoji Cuaca -->
+                </div>
+
+                <!-- Karakter Anak -->
+                <div class="relative mb-6">
+                    <span id="play-character" class="text-8xl md:text-9xl drop-shadow-lg">👦</span>
+                    <span id="play-item-equipped"
+                        class="absolute bottom-0 -right-4 text-5xl md:text-6xl drop-shadow-md transition-all duration-300 transform scale-0">
+                        <!-- Item dipakai -->
+                    </span>
+                </div>
+
+                <p id="instruction-text" class="text-2xl md:text-3xl font-bold text-gray-700 leading-snug mb-8">
+                    Mendengarkan...
+                </p>
+
+                <!-- Pilihan Benda -->
+                <div id="play-choices" class="flex flex-wrap justify-center gap-4 w-full">
+                    <!-- Tombol pilihan -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Data Cuaca dan Benda
+        const weatherData = [
+            { id: 'cerah', name: 'Cerah', weatherEmoji: '☀️', itemEmoji: '🕶️', itemName: 'Kacamata Hitam', bgClass: 'bg-pastel-yellow', bodyColor: '#fef08a' },
+            { id: 'hujan', name: 'Hujan', weatherEmoji: '🌧️', itemEmoji: '☔', itemName: 'Payung', bgClass: 'bg-pastel-blue', bodyColor: '#bfdbfe' },
+            { id: 'berawan', name: 'Berawan', weatherEmoji: '☁️', itemEmoji: '🧥', itemName: 'Jaket', bgClass: 'bg-pastel-teal', bodyColor: '#99f6e4' },
+            { id: 'bersalju', name: 'Bersalju', weatherEmoji: '❄️', itemEmoji: '🧣', itemName: 'Syal', bgClass: 'bg-pastel-white', bodyColor: '#f1f5f9' }
+        ];
+
+        let currentMode = 'learn';
+        let score = 0;
+        let currentTarget = null;
+        let audioCtx = null;
+
+        const mainBody = document.getElementById('main-body');
+        const defaultBodyColor = '#fff7ed'; // orange-50
+
+        // Inisialisasi Audio Engine
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSFX(type) {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            if (type === 'success') {
+                // Suara "Ting!"
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.5, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+                osc.start(now);
+                osc.stop(now + 0.5);
+
+            } else if (type === 'fail') {
+                // Suara "Tet-tot"
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(150, now + 0.3);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.3, now + 0.1);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        function speak(text, callback = null) {
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.pitch = 1.3; // Lebih tinggi agar ramah anak
+            utterance.rate = 0.9;
+
+            utterance.onend = () => {
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function renderLearnMode() {
+            const grid = document.getElementById('learn-grid');
+            grid.innerHTML = '';
+
+            weatherData.forEach(weather => {
+                const card = document.createElement('button');
+                // Menggunakan styling cerah dengan border tebal
+                card.className = `${weather.bgClass} flex flex-col items-center justify-center p-6 md:p-8 rounded-[2rem] border-4 border-white btn-bouncy`;
+
+                card.innerHTML = `
+                    <div class="flex gap-2 items-end mb-4 drop-shadow-md">
+                        <span class="text-6xl md:text-8xl">${weather.weatherEmoji}</span>
+                        <span class="text-4xl md:text-5xl">${weather.itemEmoji}</span>
+                    </div>
+                    <span class="text-2xl md:text-3xl font-black text-gray-700 capitalize">${weather.name}</span>
+                `;
+
+                card.onclick = () => {
+                    initAudio();
+                    // Efek Animasi
+                    card.classList.remove('animate-pop');
+                    void card.offsetWidth;
+                    card.classList.add('animate-pop');
+
+                    // Ubah Background Layar sesuai cuaca
+                    mainBody.style.backgroundColor = weather.bodyColor;
+
+                    speak(`Cuaca sedang ${weather.name}. Jangan lupa siapkan ${weather.itemName}!`);
+                };
+
+                grid.appendChild(card);
+            });
+        }
+
+        function startPlayMode() {
+            initAudio();
+            score = 0;
+            document.getElementById('score-display').textContent = score;
+            mainBody.style.backgroundColor = defaultBodyColor;
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            const instructionText = document.getElementById('instruction-text');
+            const playChoices = document.getElementById('play-choices');
+            const playWeatherDisplay = document.getElementById('play-weather-display');
+            const playItemEquipped = document.getElementById('play-item-equipped');
+
+            // Sembunyikan item sebelumnya
+            playItemEquipped.style.transform = 'scale(0)';
+
+            // Nonaktifkan interaksi sementara
+            playChoices.innerHTML = '';
+            instructionText.textContent = "Mendengarkan...";
+            mainBody.style.backgroundColor = defaultBodyColor;
+
+            // Pilih Cuaca Acak
+            const randomIndex = Math.floor(Math.random() * weatherData.length);
+            currentTarget = weatherData[randomIndex];
+
+            // Update Visual Cuaca
+            playWeatherDisplay.textContent = currentTarget.weatherEmoji;
+            mainBody.style.backgroundColor = currentTarget.bodyColor;
+
+            // Siapkan 3 pilihan benda (1 benar, 2 salah)
+            let wrongOptions = weatherData.filter(w => w.id !== currentTarget.id);
+            wrongOptions = wrongOptions.sort(() => 0.5 - Math.random()).slice(0, 2);
+
+            let displayOptions = [currentTarget, ...wrongOptions].sort(() => 0.5 - Math.random());
+
+            // Render Tombol Pilihan
+            displayOptions.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = `bg-white flex-1 min-w-[100px] flex flex-col items-center justify-center p-4 md:p-6 rounded-[2rem] border-4 border-gray-100 shadow-sm btn-bouncy`;
+
+                btn.innerHTML = `
+                    <span class="text-5xl md:text-6xl mb-2 drop-shadow-sm">${option.itemEmoji}</span>
+                `;
+
+                btn.disabled = true;
+                btn.onclick = () => checkAnswer(option.id, btn);
+                playChoices.appendChild(btn);
+            });
+
+            // Instruksi Suara
+            const questionText = `Cuaca sedang ${currentTarget.name}, apa yang harus dipakai?`;
+            speak(questionText, () => {
+                instructionText.innerHTML = `Cuaca sedang <span class="text-orange-500 font-black">${currentTarget.name}</span>, apa yang harus dipakai?`;
+                // Aktifkan tombol
+                const btns = playChoices.querySelectorAll('button');
+                btns.forEach(b => b.disabled = false);
+            });
+        }
+
+        function repeatQuestion() {
+            if (currentTarget) {
+                const instructionText = document.getElementById('instruction-text');
+                const playChoices = document.getElementById('play-choices');
+                const btns = playChoices.querySelectorAll('button');
+
+                btns.forEach(b => b.disabled = true);
+                instructionText.textContent = "Mendengarkan...";
+
+                const questionText = `Cuaca sedang ${currentTarget.name}, apa yang harus dipakai?`;
+                speak(questionText, () => {
+                    instructionText.innerHTML = `Cuaca sedang <span class="text-orange-500 font-black">${currentTarget.name}</span>, apa yang harus dipakai?`;
+                    btns.forEach(b => b.disabled = false);
+                });
+            }
+        }
+
+        function checkAnswer(selectedId, btnElement) {
+            const btns = document.getElementById('play-choices').querySelectorAll('button');
+            const instructionText = document.getElementById('instruction-text');
+            const playItemEquipped = document.getElementById('play-item-equipped');
+
+            if (selectedId === currentTarget.id) {
+                // Jawaban Benar
+                playSFX('success');
+
+                // Visual Menang
+                btnElement.classList.remove('bg-white', 'border-gray-100');
+                btnElement.classList.add('bg-green-300', 'border-green-100');
+                btnElement.classList.add('animate-success');
+
+                // Pakaikan item ke karakter
+                playItemEquipped.textContent = currentTarget.itemEmoji;
+                playItemEquipped.style.transform = 'scale(1)';
+
+                // Kunci tombol
+                btns.forEach(b => { b.disabled = true; b.onclick = null; });
+
+                instructionText.textContent = `🎉 Pintar! Pakai ${currentTarget.itemName}!`;
+
+                speak(`Pintar! Pakai ${currentTarget.itemName}!`, () => {
+                    score += 10;
+                    document.getElementById('score-display').textContent = score;
+                    setTimeout(nextQuestion, 1500);
+                });
+
+            } else {
+                // Jawaban Salah
+                playSFX('fail');
+
+                // Animasi Getar
+                btnElement.classList.remove('animate-shake');
+                void btnElement.offsetWidth;
+                btnElement.classList.add('animate-shake');
+
+                speak("Ups, kurang tepat, coba lagi!");
+            }
+        }
+
+        function switchMode(mode) {
+            window.speechSynthesis.cancel();
+            currentMode = mode;
+
+            const btnLearn = document.getElementById('btn-mode-learn');
+            const btnPlay = document.getElementById('btn-mode-play');
+            const viewLearn = document.getElementById('mode-learn');
+            const viewPlay = document.getElementById('mode-play');
+
+            if (mode === 'learn') {
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-orange-400 text-white shadow-[0_4px_0_#ea580c] transition-all btn-bouncy";
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+
+                viewLearn.classList.remove('hidden');
+                viewPlay.classList.add('hidden');
+                mainBody.style.backgroundColor = defaultBodyColor;
+
+                speak("Pilih cuaca untuk belajar!");
+            } else {
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-teal-400 text-white shadow-[0_4px_0_#2dd4bf] transition-all btn-bouncy";
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+
+                viewLearn.classList.add('hidden');
+                viewPlay.classList.remove('hidden');
+
+                startPlayMode();
+            }
+        }
+
+        // Mulai
+        window.onload = () => {
+            renderLearnMode();
+        };
+    </script>
+</body>
+
+</html>
