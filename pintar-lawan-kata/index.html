@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pintar Lawan Kata</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            blue: '#bfdbfe',
+                            pink: '#ffc6ff',
+                            orange: '#ffdfba',
+                            yellow: '#fef08a',
+                            green: '#bbf7d0',
+                            purple: '#e9d5ff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+            transition: background-color 0.5s ease;
+            background-color: #f3e8ff;
+            /* Light purple pastel background */
+        }
+
+        .btn-bouncy {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:active:not(:disabled) {
+            transform: translateY(8px) scale(0.95);
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+            transform: none !important;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.4s ease-out;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-10px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s;
+        }
+
+        @keyframes successPop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15) rotate(5deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .animate-success {
+            animation: successPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-gray-800 flex flex-col font-sans">
+
+    <div class="max-w-4xl mx-auto px-4 py-6 flex flex-col w-full flex-1">
+
+        <header class="text-center mb-6 z-10 relative">
+            <h1 class="text-4xl md:text-5xl font-black text-purple-500 mb-6 drop-shadow-sm animate-float">
+                ⚖️ Pintar Lawan Kata
+            </h1>
+
+            <div
+                class="flex justify-center gap-4 bg-white/80 p-2 rounded-full shadow-sm max-w-sm mx-auto border-2 border-purple-100">
+                <button onclick="switchMode('learn')" id="btn-mode-learn"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-purple-400 text-white shadow-[0_4px_0_#c084fc] transition-all btn-bouncy">
+                    Belajar
+                </button>
+                <button onclick="switchMode('play')" id="btn-mode-play"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all">
+                    Bermain
+                </button>
+            </div>
+        </header>
+
+        <main id="mode-learn" class="flex-1 flex flex-col z-10">
+            <div class="text-center mb-6">
+                <p
+                    class="text-xl font-bold text-gray-600 bg-white inline-block px-6 py-2 rounded-full shadow-sm border-2 border-purple-100">
+                    Tekan kartunya untuk belajar! 👇
+                </p>
+            </div>
+
+            <div id="learn-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pb-10 max-w-4xl mx-auto w-full">
+                <!-- Cards will be generated here by JS -->
+            </div>
+        </main>
+
+        <main id="mode-play" class="flex-1 flex flex-col hidden pb-10 w-full z-10">
+
+            <div
+                class="flex justify-between items-center bg-white/90 p-4 rounded-2xl shadow-sm mb-4 border-4 border-white max-w-2xl mx-auto w-full">
+                <div class="text-xl font-black text-purple-500 flex items-center gap-2">
+                    <span>⭐ Skor:</span>
+                    <span id="score-display" class="text-2xl">0</span>
+                </div>
+                <button onclick="repeatQuestion()"
+                    class="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-xl font-bold btn-bouncy flex items-center gap-2 border-2 border-white shadow-sm">
+                    🔊 Ulangi Suara
+                </button>
+            </div>
+
+            <div
+                class="bg-white/90 p-6 md:p-8 rounded-[2rem] shadow-sm text-center mb-6 border-b-8 border-white flex-1 flex flex-col justify-center items-center max-w-2xl mx-auto w-full">
+
+                <div class="relative mb-2">
+                    <span id="play-character"
+                        class="text-6xl md:text-8xl drop-shadow-lg animate-float inline-block">🤔</span>
+                </div>
+
+                <p id="instruction-text"
+                    class="text-2xl md:text-3xl font-bold text-gray-700 leading-snug mb-8 min-h-[5rem]">
+                    Mendengarkan pertanyaan...
+                </p>
+
+                <div id="play-choices" class="grid grid-cols-2 gap-4 md:gap-8 w-full max-w-lg mx-auto">
+                    <!-- Choices will be generated here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const oppositesData = [
+            {
+                id: 'ukuran', bgClass: 'bg-blue-100', borderClass: 'border-blue-300',
+                item1: { id: 'besar', label: 'Besar', emoji: '🐘', desc: 'Gajah Besar' },
+                item2: { id: 'kecil', label: 'Kecil', emoji: '🐁', desc: 'Tikus Kecil' }
+            },
+            {
+                id: 'kecepatan', bgClass: 'bg-green-100', borderClass: 'border-green-300',
+                item1: { id: 'cepat', label: 'Cepat', emoji: '🐇', desc: 'Kelinci Cepat' },
+                item2: { id: 'lambat', label: 'Lambat', emoji: '🐢', desc: 'Kura-kura Lambat' }
+            },
+            {
+                id: 'suhu', bgClass: 'bg-orange-100', borderClass: 'border-orange-300',
+                item1: { id: 'panas', label: 'Panas', emoji: '🔥', desc: 'Api Panas' },
+                item2: { id: 'dingin', label: 'Dingin', emoji: '🧊', desc: 'Es Batu Dingin' }
+            },
+            {
+                id: 'tinggi', bgClass: 'bg-yellow-100', borderClass: 'border-yellow-300',
+                item1: { id: 'tinggi', label: 'Tinggi', emoji: '🦒', desc: 'Jerapah Tinggi' },
+                item2: { id: 'pendek', label: 'Pendek', emoji: '🐛', desc: 'Ulat Pendek' }
+            },
+            {
+                id: 'perasaan', bgClass: 'bg-pink-100', borderClass: 'border-pink-300',
+                item1: { id: 'senang', label: 'Senang', emoji: '😄', desc: 'Wajah Senang' },
+                item2: { id: 'sedih', label: 'Sedih', emoji: '😭', desc: 'Wajah Sedih' }
+            },
+            {
+                id: 'waktu', bgClass: 'bg-indigo-100', borderClass: 'border-indigo-300',
+                item1: { id: 'siang', label: 'Siang', emoji: '☀️', desc: 'Matahari Siang' },
+                item2: { id: 'malam', label: 'Malam', emoji: '🌙', desc: 'Bulan Malam' }
+            }
+        ];
+
+        let currentMode = 'learn';
+        let score = 0;
+        let currentTarget = null;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSFX(type) {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            if (type === 'success') {
+                // Happy "Ting!" sound
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.5, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+                osc.start(now);
+                osc.stop(now + 0.5);
+
+            } else if (type === 'fail') {
+                // Gentle "Tet-tot" buzzer
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(150, now + 0.3);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.3, now + 0.1);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        function speak(text, callback = null) {
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.pitch = 1.4; // Child-friendly high pitch
+            utterance.rate = 0.9;  // Clear and understandable pace
+
+            utterance.onend = () => {
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function renderLearnMode() {
+            const grid = document.getElementById('learn-grid');
+            grid.innerHTML = '';
+
+            oppositesData.forEach(pair => {
+                const card = document.createElement('button');
+                card.className = `${pair.bgClass} flex flex-row items-center justify-around p-6 md:p-8 rounded-[2rem] border-4 border-white btn-bouncy w-full`;
+
+                card.innerHTML = `
+                    <div class="flex flex-col items-center w-1/2">
+                        <span class="text-6xl md:text-7xl drop-shadow-md mb-2">${pair.item1.emoji}</span>
+                        <span class="text-xl md:text-2xl font-black text-gray-700 capitalize">${pair.item1.label}</span>
+                    </div>
+                    <div class="text-3xl font-black text-gray-400 px-2 opacity-50">VS</div>
+                    <div class="flex flex-col items-center w-1/2">
+                        <span class="text-6xl md:text-7xl drop-shadow-md mb-2">${pair.item2.emoji}</span>
+                        <span class="text-xl md:text-2xl font-black text-gray-700 capitalize">${pair.item2.label}</span>
+                    </div>
+                `;
+
+                card.onclick = () => {
+                    initAudio();
+                    card.classList.remove('animate-pop');
+                    void card.offsetWidth; // Trigger reflow
+                    card.classList.add('animate-pop');
+
+                    // Read out the pair slowly
+                    speak(`${pair.item1.desc}... dan ... ${pair.item2.desc}`);
+                };
+
+                grid.appendChild(card);
+            });
+        }
+
+        function startPlayMode() {
+            initAudio();
+            score = 0;
+            document.getElementById('score-display').textContent = score;
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            const instructionText = document.getElementById('instruction-text');
+            const playChoices = document.getElementById('play-choices');
+            const playCharacter = document.getElementById('play-character');
+
+            playChoices.innerHTML = '';
+            instructionText.textContent = "Mendengarkan pertanyaan...";
+
+            playCharacter.classList.add('animate-float');
+            playCharacter.classList.remove('animate-success');
+            playCharacter.textContent = "🤔";
+
+            // Pick a random pair
+            const randomPair = oppositesData[Math.floor(Math.random() * oppositesData.length)];
+
+            // Randomly decide which item in the pair is the correct target
+            const isFirstTarget = Math.random() > 0.5;
+            currentTarget = isFirstTarget ? randomPair.item1 : randomPair.item2;
+            const wrongTarget = isFirstTarget ? randomPair.item2 : randomPair.item1;
+
+            // Shuffle the display options
+            let displayOptions = [currentTarget, wrongTarget].sort(() => Math.random() - 0.5);
+
+            displayOptions.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = `bg-white flex-1 flex flex-col items-center justify-center p-8 rounded-[2rem] border-4 ${randomPair.borderClass} shadow-sm btn-bouncy aspect-square`;
+
+                btn.innerHTML = `
+                    <span class="text-6xl md:text-8xl drop-shadow-sm">${option.emoji}</span>
+                `;
+
+                btn.disabled = true; // Disable until question is fully read
+                btn.onclick = () => checkAnswer(option.id, btn);
+                playChoices.appendChild(btn);
+            });
+
+            const questionText = `Coba cari, mana yang ${currentTarget.label}?`;
+
+            speak(questionText, () => {
+                instructionText.innerHTML = questionText;
+                const btns = playChoices.querySelectorAll('button');
+                btns.forEach(b => b.disabled = false);
+            });
+        }
+
+        function repeatQuestion() {
+            if (currentTarget) {
+                const instructionText = document.getElementById('instruction-text');
+                const playChoices = document.getElementById('play-choices');
+                const btns = playChoices.querySelectorAll('button');
+
+                btns.forEach(b => b.disabled = true);
+                instructionText.textContent = "Mendengarkan pertanyaan...";
+
+                const questionText = `Coba cari, mana yang ${currentTarget.label}?`;
+                speak(questionText, () => {
+                    instructionText.innerHTML = questionText;
+                    btns.forEach(b => b.disabled = false);
+                });
+            }
+        }
+
+        function checkAnswer(selectedId, btnElement) {
+            const btns = document.getElementById('play-choices').querySelectorAll('button');
+            const instructionText = document.getElementById('instruction-text');
+            const playCharacter = document.getElementById('play-character');
+
+            if (selectedId === currentTarget.id) {
+                playSFX('success');
+
+                btnElement.classList.remove('bg-white');
+                btnElement.classList.add('bg-green-200', 'animate-success');
+
+                playCharacter.textContent = "🎉";
+                playCharacter.classList.remove('animate-float');
+                void playCharacter.offsetWidth;
+                playCharacter.classList.add('animate-success');
+
+                btns.forEach(b => { b.disabled = true; b.onclick = null; });
+
+                instructionText.innerHTML = `🎉 Pintar! Itu <span class="text-purple-600 font-black">${currentTarget.label}</span>!`;
+
+                speak(`Pintar! Itu ${currentTarget.label}!`, () => {
+                    score += 10;
+                    document.getElementById('score-display').textContent = score;
+                    setTimeout(nextQuestion, 1500);
+                });
+
+            } else {
+                playSFX('fail');
+
+                btnElement.classList.remove('animate-shake');
+                void btnElement.offsetWidth;
+                btnElement.classList.add('animate-shake');
+
+                speak("Ups, coba lagi!");
+            }
+        }
+
+        function switchMode(mode) {
+            window.speechSynthesis.cancel();
+            currentMode = mode;
+
+            const btnLearn = document.getElementById('btn-mode-learn');
+            const btnPlay = document.getElementById('btn-mode-play');
+            const viewLearn = document.getElementById('mode-learn');
+            const viewPlay = document.getElementById('mode-play');
+
+            if (mode === 'learn') {
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-purple-400 text-white shadow-[0_4px_0_#c084fc] transition-all btn-bouncy";
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+
+                viewLearn.classList.remove('hidden');
+                viewPlay.classList.add('hidden');
+
+                speak("Tekan kartunya untuk belajar!");
+            } else {
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-yellow-400 text-yellow-900 shadow-[0_4px_0_#eab308] transition-all btn-bouncy";
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+
+                viewLearn.classList.add('hidden');
+                viewPlay.classList.remove('hidden');
+
+                startPlayMode();
+            }
+        }
+
+        // Initialize App on load
+        window.onload = () => {
+            renderLearnMode();
+        };
+    </script>
+</body>
+
+</html>

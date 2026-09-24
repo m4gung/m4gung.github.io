@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pintar Habitat Hewan</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            blue: '#bfdbfe',
+                            pink: '#ffc6ff',
+                            orange: '#ffdfba',
+                            yellow: '#fef08a',
+                            green: '#bbf7d0',
+                            purple: '#e9d5ff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+            transition: background-color 0.5s ease;
+            background-color: #f0fdf4;
+            /* Light green pastel background */
+        }
+
+        .btn-bouncy {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:active:not(:disabled) {
+            transform: translateY(8px) scale(0.95);
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Prevent scrolling when dragging the animal */
+        .touch-none-strict {
+            touch-action: none;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.4s ease-out;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-10px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s;
+        }
+
+        @keyframes successPop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15) rotate(5deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .animate-success {
+            animation: successPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-gray-800 flex flex-col font-sans overflow-x-hidden">
+
+    <div class="max-w-4xl mx-auto px-4 py-6 flex flex-col w-full flex-1">
+
+        <header class="text-center mb-6 z-10 relative">
+            <h1 class="text-4xl md:text-5xl font-black text-green-600 mb-6 drop-shadow-sm animate-float">
+                🏡 Habitat Hewan
+            </h1>
+
+            <div
+                class="flex justify-center gap-4 bg-white/80 p-2 rounded-full shadow-sm max-w-sm mx-auto border-2 border-green-100">
+                <button onclick="switchMode('learn')" id="btn-mode-learn"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-green-400 text-white shadow-[0_4px_0_#4ade80] transition-all btn-bouncy">
+                    Belajar
+                </button>
+                <button onclick="switchMode('play')" id="btn-mode-play"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all">
+                    Bermain
+                </button>
+            </div>
+        </header>
+
+        <main id="mode-learn" class="flex-1 flex flex-col z-10">
+            <div class="text-center mb-6">
+                <p
+                    class="text-xl font-bold text-gray-600 bg-white inline-block px-6 py-2 rounded-full shadow-sm border-2 border-green-100">
+                    Tekan hewannya untuk belajar! 👇
+                </p>
+            </div>
+
+            <div id="learn-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 pb-10 max-w-4xl mx-auto w-full">
+                <!-- Learn cards generated by JS -->
+            </div>
+        </main>
+
+        <main id="mode-play" class="flex-1 flex flex-col hidden pb-10 w-full z-10 relative">
+
+            <div
+                class="flex justify-between items-center bg-white/90 p-4 rounded-2xl shadow-sm mb-4 border-4 border-white max-w-3xl mx-auto w-full">
+                <div class="text-xl font-black text-green-600 flex items-center gap-2">
+                    <span>⭐ Skor:</span>
+                    <span id="score-display" class="text-2xl">0</span>
+                </div>
+                <p id="instruction-text" class="text-lg md:text-xl font-bold text-gray-600 text-center flex-1 mx-4">
+                    Tarik hewan ke rumahnya!
+                </p>
+                <button onclick="repeatQuestion()"
+                    class="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-xl font-bold btn-bouncy flex items-center gap-2 border-2 border-white shadow-sm">
+                    🔊 Suara
+                </button>
+            </div>
+
+            <!-- Drop Zones (Habitats) -->
+            <div id="drop-zones" class="grid grid-cols-3 gap-3 md:gap-6 w-full max-w-3xl mx-auto mb-10">
+                <!-- Drop zones generated by JS -->
+            </div>
+
+            <!-- Draggable Animal Area -->
+            <div class="flex-1 flex flex-col justify-end items-center mb-8 relative">
+                <div
+                    class="w-full max-w-sm bg-white/80 rounded-[3rem] p-6 border-4 border-dashed border-gray-300 text-center">
+                    <p class="text-gray-400 font-bold mb-4">Mulai dari sini</p>
+
+                    <!-- The Draggable Element -->
+                    <div id="draggable-animal"
+                        class="touch-none-strict mx-auto w-32 h-32 md:w-40 md:h-40 bg-white rounded-full shadow-lg border-4 border-white flex items-center justify-center cursor-grab active:cursor-grabbing z-50 transition-transform duration-75 relative">
+                        <span id="animal-emoji" class="text-6xl md:text-8xl drop-shadow-md pointer-events-none">❓</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Confetti/Success overlay anchor -->
+            <div id="success-overlay"
+                class="absolute inset-0 pointer-events-none flex items-center justify-center z-50 hidden">
+                <span class="text-9xl animate-success">⭐</span>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const habitats = [
+            { id: 'laut', name: 'Laut', emoji: '🌊', bgClass: 'bg-blue-100', borderClass: 'border-blue-300', textClass: 'text-blue-700' },
+            { id: 'hutan', name: 'Hutan', emoji: '🌲', bgClass: 'bg-green-100', borderClass: 'border-green-300', textClass: 'text-green-700' },
+            { id: 'udara', name: 'Udara', emoji: '☁️', bgClass: 'bg-purple-100', borderClass: 'border-purple-300', textClass: 'text-purple-700' }
+        ];
+
+        const animals = [
+            { id: 'ikan', name: 'Ikan', emoji: '🐟', habitatId: 'laut' },
+            { id: 'gurita', name: 'Gurita', emoji: '🐙', habitatId: 'laut' },
+            { id: 'singa', name: 'Singa', emoji: '🦁', habitatId: 'hutan' },
+            { id: 'monyet', name: 'Monyet', emoji: '🐒', habitatId: 'hutan' },
+            { id: 'burung', name: 'Burung', emoji: '🐦', habitatId: 'udara' },
+            { id: 'kupu', name: 'Kupu-kupu', emoji: '🦋', habitatId: 'udara' }
+        ];
+
+        let currentMode = 'learn';
+        let score = 0;
+        let currentAnimal = null;
+        let audioCtx = null;
+
+        // Drag state
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let currentTranslateX = 0, currentTranslateY = 0;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSFX(type) {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            if (type === 'success') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.5, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+
+            } else if (type === 'fail') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(150, now + 0.3);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.3, now + 0.1);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        function speak(text, callback = null) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.pitch = 1.3;
+            utterance.rate = 0.9;
+            utterance.onend = () => { if (callback) callback(); };
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function renderLearnMode() {
+            const grid = document.getElementById('learn-grid');
+            grid.innerHTML = '';
+
+            habitats.forEach(habitat => {
+                const habitatGroup = document.createElement('div');
+                habitatGroup.className = `${habitat.bgClass} p-4 md:p-6 rounded-[2rem] border-4 border-white shadow-sm flex flex-col items-center`;
+
+                habitatGroup.innerHTML = `
+                    <div class="text-5xl md:text-6xl mb-2">${habitat.emoji}</div>
+                    <div class="text-xl font-black ${habitat.textClass} mb-4">${habitat.name}</div>
+                    <div class="flex gap-4 w-full justify-center"></div>
+                `;
+
+                const animalsContainer = habitatGroup.querySelector('div.flex');
+
+                const habitatAnimals = animals.filter(a => a.habitatId === habitat.id);
+                habitatAnimals.forEach(animal => {
+                    const btn = document.createElement('button');
+                    btn.className = `bg-white w-20 h-20 md:w-24 md:h-24 rounded-2xl flex items-center justify-center border-4 ${habitat.borderClass} btn-bouncy text-4xl md:text-5xl drop-shadow-sm`;
+                    btn.innerHTML = animal.emoji;
+
+                    btn.onclick = () => {
+                        initAudio();
+                        btn.classList.remove('animate-pop');
+                        void btn.offsetWidth;
+                        btn.classList.add('animate-pop');
+                        speak(`Ini ${animal.name}. ${animal.name} hidup di ${habitat.name}.`);
+                    };
+
+                    animalsContainer.appendChild(btn);
+                });
+
+                grid.appendChild(habitatGroup);
+            });
+        }
+
+        function renderPlayMode() {
+            const dropZonesContainer = document.getElementById('drop-zones');
+            dropZonesContainer.innerHTML = '';
+
+            habitats.forEach(habitat => {
+                const zone = document.createElement('div');
+                // Store habitat ID in dataset for hit testing
+                zone.dataset.habitat = habitat.id;
+                zone.className = `drop-zone ${habitat.bgClass} flex flex-col items-center justify-center p-4 md:p-8 rounded-[2rem] border-4 border-dashed ${habitat.borderClass} transition-colors`;
+                zone.innerHTML = `
+                    <span class="text-5xl md:text-6xl drop-shadow-sm mb-2 pointer-events-none">${habitat.emoji}</span>
+                    <span class="text-lg md:text-xl font-black ${habitat.textClass} pointer-events-none">${habitat.name}</span>
+                `;
+                dropZonesContainer.appendChild(zone);
+            });
+
+            setupDragAndDrop();
+            nextQuestion();
+        }
+
+        function setupDragAndDrop() {
+            const dragger = document.getElementById('draggable-animal');
+
+            dragger.addEventListener('pointerdown', (e) => {
+                if (!currentAnimal) return;
+                initAudio();
+                isDragging = true;
+
+                // Record starting pointer position
+                startX = e.clientX;
+                startY = e.clientY;
+
+                // Add grabbing styles
+                dragger.style.transition = 'none'; // Disable transition for smooth 1:1 drag
+                dragger.style.zIndex = 100;
+                dragger.classList.remove('animate-shake', 'animate-pop');
+                dragger.style.boxShadow = '0 15px 25px rgba(0,0,0,0.2)';
+
+                dragger.setPointerCapture(e.pointerId);
+            });
+
+            dragger.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+
+                // Calculate distance moved
+                currentTranslateX = e.clientX - startX;
+                currentTranslateY = e.clientY - startY;
+
+                // Apply translation
+                dragger.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(1.1)`;
+            });
+
+            dragger.addEventListener('pointerup', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                dragger.releasePointerCapture(e.pointerId);
+
+                dragger.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                dragger.style.boxShadow = '';
+
+                // Check if dropped over a valid zone based on current pointer coordinates
+                checkDrop(e.clientX, e.clientY);
+            });
+        }
+
+        function checkDrop(pointerX, pointerY) {
+            const zones = document.querySelectorAll('.drop-zone');
+            let droppedOnHabitatId = null;
+
+            // Simple hit detection using pointer coordinates against Drop Zone bounding boxes
+            zones.forEach(zone => {
+                const rect = zone.getBoundingClientRect();
+                if (pointerX >= rect.left && pointerX <= rect.right &&
+                    pointerY >= rect.top && pointerY <= rect.bottom) {
+                    droppedOnHabitatId = zone.dataset.habitat;
+                }
+            });
+
+            const dragger = document.getElementById('draggable-animal');
+
+            if (droppedOnHabitatId === currentAnimal.habitatId) {
+                // Correct!
+                playSFX('success');
+                const targetHabitat = habitats.find(h => h.id === droppedOnHabitatId);
+
+                document.getElementById('instruction-text').innerHTML = `🎉 Pintar! ${currentAnimal.name} di ${targetHabitat.name}!`;
+
+                // Reset dragger visually
+                dragger.style.transform = `translate(0px, 0px) scale(0)`;
+                currentTranslateX = 0; currentTranslateY = 0;
+
+                // Show success overlay
+                const overlay = document.getElementById('success-overlay');
+                overlay.classList.remove('hidden');
+
+                speak(`Pintar! ${currentAnimal.name} tinggal di ${targetHabitat.name}.`, () => {
+                    score += 10;
+                    document.getElementById('score-display').textContent = score;
+                    overlay.classList.add('hidden');
+                    nextQuestion();
+                });
+            } else {
+                // Wrong! Bounce back
+                playSFX('fail');
+                speak('Ups, bukan di situ, coba lagi!');
+
+                // Reset position with animation
+                currentTranslateX = 0;
+                currentTranslateY = 0;
+                dragger.style.transform = `translate(0px, 0px) scale(1)`;
+
+                // Add shake effect after it returns
+                setTimeout(() => {
+                    dragger.classList.add('animate-shake');
+                }, 300);
+            }
+        }
+
+        function nextQuestion() {
+            // Pick random animal
+            currentAnimal = animals[Math.floor(Math.random() * animals.length)];
+
+            const dragger = document.getElementById('draggable-animal');
+            const emojiEl = document.getElementById('animal-emoji');
+
+            emojiEl.textContent = currentAnimal.emoji;
+            dragger.style.transform = `translate(0px, 0px) scale(1)`;
+            dragger.classList.remove('animate-shake');
+            void dragger.offsetWidth;
+            dragger.classList.add('animate-pop');
+
+            const instruction = `Bantu ${currentAnimal.name} pulang ke rumahnya!`;
+            document.getElementById('instruction-text').textContent = instruction;
+            speak(instruction);
+        }
+
+        function repeatQuestion() {
+            if (currentAnimal) {
+                speak(`Bantu ${currentAnimal.name} pulang ke rumahnya!`);
+            }
+        }
+
+        function switchMode(mode) {
+            window.speechSynthesis.cancel();
+            currentMode = mode;
+
+            const btnLearn = document.getElementById('btn-mode-learn');
+            const btnPlay = document.getElementById('btn-mode-play');
+            const viewLearn = document.getElementById('mode-learn');
+            const viewPlay = document.getElementById('mode-play');
+
+            if (mode === 'learn') {
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-green-400 text-white shadow-[0_4px_0_#4ade80] transition-all btn-bouncy";
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+                document.body.style.backgroundColor = '#f0fdf4'; // Light green
+
+                viewLearn.classList.remove('hidden');
+                viewPlay.classList.add('hidden');
+
+                speak("Tekan hewannya untuk belajar habitatnya!");
+            } else {
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-yellow-400 text-yellow-900 shadow-[0_4px_0_#eab308] transition-all btn-bouncy";
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+                document.body.style.backgroundColor = '#fdf4ff'; // Light fuchsia
+
+                viewLearn.classList.add('hidden');
+                viewPlay.classList.remove('hidden');
+
+                score = 0;
+                document.getElementById('score-display').textContent = score;
+                renderPlayMode();
+            }
+        }
+
+        window.onload = () => {
+            renderLearnMode();
+        };
+    </script>
+</body>
+
+</html>
