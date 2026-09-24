@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pintar Angka & Berhitung</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Fredoka+One&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'nunito': ['Nunito', 'sans-serif'],
+                        'display': ['Fredoka One', 'cursive'],
+                    },
+                    colors: {
+                        pastel: {
+                            1: '#FFB3BA', // Pink
+                            2: '#FFDFBA', // Orange
+                            3: '#FFFFBA', // Yellow
+                            4: '#BAFFC9', // Green
+                            5: '#BAE1FF', // Blue
+                            6: '#E8BAFF', // Purple
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #334155;
+        }
+
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.15) translateY(-10px);
+            }
+
+            60% {
+                transform: scale(0.95) translateY(5px);
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px) rotate(-5deg);
+            }
+
+            75% {
+                transform: translateX(10px) rotate(5deg);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s infinite ease-in-out;
+        }
+
+        .btn-3d {
+            transition: all 0.1s;
+        }
+
+        .btn-3d:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 0 currentcolor !important;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center no-select pb-12">
+
+    <!-- SCREEN: MENU UTAMA -->
+    <div id="screen-menu"
+        class="w-full max-w-2xl flex flex-col items-center justify-center min-h-screen p-6 text-center">
+        <div
+            class="bg-white/90 backdrop-blur-sm p-8 md:p-10 rounded-[3rem] shadow-2xl border-8 border-white w-full animate-float">
+            <h1 class="font-display text-5xl md:text-6xl text-indigo-500 mb-2 drop-shadow-sm leading-tight">
+                Pintar Angka! 🔢
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 font-bold">Pilih permainan kesukaanmu</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <button onclick="goToLearnNumbers()"
+                    class="btn-3d bg-pastel-4 hover:bg-green-300 text-gray-800 text-2xl font-black py-6 px-6 rounded-[2rem] shadow-[0_8px_0_#86efac] border-4 border-white flex flex-col items-center justify-center gap-2">
+                    <span class="text-4xl">📖</span>
+                    Belajar Angka
+                </button>
+                <button onclick="goToGameNumbers()"
+                    class="btn-3d bg-pastel-2 hover:bg-orange-300 text-gray-800 text-2xl font-black py-6 px-6 rounded-[2rem] shadow-[0_8px_0_#fdba74] border-4 border-white flex flex-col items-center justify-center gap-2">
+                    <span class="text-4xl">🎯</span>
+                    Game Angka
+                </button>
+                <button onclick="goToMathMenu('learn')"
+                    class="btn-3d bg-pastel-5 hover:bg-blue-300 text-gray-800 text-2xl font-black py-6 px-6 rounded-[2rem] shadow-[0_8px_0_#93c5fd] border-4 border-white flex flex-col items-center justify-center gap-2">
+                    <span class="text-4xl">🧮</span>
+                    Belajar Berhitung
+                </button>
+                <button onclick="goToMathMenu('game')"
+                    class="btn-3d bg-pastel-6 hover:bg-purple-300 text-gray-800 text-2xl font-black py-6 px-6 rounded-[2rem] shadow-[0_8px_0_#d8b4fe] border-4 border-white flex flex-col items-center justify-center gap-2">
+                    <span class="text-4xl">🎮</span>
+                    Game Berhitung
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN: BELAJAR ANGKA -->
+    <div id="screen-learn-numbers" class="hidden w-full max-w-4xl flex-col items-center pt-6 px-4">
+        <header class="w-full flex flex-col items-center gap-4 mb-8">
+            <div class="flex items-center justify-between w-full">
+                <button onclick="goToMenu()"
+                    class="btn-3d bg-white text-gray-600 font-bold py-2 px-6 rounded-full shadow-[0_4px_0_#cbd5e1] border-2 border-gray-100">⬅️
+                    Kembali</button>
+            </div>
+            <h1
+                class="font-display text-4xl text-white bg-green-400 px-8 py-3 rounded-full border-4 border-white shadow-lg">
+                Belajar Angka</h1>
+        </header>
+        <div id="numbers-grid" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-2xl">
+            <!-- Diisi oleh JS -->
+        </div>
+    </div>
+
+    <!-- SCREEN: GAME ANGKA -->
+    <div id="screen-game-numbers" class="hidden w-full max-w-4xl flex-col items-center pt-6 px-4">
+        <header class="w-full flex items-center justify-between mb-8">
+            <button onclick="goToMenu()"
+                class="btn-3d bg-white text-gray-600 font-bold py-2 px-6 rounded-full shadow-[0_4px_0_#cbd5e1] border-2 border-gray-100">⬅️
+                Kembali</button>
+            <h2
+                class="font-display text-2xl text-white bg-orange-400 px-6 py-2 rounded-full border-4 border-white shadow-md">
+                Tebak Angka</h2>
+        </header>
+        <div
+            class="bg-white/95 p-6 md:p-10 rounded-[3rem] shadow-2xl border-8 border-white w-full max-w-2xl text-center flex flex-col items-center">
+            <p class="text-2xl text-gray-700 font-bold mb-4">Temukan angka:</p>
+            <div class="flex items-center justify-center gap-4 mb-8">
+                <h1 id="game-numbers-question" class="font-display text-6xl text-indigo-500 drop-shadow-sm uppercase">?
+                </h1>
+                <button onclick="repeatNumberQuestion()"
+                    class="btn-3d bg-pastel-3 text-yellow-800 font-bold p-3 rounded-full shadow-[0_6px_0_#fde047] border-4 border-white">🔊</button>
+            </div>
+            <div id="game-numbers-options" class="flex justify-center gap-4 md:gap-8 w-full flex-wrap">
+                <!-- Diisi oleh JS -->
+            </div>
+            <div id="game-numbers-feedback" class="mt-8 text-2xl font-bold h-8 transition-all"></div>
+        </div>
+    </div>
+
+    <!-- SCREEN: MENU MATEMATIKA -->
+    <div id="screen-math-menu"
+        class="hidden w-full max-w-2xl flex-col items-center justify-center min-h-screen p-6 text-center">
+        <div class="bg-white/90 backdrop-blur-sm p-8 md:p-10 rounded-[3rem] shadow-2xl border-8 border-white w-full">
+            <button onclick="goToMenu()"
+                class="absolute top-6 left-6 btn-3d bg-gray-100 text-gray-600 font-bold py-2 px-4 rounded-full shadow-[0_4px_0_#cbd5e1]">⬅️</button>
+
+            <h1 class="font-display text-4xl text-indigo-500 mb-8 drop-shadow-sm" id="math-menu-title">Pilih Berhitung
+            </h1>
+
+            <div class="grid grid-cols-2 gap-4 md:gap-6">
+                <button onclick="selectOperator('+')"
+                    class="btn-3d bg-pastel-1 text-gray-800 text-4xl md:text-6xl font-black py-8 rounded-[2rem] shadow-[0_8px_0_#fca5a5] border-4 border-white">+</button>
+                <button onclick="selectOperator('-')"
+                    class="btn-3d bg-pastel-5 text-gray-800 text-4xl md:text-6xl font-black py-8 rounded-[2rem] shadow-[0_8px_0_#93c5fd] border-4 border-white">-</button>
+                <button onclick="selectOperator('*')"
+                    class="btn-3d bg-pastel-4 text-gray-800 text-4xl md:text-6xl font-black py-8 rounded-[2rem] shadow-[0_8px_0_#86efac] border-4 border-white">x</button>
+                <button onclick="selectOperator('/')"
+                    class="btn-3d bg-pastel-3 text-gray-800 text-4xl md:text-6xl font-black py-8 rounded-[2rem] shadow-[0_8px_0_#fde047] border-4 border-white">÷</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN: BELAJAR BERHITUNG -->
+    <div id="screen-learn-math" class="hidden w-full max-w-3xl flex-col items-center justify-center min-h-screen p-4">
+        <header class="w-full flex items-center justify-between mb-8">
+            <button onclick="goToMathMenu(currentMathFlow)"
+                class="btn-3d bg-white text-gray-600 font-bold py-2 px-6 rounded-full shadow-[0_4px_0_#cbd5e1] border-2 border-gray-100">⬅️
+                Kembali</button>
+            <h2
+                class="font-display text-2xl text-white bg-blue-400 px-6 py-2 rounded-full border-4 border-white shadow-md">
+                Contoh Hitungan</h2>
+        </header>
+
+        <div
+            class="bg-white/95 p-8 md:p-12 rounded-[3rem] shadow-2xl border-8 border-white w-full text-center flex flex-col items-center">
+            <div class="flex items-center justify-center w-full bg-pastel-6/30 p-8 rounded-[2rem] border-4 border-pastel-6 mb-8 cursor-pointer btn-3d"
+                onclick="repeatMathLearn()">
+                <h1 id="learn-math-equation"
+                    class="font-display text-6xl md:text-7xl text-indigo-600 drop-shadow-sm tracking-widest">2 + 2 = 4
+                </h1>
+            </div>
+
+            <button onclick="generateMathLearn()"
+                class="btn-3d bg-pastel-4 hover:bg-green-300 text-gray-800 text-2xl font-black py-4 px-8 rounded-full shadow-[0_8px_0_#86efac] border-4 border-white flex items-center gap-3">
+                Contoh Lainnya 🎲
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN: GAME BERHITUNG -->
+    <div id="screen-game-math" class="hidden w-full max-w-3xl flex-col items-center justify-center min-h-screen p-4">
+        <header class="w-full flex items-center justify-between mb-8">
+            <button onclick="goToMathMenu(currentMathFlow)"
+                class="btn-3d bg-white text-gray-600 font-bold py-2 px-6 rounded-full shadow-[0_4px_0_#cbd5e1] border-2 border-gray-100">⬅️
+                Kembali</button>
+            <h2
+                class="font-display text-2xl text-white bg-purple-400 px-6 py-2 rounded-full border-4 border-white shadow-md">
+                Tebak Hasil</h2>
+        </header>
+
+        <div
+            class="bg-white/95 p-6 md:p-10 rounded-[3rem] shadow-2xl border-8 border-white w-full text-center flex flex-col items-center">
+            <p class="text-xl md:text-2xl text-gray-700 font-bold mb-4">Berapa hasilnya?</p>
+            <div class="flex items-center gap-4 mb-10">
+                <h1 id="game-math-question"
+                    class="font-display text-5xl md:text-7xl text-indigo-600 drop-shadow-sm tracking-widest">
+                    2 + ? =
+                </h1>
+                <button onclick="repeatMathGameQuestion()"
+                    class="btn-3d bg-pastel-3 text-yellow-800 font-bold p-3 rounded-full shadow-[0_6px_0_#fde047] border-4 border-white">🔊</button>
+            </div>
+
+            <div id="game-math-options" class="flex justify-center gap-4 md:gap-8 w-full flex-wrap">
+                <!-- Diisi oleh JS -->
+            </div>
+            <div id="game-math-feedback" class="mt-8 text-2xl font-bold h-8 transition-all"></div>
+        </div>
+    </div>
+
+    <script>
+        const colorThemes = [
+            { bg: 'bg-pastel-1', shadow: 'shadow-[0_8px_0_#fca5a5]' },
+            { bg: 'bg-pastel-2', shadow: 'shadow-[0_8px_0_#fdba74]' },
+            { bg: 'bg-pastel-4', shadow: 'shadow-[0_8px_0_#86efac]' },
+            { bg: 'bg-pastel-5', shadow: 'shadow-[0_8px_0_#93c5fd]' },
+            { bg: 'bg-pastel-6', shadow: 'shadow-[0_8px_0_#d8b4fe]' },
+            { bg: 'bg-pastel-3', shadow: 'shadow-[0_8px_0_#fde047]' }
+        ];
+
+        const numberWords = ["Nol", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh"];
+
+        let currentMathFlow = ''; // 'learn' atau 'game'
+        let currentOperator = '';
+        let currentTargetNumber = -1;
+        let currentMathData = {};
+
+        function speak(text, callback = null) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.1;
+
+            utterance.onend = () => {
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function getOperatorText(op) {
+            if (op === '+') return 'ditambah';
+            if (op === '-') return 'dikurangi';
+            if (op === '*') return 'dikali';
+            if (op === '/') return 'dibagi';
+            return '';
+        }
+
+        function hideAllScreens() {
+            const screens = ['screen-menu', 'screen-learn-numbers', 'screen-game-numbers', 'screen-math-menu', 'screen-learn-math', 'screen-game-math'];
+            screens.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            });
+        }
+
+        function showScreen(id) {
+            hideAllScreens();
+            const el = document.getElementById(id);
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+            window.speechSynthesis.cancel();
+        }
+
+        function goToMenu() { showScreen('screen-menu'); }
+
+        function goToLearnNumbers() {
+            showScreen('screen-learn-numbers');
+            speak("Mode belajar angka. Klik angkanya!");
+
+            const grid = document.getElementById('numbers-grid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i <= 10; i++) {
+                const theme = colorThemes[i % colorThemes.length];
+                const btn = document.createElement('button');
+                btn.className = `btn-3d flex flex-col items-center justify-center p-4 rounded-3xl ${theme.bg} ${theme.shadow} border-4 border-white aspect-square`;
+                btn.innerHTML = `<span class="font-display text-5xl md:text-6xl text-gray-800">${i}</span><span class="mt-2 font-bold text-gray-700">${numberWords[i]}</span>`;
+
+                btn.onclick = () => {
+                    btn.classList.remove('animate-pop');
+                    void btn.offsetWidth;
+                    btn.classList.add('animate-pop');
+                    speak(numberWords[i]);
+                };
+                grid.appendChild(btn);
+            }
+        }
+
+        function goToGameNumbers() {
+            showScreen('screen-game-numbers');
+            speak("Ayo tebak angka!", generateNumberQuestion);
+        }
+
+        function generateNumberQuestion() {
+            const fb = document.getElementById('game-numbers-feedback');
+            fb.innerText = ""; fb.className = "mt-8 text-2xl font-bold h-8";
+
+            let options = [];
+            while (options.length < 3) {
+                let r = Math.floor(Math.random() * 11); // 0-10
+                if (!options.includes(r)) options.push(r);
+            }
+            currentTargetNumber = options[Math.floor(Math.random() * 3)];
+
+            document.getElementById('game-numbers-question').innerText = numberWords[currentTargetNumber];
+
+            const container = document.getElementById('game-numbers-options');
+            container.innerHTML = '';
+
+            options.forEach((opt, idx) => {
+                const theme = colorThemes[idx % colorThemes.length];
+                const btn = document.createElement('button');
+                btn.className = `btn-3d flex items-center justify-center font-display text-6xl md:text-7xl w-24 h-24 md:w-32 md:h-32 rounded-full ${theme.bg} ${theme.shadow} border-4 border-white text-gray-800`;
+                btn.innerText = opt;
+
+                btn.onclick = () => checkNumberAnswer(opt, btn);
+                container.appendChild(btn);
+            });
+
+            repeatNumberQuestion();
+        }
+
+        function repeatNumberQuestion() {
+            if (currentTargetNumber !== -1) {
+                speak(`Temukan angka ${numberWords[currentTargetNumber]}`);
+            }
+        }
+
+        function checkNumberAnswer(selected, btn) {
+            const fb = document.getElementById('game-numbers-feedback');
+            if (selected === currentTargetNumber) {
+                btn.classList.add('animate-pop');
+                fb.innerText = "Yey! Benar! 🎉";
+                fb.className = "mt-8 text-2xl font-bold h-8 text-green-500 animate-pop";
+                speak(`Pintar! Itu angka ${numberWords[currentTargetNumber]}`, () => setTimeout(generateNumberQuestion, 1000));
+            } else {
+                btn.classList.remove('animate-shake'); void btn.offsetWidth; btn.classList.add('animate-shake');
+                fb.innerText = "Ups! Coba lagi 🤔";
+                fb.className = "mt-8 text-2xl font-bold h-8 text-red-500 animate-pop";
+                speak("Ups, coba lagi");
+            }
+        }
+
+        function goToMathMenu(flow) {
+            currentMathFlow = flow;
+            showScreen('screen-math-menu');
+            document.getElementById('math-menu-title').innerText = flow === 'learn' ? 'Pilih Belajar' : 'Pilih Bermain';
+            speak("Pilih tanda untuk berhitung");
+        }
+
+        function selectOperator(op) {
+            currentOperator = op;
+            if (currentMathFlow === 'learn') {
+                showScreen('screen-learn-math');
+                generateMathLearn();
+            } else {
+                showScreen('screen-game-math');
+                generateMathGame();
+            }
+        }
+
+        function createSimpleMath() {
+            let a, b, ans;
+            let displayOp = currentOperator;
+            if (currentOperator === '+') {
+                a = Math.floor(Math.random() * 9) + 1;
+                b = Math.floor(Math.random() * (10 - a)) + 1; // max 10
+                ans = a + b;
+            } else if (currentOperator === '-') {
+                a = Math.floor(Math.random() * 10) + 1; // 1-10
+                b = Math.floor(Math.random() * a) + 1; // 1 to a, no negative
+                ans = a - b;
+            } else if (currentOperator === '*') {
+                a = Math.floor(Math.random() * 5) + 1; // 1-5
+                b = Math.floor(Math.random() * 5) + 1; // 1-5
+                ans = a * b;
+                displayOp = 'x';
+            } else if (currentOperator === '/') {
+                b = Math.floor(Math.random() * 5) + 1;
+                ans = Math.floor(Math.random() * 5) + 1;
+                a = b * ans; // ensures no remainder
+                displayOp = '÷';
+            }
+            return { a, b, ans, displayOp, str: `${a} ${displayOp} ${b}` };
+        }
+
+        function generateMathLearn() {
+            currentMathData = createSimpleMath();
+            const textEq = `${currentMathData.str} = ${currentMathData.ans}`;
+            document.getElementById('learn-math-equation').innerText = textEq;
+
+            // Animasi transisi
+            const el = document.getElementById('learn-math-equation');
+            el.classList.remove('animate-pop'); void el.offsetWidth; el.classList.add('animate-pop');
+
+            repeatMathLearn();
+        }
+
+        function repeatMathLearn() {
+            const opText = getOperatorText(currentOperator);
+            const speakText = `${currentMathData.a} ${opText} ${currentMathData.b}, sama dengan ${currentMathData.ans}`;
+            speak(speakText);
+        }
+
+        function generateMathGame() {
+            const fb = document.getElementById('game-math-feedback');
+            fb.innerText = ""; fb.className = "mt-8 text-2xl font-bold h-8";
+
+            currentMathData = createSimpleMath();
+            document.getElementById('game-math-question').innerText = `${currentMathData.str} = ?`;
+
+            // Buat pilihan ganda (1 benar, 2 salah yang mendekati)
+            let options = [currentMathData.ans];
+            while (options.length < 3) {
+                let offset = Math.floor(Math.random() * 5) - 2; // -2 to +2
+                if (offset === 0) offset = 3;
+                let fakeAns = currentMathData.ans + offset;
+                if (fakeAns >= 0 && !options.includes(fakeAns)) {
+                    options.push(fakeAns);
+                }
+            }
+            options.sort(() => 0.5 - Math.random()); // Acak posisi
+
+            const container = document.getElementById('game-math-options');
+            container.innerHTML = '';
+
+            options.forEach((opt, idx) => {
+                const theme = colorThemes[idx % colorThemes.length];
+                const btn = document.createElement('button');
+                btn.className = `btn-3d flex items-center justify-center font-display text-5xl md:text-6xl w-24 h-24 md:w-28 md:h-28 rounded-[2rem] ${theme.bg} ${theme.shadow} border-4 border-white text-gray-800`;
+                btn.innerText = opt;
+                btn.onclick = () => checkMathAnswer(opt, btn);
+                container.appendChild(btn);
+            });
+
+            repeatMathGameQuestion();
+        }
+
+        function repeatMathGameQuestion() {
+            const opText = getOperatorText(currentOperator);
+            speak(`Berapa hasil dari ${currentMathData.a} ${opText} ${currentMathData.b}?`);
+        }
+
+        function checkMathAnswer(selected, btn) {
+            const fb = document.getElementById('game-math-feedback');
+            if (selected === currentMathData.ans) {
+                btn.classList.add('animate-pop');
+                fb.innerText = "Yey! Pintar Sekali! 🎉";
+                fb.className = "mt-8 text-2xl font-bold h-8 text-green-500 animate-pop";
+                speak(`Benar! Jawabannya adalah ${currentMathData.ans}`, () => setTimeout(generateMathGame, 1200));
+            } else {
+                btn.classList.remove('animate-shake'); void btn.offsetWidth; btn.classList.add('animate-shake');
+                fb.innerText = "Ups! Coba hitung lagi 🤔";
+                fb.className = "mt-8 text-2xl font-bold h-8 text-red-500 animate-pop";
+                speak("Ups, coba hitung lagi");
+            }
+        }
+    </script>
+</body>
+
+</html>
