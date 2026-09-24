@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Beri Makan Dino - Game Belajar Warna</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'nunito': ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            blue: '#BAE6FD',
+                            green: '#BBF7D0',
+                            yellow: '#FEF08A',
+                            pink: '#FBCFE8',
+                            purple: '#E9D5FF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden;
+            /* Prevent scrolling on mobile */
+            touch-action: manipulation;
+            /* Improve touch interaction */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Prevent text selection to make it feel more like an app */
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Dino idle animation */
+        @keyframes bounce-soft {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .animate-bounce-soft {
+            animation: bounce-soft 2s infinite ease-in-out;
+        }
+
+        /* Wrong answer shake animation */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0) rotate(0deg);
+            }
+
+            20% {
+                transform: translateX(-10px) rotate(-5deg);
+            }
+
+            40% {
+                transform: translateX(10px) rotate(5deg);
+            }
+
+            60% {
+                transform: translateX(-10px) rotate(-5deg);
+            }
+
+            80% {
+                transform: translateX(10px) rotate(5deg);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Correct answer pop animation */
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.6s forwards ease-in-out;
+        }
+
+        /* Food item hover/press effect */
+        .food-item {
+            transition: transform 0.1s;
+            cursor: pointer;
+        }
+
+        .food-item:active {
+            transform: scale(0.9);
+        }
+
+        /* Confetti canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-pastel-green h-screen w-screen flex flex-col items-center justify-center no-select transition-colors duration-1000"
+    id="main-bg">
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Start Screen -->
+    <div id="start-screen"
+        class="absolute inset-0 z-40 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+        <h1 class="text-5xl md:text-6xl font-black text-emerald-500 mb-6 drop-shadow-md">Beri Makan Dino!</h1>
+        <p class="text-2xl text-gray-600 mb-10 font-bold max-w-md">Mari belajar warna bersama teman dinosaurus kita.</p>
+
+        <!-- SVG Icon for Start Button -->
+        <svg class="w-32 h-32 mb-8 animate-bounce-soft" viewBox="0 0 100 100">
+            <path
+                d="M 20 80 Q 20 40 50 20 L 70 20 Q 90 20 90 40 L 90 50 Q 90 60 75 60 L 70 60 L 70 90 Q 70 95 65 95 L 55 95 Q 50 95 50 90 L 50 80 L 40 80 L 40 90 Q 40 95 35 95 L 25 95 Q 20 95 20 90 Z"
+                fill="#10B981" />
+            <circle cx="70" cy="35" r="5" fill="white" />
+            <circle cx="72" cy="35" r="2.5" fill="black" />
+            <path d="M 75 45 Q 80 50 85 45" stroke="black" stroke-width="2" stroke-linecap="round" fill="none" />
+        </svg>
+
+        <button onclick="startGame()"
+            class="bg-emerald-500 hover:bg-emerald-400 text-white text-4xl font-black py-4 px-12 rounded-full shadow-[0_8px_0_#059669] hover:shadow-[0_4px_0_#059669] hover:translate-y-1 transition-all">
+            Main Sekarang
+        </button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="hidden w-full max-w-4xl flex-col items-center justify-between h-full py-8 px-4">
+
+        <!-- Instruction -->
+        <div class="text-center mb-4 mt-4">
+            <h2 id="instruction-text"
+                class="text-3xl md:text-5xl font-black text-gray-800 drop-shadow-sm bg-white/60 px-8 py-4 rounded-3xl border-4 border-white shadow-lg">
+                Beri makan Dino warna <span id="color-name" class="text-red-500">Merah</span>!
+            </h2>
+        </div>
+
+        <!-- Dino Character -->
+        <div class="flex-1 flex items-center justify-center min-h-[30vh]">
+            <div id="dino-container" class="animate-bounce-soft transition-transform duration-300">
+                <!-- SVG will be injected here by JS -->
+            </div>
+        </div>
+
+        <!-- Positive Feedback Message -->
+        <div id="success-message"
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 hidden pointer-events-none">
+            <h3
+                class="text-6xl md:text-8xl font-black text-yellow-400 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] bg-white/80 px-10 py-6 rounded-full border-8 border-yellow-400 rotate-[-5deg]">
+                Pintar! ⭐
+            </h3>
+        </div>
+
+        <!-- Food Options -->
+        <div class="w-full mt-auto pb-4">
+            <div id="food-container" class="flex justify-center gap-4 sm:gap-8 flex-wrap">
+                <!-- Food buttons will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const colors = [
+            { name: 'Merah', hex: '#EF4444', textClass: 'text-red-500', bgClass: 'bg-red-100' },
+            { name: 'Biru', hex: '#3B82F6', textClass: 'text-blue-500', bgClass: 'bg-blue-100' },
+            { name: 'Hijau', hex: '#10B981', textClass: 'text-emerald-500', bgClass: 'bg-emerald-100' },
+            { name: 'Kuning', hex: '#F59E0B', textClass: 'text-yellow-500', bgClass: 'bg-yellow-100' },
+            { name: 'Ungu', hex: '#8B5CF6', textClass: 'text-purple-500', bgClass: 'bg-purple-100' },
+            { name: 'Jingga', hex: '#F97316', textClass: 'text-orange-500', bgClass: 'bg-orange-100' },
+            { name: 'Merah Muda', hex: '#EC4899', textClass: 'text-pink-500', bgClass: 'bg-pink-100' }
+        ];
+
+        let targetColor = null;
+        let audioContext = null;
+        let isAnimating = false;
+
+        function getDinoSVG(colorHex, isEating = false) {
+            const mouthOpen = isEating ?
+                `<path d="M 75 45 Q 80 60 85 45 Z" fill="#7F1D1D" />` :
+                `<path d="M 75 45 Q 80 50 85 45" stroke="black" stroke-width="2" stroke-linecap="round" fill="none" />`;
+
+            return `
+            <svg class="w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl transition-all duration-300" viewBox="0 0 100 100">
+                <!-- Tail and Body -->
+                <path d="M 20 80 Q 20 40 50 20 L 70 20 Q 90 20 90 40 L 90 50 Q 90 60 75 60 L 70 60 L 70 90 Q 70 95 65 95 L 55 95 Q 50 95 50 90 L 50 80 L 40 80 L 40 90 Q 40 95 35 95 L 25 95 Q 20 95 20 90 Z" fill="${colorHex}" />
+                
+                <!-- Spikes (Back) -->
+                <path d="M 30 35 L 25 25 L 40 28 Z" fill="#FCD34D" />
+                <path d="M 45 22 L 45 12 L 55 18 Z" fill="#FCD34D" />
+                <path d="M 62 20 L 68 10 L 75 20 Z" fill="#FCD34D" />
+
+                <!-- Eye -->
+                <circle cx="70" cy="35" r="5" fill="white" />
+                <circle cx="72" cy="35" r="2.5" fill="black" />
+                
+                <!-- Mouth -->
+                ${mouthOpen}
+
+                <!-- Cheeks -->
+                <circle cx="60" cy="45" r="4" fill="rgba(255,255,255,0.4)" />
+            </svg>`;
+        }
+
+        function getLeafSVG(colorHex) {
+            return `
+            <svg class="w-full h-full p-2 sm:p-4 pointer-events-none drop-shadow-lg" viewBox="0 0 100 100">
+                <path d="M 50 90 C 20 90 10 60 10 30 C 40 30 50 10 90 10 C 90 40 80 60 50 90 Z" fill="${colorHex}" />
+                <path d="M 10 30 C 40 30 50 10 90 10" stroke="rgba(255,255,255,0.4)" stroke-width="4" stroke-linecap="round" fill="none" />
+                <path d="M 50 90 L 60 40" stroke="rgba(0,0,0,0.1)" stroke-width="4" stroke-linecap="round" fill="none" />
+            </svg>`;
+        }
+
+        function initAudio() {
+            if (!audioContext) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioContext) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'success') {
+                // Cheerful chime sound
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.1); // A5
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } else if (type === 'wrong') {
+                // Soft boop sound
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.2);
+            }
+        }
+
+        function startGame() {
+            initAudio();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('flex');
+            loadNextLevel();
+        }
+
+        function loadNextLevel() {
+            isAnimating = false;
+            // Clear animations
+            document.getElementById('success-message').classList.add('hidden');
+
+            // Pick a random target color
+            const targetIndex = Math.floor(Math.random() * colors.length);
+            targetColor = colors[targetIndex];
+
+            // Update UI
+            document.getElementById('color-name').textContent = targetColor.name;
+            document.getElementById('color-name').className = targetColor.textClass;
+            document.getElementById('main-bg').className = `h-screen w-screen flex flex-col items-center justify-center no-select transition-colors duration-1000 ${targetColor.bgClass}`;
+
+            // Update Dino
+            document.getElementById('dino-container').innerHTML = getDinoSVG(targetColor.hex, false);
+            document.getElementById('dino-container').style.transform = 'scale(1)';
+
+            // Generate Food Options (1 correct, 2 wrong)
+            let options = [targetColor];
+            let availableWrongColors = colors.filter(c => c.name !== targetColor.name);
+
+            // Shuffle and pick 2 wrong ones
+            availableWrongColors.sort(() => 0.5 - Math.random());
+            options.push(availableWrongColors[0]);
+            options.push(availableWrongColors[1]);
+
+            // Shuffle the 3 options
+            options.sort(() => 0.5 - Math.random());
+
+            // Render Food
+            const foodContainer = document.getElementById('food-container');
+            foodContainer.innerHTML = '';
+
+            options.forEach(option => {
+                const btn = document.createElement('div');
+                btn.className = 'food-item w-28 h-28 sm:w-40 sm:h-40 bg-white rounded-full shadow-[0_6px_0_#D1D5DB] border-4 border-gray-100 flex items-center justify-center active:shadow-none active:translate-y-[6px] transition-all';
+                btn.innerHTML = getLeafSVG(option.hex);
+
+                // Touch/Click event
+                btn.onclick = () => handleFoodClick(option, btn);
+
+                foodContainer.appendChild(btn);
+            });
+        }
+
+        function handleFoodClick(selectedColor, element) {
+            if (isAnimating) return; // Prevent clicking during animation
+
+            if (selectedColor.name === targetColor.name) {
+                // Correct!
+                isAnimating = true;
+                playSound('success');
+
+                // Animate the clicked food
+                element.classList.add('animate-pop');
+
+                // Make dino eat and grow slightly
+                document.getElementById('dino-container').innerHTML = getDinoSVG(targetColor.hex, true);
+                document.getElementById('dino-container').style.transform = 'scale(1.1)';
+
+                // Show success text
+                const successMsg = document.getElementById('success-message');
+                successMsg.classList.remove('hidden');
+
+                // Fire confetti
+                fireConfetti();
+
+                // Load next level after delay
+                setTimeout(() => {
+                    loadNextLevel();
+                }, 2000);
+
+            } else {
+                // Wrong!
+                playSound('wrong');
+
+                // Shake the wrong item
+                element.classList.remove('animate-shake'); // Reset animation
+                void element.offsetWidth; // Trigger reflow
+                element.classList.add('animate-shake');
+            }
+        }
+
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationFrameId;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function fireConfetti() {
+            const colors = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
+            particles = [];
+
+            // Create 100 particles
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 100,
+                    r: Math.random() * 10 + 5, // radius/size
+                    dx: Math.random() * 20 - 10, // velocity x
+                    dy: Math.random() * -15 - 5, // velocity y (upwards)
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngleIncrement: (Math.random() * 0.07) + 0.05,
+                    tiltAngle: 0
+                });
+            }
+
+            if (!animationFrameId) {
+                animateConfetti();
+            }
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let activeParticles = 0;
+
+            particles.forEach((p) => {
+                p.tiltAngle += p.tiltAngleIncrement;
+                p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
+                p.x += Math.sin(p.tiltAngle) * 2;
+                p.dy += 0.2; // Gravity
+                p.y += p.dy;
+
+                if (p.y <= canvas.height) {
+                    activeParticles++;
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                    ctx.stroke();
+                }
+            });
+
+            if (activeParticles > 0) {
+                animationFrameId = requestAnimationFrame(animateConfetti);
+            } else {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear when done
+            }
+        }
+    </script>
+</body>
+
+</html>
