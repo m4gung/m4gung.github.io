@@ -308,6 +308,7 @@
             // Pick a random target color
             const targetIndex = Math.floor(Math.random() * colors.length);
             targetColor = colors[targetIndex];
+            speakText('Beri makan Dino warna ' + targetColor.name);
 
             // Update UI
             document.getElementById('color-name').textContent = targetColor.name;
@@ -372,10 +373,11 @@
                 setTimeout(() => {
                     loadNextLevel();
                 }, 2000);
-
+                speakText('Pintar!');
             } else {
                 // Wrong!
                 playSound('wrong');
+                speakText('Salah, coba lagi!');
 
                 // Shake the wrong item
                 element.classList.remove('animate-shake'); // Reset animation
@@ -448,6 +450,23 @@
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
                 ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear when done
+            }
+        }
+
+        // Fungsi Teks ke Suara (Web Speech API)
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                // Hentikan suara yang sedang berjalan agar tidak bertumpuk
+                window.speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID'; // Bahasa Indonesia
+                utterance.rate = 0.85;    // Lebih lambat sedikit agar mudah dipahami anak
+                utterance.pitch = 1.3;    // Nada suara agak tinggi agar terdengar bersahabat
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.warn("Browser tidak mendukung Web Speech API");
             }
         }
     </script>
