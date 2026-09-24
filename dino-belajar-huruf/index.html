@@ -187,15 +187,27 @@
     <!-- Game Screen -->
     <div id="game-screen" class="hidden w-full max-w-4xl flex-col items-center justify-between h-full py-6 px-4">
 
-        <!-- Papan Instruksi -->
-        <div class="text-center mt-2 z-10">
+        <!-- Papan Instruksi dengan Tombol Suara -->
+        <div class="flex flex-row items-center justify-center mt-2 z-10 gap-2 sm:gap-4">
             <div
-                class="bg-white/90 px-8 py-3 rounded-full border-4 border-blue-400 shadow-[0_6px_0_#60A5FA] inline-block">
-                <h2 class="text-3xl md:text-5xl font-fredoka text-gray-700">
-                    Cari huruf: <span id="target-letter-display"
+                class="bg-white/90 px-6 sm:px-8 py-3 rounded-full border-4 border-blue-400 shadow-[0_6px_0_#60A5FA] inline-block">
+                <h2 class="text-3xl md:text-5xl font-fredoka text-gray-700 m-0">
+                    Cari: <span id="target-letter-display"
                         class="text-red-500 text-5xl md:text-6xl inline-block ml-2 animate-bounce text-shadow-sm">A</span>
                 </h2>
             </div>
+
+            <!-- Tombol Ulangi Suara -->
+            <button onclick="speakInstruction()"
+                class="bg-yellow-400 hover:bg-yellow-300 text-white p-3 sm:p-4 rounded-full shadow-[0_6px_0_#CA8A04] hover:shadow-[0_2px_0_#CA8A04] hover:translate-y-1 transition-all border-4 border-white flex items-center justify-center"
+                aria-label="Ulangi Suara">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 sm:h-10 sm:w-10 text-white drop-shadow-md"
+                    viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
         </div>
 
         <!-- Karakter Dino -->
@@ -283,6 +295,24 @@
             }
         }
 
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Hentikan antrean suara sebelumnya
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID'; // Logat Indonesia
+                utterance.rate = 0.9;     // Sedikit lebih lambat agar mudah didengar anak
+                utterance.pitch = 1.2;    // Nada sedikit tinggi agar terdengar ramah
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Fungsi khusus untuk membacakan instruksi soal
+        function speakInstruction() {
+            if (targetLetter) {
+                speakText(`Temukan huruf ${targetLetter}`);
+            }
+        }
+
         // Generate SVG Dino (T-Rex)
         function renderDino(isHappy = false) {
             const mouth = isHappy ?
@@ -320,6 +350,10 @@
 
         function startGame() {
             initAudio();
+
+            // Pancing Web Speech API agar aktif pada interaksi pertama (penting untuk browser modern)
+            speakText("Ayo bermain!");
+
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
             document.getElementById('game-screen').classList.add('flex');
@@ -374,6 +408,11 @@
                 egg.onclick = () => handleEggClick(letter, egg);
                 container.appendChild(egg);
             });
+
+            // Ucapkan instruksi suara setengah detik setelah telur dimuat
+            setTimeout(() => {
+                speakInstruction();
+            }, 500);
         }
 
         function handleEggClick(clickedLetter, element) {
@@ -383,6 +422,7 @@
                 // Jawaban Benar
                 isAnimating = true;
                 playSound('success');
+                speakText(`Pintar! Itu huruf ${targetLetter}`);
 
                 // Telur pecah/menghilang
                 element.classList.add('animate-pop');
@@ -400,11 +440,12 @@
                 // Lanjut ke level berikutnya setelah delay
                 setTimeout(() => {
                     loadNextLevel();
-                }, 2000);
+                }, 3000); // Waktu ditambah sedikit agar audio suara selesai berbicara
 
             } else {
                 // Jawaban Salah
                 playSound('wrong');
+                speakText('Ups, coba lagi');
 
                 // Efek getar dan ubah warna sedikit pudar
                 element.classList.remove('animate-shake');
