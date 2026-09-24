@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pintar Benda Rumah</title>
+
+    <!-- Memuat Font Ramah Anak -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            red: '#ffb3ba',
+                            orange: '#ffdfba',
+                            yellow: '#ffffba',
+                            green: '#baffc9',
+                            blue: '#bae1ff',
+                            purple: '#e8baff',
+                            pink: '#ffc6ff',
+                            cyan: '#9bf6ff',
+                            lime: '#caffbf',
+                            teal: '#a0c4ff',
+                            brown: '#e5d3b3'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            /* Mencegah highlight biru saat anak-anak menyentuh layar */
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* Animasi Tombol Membal (Bouncy) */
+        .btn-bouncy {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:active {
+            transform: translateY(8px) scale(0.95);
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        /* State disabled tidak boleh bouncy saat diklik */
+        .btn-bouncy:disabled {
+            transform: none !important;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1) !important;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        /* Animasi Pop saat item ditekan di mode belajar */
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.4s ease-out;
+        }
+
+        /* Animasi Bergetar (Shake) untuk jawaban salah */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0) rotate(var(--random-rot, 0deg));
+            }
+
+            20%,
+            60% {
+                transform: translateX(-15px) rotate(calc(var(--random-rot, 0deg) - 10deg));
+            }
+
+            40%,
+            80% {
+                transform: translateX(15px) rotate(calc(var(--random-rot, 0deg) + 10deg));
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.5s;
+        }
+
+        /* Animasi Kemenangan / Sukses */
+        @keyframes successPop {
+            0% {
+                transform: scale(1) rotate(var(--random-rot, 0deg));
+            }
+
+            50% {
+                transform: scale(1.3) rotate(0deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .animate-success {
+            animation: successPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            z-index: 10;
+        }
+
+        /* Animasi judul melayang */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Area berserakan (Messy Room) */
+        .messy-room {
+            background-image: radial-gradient(#ffffff 20%, transparent 20%), radial-gradient(#ffffff 20%, transparent 20%);
+            background-color: #fef3c7;
+            /* Warna hangat seperti ruangan */
+            background-position: 0 0, 25px 25px;
+            background-size: 50px 50px;
+            border-radius: 2rem;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-orange-50 min-h-screen text-gray-800 overflow-x-hidden flex flex-col font-sans">
+
+    <div class="max-w-5xl mx-auto px-4 py-6 flex flex-col w-full flex-1">
+
+        <header class="text-center mb-6">
+            <h1 class="text-4xl md:text-5xl font-black text-orange-500 mb-6 drop-shadow-sm animate-float">
+                🏠 Pintar Benda Rumah 🧸
+            </h1>
+
+            <div class="flex justify-center gap-4 bg-white/80 p-2 rounded-full shadow-sm max-w-sm mx-auto">
+                <button onclick="switchMode('learn')" id="btn-mode-learn"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-orange-400 text-white shadow-[0_4px_0_#ea580c] transition-all btn-bouncy">
+                    Belajar
+                </button>
+                <button onclick="switchMode('play')" id="btn-mode-play"
+                    class="flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all">
+                    Bermain
+                </button>
+            </div>
+        </header>
+
+        <main id="mode-learn" class="flex-1 flex flex-col">
+            <div class="text-center mb-6">
+                <p
+                    class="text-xl font-bold text-gray-600 bg-white inline-block px-6 py-2 rounded-full shadow-sm border-2 border-orange-100">
+                    Sentuh bendanya untuk belajar! 👇
+                </p>
+            </div>
+
+            <!-- Grid Benda -->
+            <div id="learn-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 pb-10">
+                <!-- Diisi otomatis oleh JavaScript -->
+            </div>
+        </main>
+
+        <main id="mode-play" class="flex-1 flex flex-col hidden pb-10 w-full">
+            <div class="max-w-3xl mx-auto w-full">
+                <div
+                    class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm mb-4 border-4 border-orange-200">
+                    <div class="text-xl font-black text-orange-500 flex items-center gap-2">
+                        <span>⭐ Skor:</span>
+                        <span id="score-display" class="text-2xl">0</span>
+                    </div>
+                    <button onclick="repeatQuestion()"
+                        class="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-xl font-bold btn-bouncy flex items-center gap-2 border-2 border-white shadow-sm">
+                        🔊 Ulangi Suara
+                    </button>
+                </div>
+
+                <div class="bg-white p-4 rounded-[2rem] shadow-sm text-center mb-6 border-b-8 border-orange-200">
+                    <p id="instruction-text" class="text-2xl md:text-3xl font-bold text-gray-700 leading-snug">
+                        Mendengarkan...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Area Bermain (Kamar Berserakan) -->
+            <div id="play-area"
+                class="messy-room flex-1 relative flex flex-wrap justify-center items-center p-8 gap-4 md:gap-8 min-h-[400px]">
+                <!-- Diisi otomatis oleh JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Data Benda Sehari-hari di Rumah
+        const houseItems = [
+            { id: 'kasur', name: 'Kasur', emoji: '🛏️', bgClass: 'bg-pastel-blue' },
+            { id: 'piring', name: 'Piring', emoji: '🍽️', bgClass: 'bg-pastel-orange' },
+            { id: 'kursi', name: 'Kursi', emoji: '🪑', bgClass: 'bg-pastel-yellow' },
+            { id: 'buku', name: 'Buku', emoji: '📖', bgClass: 'bg-pastel-purple' },
+            { id: 'tv', name: 'TV', emoji: '📺', bgClass: 'bg-pastel-green' },
+            { id: 'sofa', name: 'Sofa', emoji: '🛋️', bgClass: 'bg-pastel-pink' },
+            { id: 'boneka', name: 'Boneka', emoji: '🧸', bgClass: 'bg-pastel-cyan' },
+            { id: 'jam', name: 'Jam', emoji: '🕰️', bgClass: 'bg-pastel-lime' }
+        ];
+
+        let currentMode = 'learn';
+        let score = 0;
+        let currentTarget = null;
+        let audioCtx = null;
+
+        const learnGrid = document.getElementById('learn-grid');
+        const playArea = document.getElementById('play-area');
+        const instructionText = document.getElementById('instruction-text');
+        const scoreDisplay = document.getElementById('score-display');
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Sintesis suara efek singkat tanpa file MP3
+        function playSFX(type) {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            if (type === 'success') {
+                // Suara "Ting! Ting!" riang
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.5, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+                osc.start(now);
+                osc.stop(now + 0.5);
+
+            } else if (type === 'fail') {
+                // Suara "Boing/Tet-tot" rendah
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(150, now + 0.3);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.3, now + 0.1);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        function speak(text, callback = null) {
+            // Batalkan percakapan sebelumnya
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.pitch = 1.2; // Suara sedikit tinggi agar terdengar ramah
+            utterance.rate = 0.9;  // Sedikit lambat agar anak mudah mencerna
+
+            utterance.onend = () => {
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function renderLearnMode() {
+            learnGrid.innerHTML = '';
+            houseItems.forEach(item => {
+                const card = document.createElement('button');
+                // Desain kartu kotak membulat
+                card.className = `${item.bgClass} flex flex-col items-center justify-center p-6 md:p-8 rounded-3xl border-4 border-white btn-bouncy`;
+
+                card.innerHTML = `
+                    <span class="text-6xl md:text-8xl mb-4 drop-shadow-md">${item.emoji}</span>
+                    <span class="text-2xl md:text-3xl font-black text-gray-700 capitalize">${item.name}</span>
+                `;
+
+                card.onclick = () => {
+                    initAudio();
+                    // Reset animasi pop
+                    card.classList.remove('animate-pop');
+                    void card.offsetWidth; // Trigger reflow
+                    card.classList.add('animate-pop');
+
+                    // Baca nama benda
+                    speak(item.name);
+                };
+
+                learnGrid.appendChild(card);
+            });
+        }
+
+        function startPlayMode() {
+            initAudio();
+            score = 0;
+            updateScoreDisplay();
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            // Matikan klik sementara saat mendengarkan soal
+            const allBtns = playArea.querySelectorAll('button');
+            allBtns.forEach(b => b.disabled = true);
+
+            instructionText.textContent = "Mendengarkan...";
+
+            // Pilih benda acak yang akan dicari
+            const randomIndex = Math.floor(Math.random() * houseItems.length);
+            currentTarget = houseItems[randomIndex];
+
+            // Tampilkan 6 item acak (termasuk yang benar) agar tidak terlalu penuh
+            let wrongOptions = houseItems.filter(i => i.id !== currentTarget.id);
+            wrongOptions = wrongOptions.sort(() => 0.5 - Math.random()).slice(0, 5); // Ambil 5 salah
+
+            let displayItems = [currentTarget, ...wrongOptions];
+            displayItems = displayItems.sort(() => 0.5 - Math.random()); // Acak posisinya
+
+            playArea.innerHTML = '';
+
+            displayItems.forEach(item => {
+                const btn = document.createElement('button');
+
+                // Rotasi acak dari -20 derajat hingga 20 derajat untuk efek "berserakan"
+                const randomRot = Math.floor(Math.random() * 40) - 20;
+                // Scale acak sedikit
+                const randomScale = (Math.random() * 0.2 + 0.9).toFixed(2); // 0.9 to 1.1
+
+                btn.style.setProperty('--random-rot', `${randomRot}deg`);
+                btn.style.transform = `rotate(${randomRot}deg) scale(${randomScale})`;
+                btn.style.margin = `${Math.floor(Math.random() * 15)}px`;
+
+                btn.className = `${item.bgClass} flex flex-col items-center justify-center p-6 md:p-8 rounded-[2rem] border-4 border-white btn-bouncy relative`;
+
+                btn.innerHTML = `<span class="text-6xl md:text-7xl drop-shadow-md pointer-events-none">${item.emoji}</span>`;
+
+                btn.disabled = true; // Disabled saat bicara
+                btn.onclick = () => checkAnswer(item.id, btn);
+                playArea.appendChild(btn);
+            });
+
+            // Beri instruksi suara
+            speak(`Tolong cari ${currentTarget.name}!`, () => {
+                instructionText.innerHTML = `Tolong cari <span class="text-orange-500">${currentTarget.name}</span>!`;
+                // Buka kunci tombol
+                const renderedBtns = playArea.querySelectorAll('button');
+                renderedBtns.forEach(b => b.disabled = false);
+            });
+        }
+
+        function repeatQuestion() {
+            if (currentTarget) {
+                const renderedBtns = playArea.querySelectorAll('button');
+                renderedBtns.forEach(b => b.disabled = true);
+
+                instructionText.textContent = "Mendengarkan...";
+
+                speak(`Tolong cari ${currentTarget.name}!`, () => {
+                    instructionText.innerHTML = `Tolong cari <span class="text-orange-500">${currentTarget.name}</span>!`;
+                    renderedBtns.forEach(b => b.disabled = false);
+                });
+            }
+        }
+
+        function checkAnswer(selectedId, btnElement) {
+            if (selectedId === currentTarget.id) {
+                // Jawaban Benar
+                playSFX('success');
+
+                // Styling visual menang (hijau, bayangan besar, z-index naik)
+                btnElement.classList.remove(currentTarget.bgClass);
+                btnElement.classList.add('bg-green-300', 'border-green-100', 'shadow-[0_0_30px_rgba(74,222,128,0.6)]');
+
+                btnElement.classList.remove('animate-shake');
+                btnElement.classList.add('animate-success');
+
+                // Kunci semua tombol
+                const allBtns = playArea.querySelectorAll('button');
+                allBtns.forEach(b => { b.disabled = true; b.onclick = null; });
+
+                instructionText.textContent = `🎉 Pintar! Itu ${currentTarget.name}! 🎉`;
+
+                speak(`Pintar! Itu ${currentTarget.name}!`, () => {
+                    score += 10;
+                    updateScoreDisplay();
+                    setTimeout(nextQuestion, 1200); // Lanjut ke soal berikutnya
+                });
+
+            } else {
+                // Jawaban Salah
+                playSFX('fail');
+
+                // Memicu animasi getar ulang
+                btnElement.classList.remove('animate-shake');
+                void btnElement.offsetWidth; // Reflow
+                btnElement.classList.add('animate-shake');
+
+                speak("Ups, coba lagi!");
+            }
+        }
+
+        function updateScoreDisplay() {
+            scoreDisplay.textContent = score;
+        }
+
+        function switchMode(mode) {
+            window.speechSynthesis.cancel();
+            currentMode = mode;
+
+            const btnLearn = document.getElementById('btn-mode-learn');
+            const btnPlay = document.getElementById('btn-mode-play');
+            const viewLearn = document.getElementById('mode-learn');
+            const viewPlay = document.getElementById('mode-play');
+
+            if (mode === 'learn') {
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-orange-400 text-white shadow-[0_4px_0_#ea580c] transition-all btn-bouncy";
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+
+                viewLearn.classList.remove('hidden');
+                viewPlay.classList.add('hidden');
+
+                speak("Sentuh bendanya untuk belajar!");
+            } else {
+                btnPlay.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-teal-400 text-white shadow-[0_4px_0_#2dd4bf] transition-all btn-bouncy";
+                btnLearn.className = "flex-1 py-3 px-4 rounded-full font-bold text-lg bg-white text-gray-500 shadow-none transition-all";
+
+                viewLearn.classList.add('hidden');
+                viewPlay.classList.remove('hidden');
+
+                startPlayMode();
+            }
+        }
+
+        // Inisialisasi awal saat dimuat
+        window.onload = () => {
+            renderLearnMode();
+        };
+    </script>
+</body>
+
+</html>
