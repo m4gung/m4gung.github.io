@@ -1,0 +1,16 @@
+{
+    "name": "Kenali Dinosaurus",
+    "short_name": "Kenali Dinosaurus",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#fff",
+    "theme_color": "#fff",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}
