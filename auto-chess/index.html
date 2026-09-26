@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magic Clash Go - Star 3 & Temporary Slot Edition</title>
+  <style>
+    :root {
+      --bg: #070914;
+      --card-bg: rgba(18, 24, 43, 0.9);
+      --cyan: #00f2fe;
+      --purple: #9d4edd;
+      --gold: #ffbe0b;
+      --rose: #ff0054;
+      --green: #06d6a0;
+      --temp-gold: #ff9f1c;
+      --dark-tile: rgba(22, 30, 52, 0.7);
+      --p1-tile: rgba(0, 150, 255, 0.12);
+      --p2-tile: rgba(255, 0, 85, 0.12);
+      --p1-border: #00e5ff;
+      --p2-border: #ff3366;
+      /* Hero Cost Colors */
+      --c1: #8b9bb4;
+      --c2: #06d6a0;
+      --c3: #00f2fe;
+      --c4: #9d4edd;
+      --c5: #ffbe0b;
+    }
+    * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      background: radial-gradient(circle at 50% 10%, #171d36 0%, var(--bg) 80%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 10px;
+    }
+
+    .screen-shake {
+      animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-2px, 0, 0); }
+      20%, 80% { transform: translate3d(3px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    header {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 10px 18px;
+      margin-bottom: 8px;
+      backdrop-filter: blur(12px);
+    }
+    .game-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--cyan), var(--purple), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1.5px;
+    }
+    .header-btns { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      background: #1e2842;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn:hover { background: #2c3a5e; transform: translateY(-2px); }
+    .btn-gold { background: linear-gradient(135deg, #d4a017, #fcd34d); color: #0a0e17; border: none; }
+    .btn-gold:hover { filter: brightness(1.15); }
+    
+    .btn-lock {
+      background: #1e2842;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #8b9bb4;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-lock.locked {
+      background: rgba(255, 190, 11, 0.18);
+      border-color: var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 10px rgba(255, 190, 11, 0.35);
+    }
+
+    .game-container {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 960px;
+    }
+    @media (max-width: 800px) {
+      .game-container { grid-template-columns: 1fr; }
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(10px);
+    }
+    .card-heading {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #8b9bb4;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .tournament-list { display: flex; flex-direction: column; gap: 6px; }
+    .lobby-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+    }
+    .lobby-item.current-enemy {
+      border: 1px solid var(--rose);
+      background: rgba(255, 0, 84, 0.15);
+      box-shadow: 0 0 10px rgba(255, 0, 84, 0.3);
+    }
+    .lobby-item.eliminated { opacity: 0.35; text-decoration: line-through; }
+    .lobby-hp-bar {
+      width: 60px;
+      height: 6px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+    .lobby-hp-val { height: 100%; background: var(--green); }
+
+    .synergy-list { display: flex; flex-direction: column; gap: 5px; }
+    .synergy-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.03);
+      border-left: 3px solid #444;
+    }
+    .synergy-item.active {
+      background: rgba(0, 242, 254, 0.1);
+      border-left: 3px solid var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.15);
+      color: #fff;
+    }
+
+    /* ARENA & SIDELINE */
+    .arena-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+    .turn-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      background: var(--card-bg);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.85rem;
+    }
+    .phase-badge {
+      background: linear-gradient(135deg, var(--purple), #5a189a);
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .commander-sideline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .sideline-avatar {
+      font-size: 2.2rem;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .sideline-avatar.cheer {
+      animation: cheerJump 0.5s ease;
+    }
+    .sideline-avatar.panic {
+      animation: panicShake 0.4s ease;
+    }
+    @keyframes cheerJump {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-14px) scale(1.3) rotate(8deg); }
+    }
+    @keyframes panicShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px) rotate(-10deg); }
+      75% { transform: translateX(8px) rotate(10deg); }
+    }
+
+    /* BOARD 6x6 */
+    .board-container {
+      position: relative;
+      background: #0d1222;
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    #combatCanvas {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 54px);
+      grid-template-rows: repeat(6, 54px);
+      gap: 5px;
+      z-index: 2;
+    }
+    @media (max-width: 480px) {
+      .board-grid {
+        grid-template-columns: repeat(6, 45px);
+        grid-template-rows: repeat(6, 45px);
+        gap: 3px;
+      }
+    }
+    .cell {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      background: var(--dark-tile);
+      border: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.15s;
+    }
+    .cell.p2-zone { background: var(--p2-tile); border-color: rgba(255,51,102,0.2); }
+    .cell.p1-zone { background: var(--p1-tile); border-color: rgba(0,229,255,0.2); }
+    .cell.drag-over { border-color: var(--cyan); background: rgba(0,242,254,0.25) !important; }
+
+    /* HERO PIECE & STAR 3 AURA */
+    .hero-piece {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      transition: transform 0.15s;
+    }
+    @media (max-width: 480px) {
+      .hero-piece { width: 40px; height: 40px; }
+    }
+    .hero-piece:hover { transform: scale(1.1); z-index: 5; }
+    .hero-piece.p1 { border: 2px solid var(--p1-border); background: linear-gradient(135deg, #102138, #182e4e); box-shadow: 0 0 10px rgba(0,229,255,0.3); }
+    .hero-piece.p2 { border: 2px solid var(--p2-border); background: linear-gradient(135deg, #2b1222, #411732); box-shadow: 0 0 10px rgba(255,51,102,0.3); }
+
+    /* BINTANG 3 GLOWING RAINBOW EFFECT */
+    .hero-piece.star-3 {
+      border: 2px solid #ffd700 !important;
+      animation: rainbowGlow 2s infinite linear;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.7) !important;
+    }
+    @keyframes rainbowGlow {
+      0% { filter: drop-shadow(0 0 4px #ff0054); }
+      33% { filter: drop-shadow(0 0 5px #00f2fe); }
+      66% { filter: drop-shadow(0 0 5px #ffbe0b); }
+      100% { filter: drop-shadow(0 0 4px #ff0054); }
+    }
+
+    .hero-emoji { font-size: 1.35rem; line-height: 1; }
+    .stars {
+      position: absolute;
+      top: 1px;
+      font-size: 0.6rem;
+      letter-spacing: -1px;
+      color: var(--gold);
+      text-shadow: 0 0 4px #000;
+    }
+    .hp-bar-wrap {
+      position: absolute;
+      bottom: 2px;
+      width: 82%;
+      height: 3px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .hp-bar { width: 100%; height: 100%; background: #06d6a0; }
+    .mana-bar-wrap {
+      position: absolute;
+      bottom: 6px;
+      width: 82%;
+      height: 2px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .mana-bar { width: 0%; height: 100%; background: var(--cyan); }
+
+    /* BENCH, TEMPORARY SLOTS & SELL ZONE */
+    .bench-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .bench-grid {
+      display: flex;
+      gap: 5px;
+      background: var(--card-bg);
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      flex: 1;
+    }
+    .bench-slot {
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(255,255,255,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* SLOT SEMENTARA (TEMPORARY BUFFER) */
+    .temp-bench-grid {
+      display: flex;
+      gap: 5px;
+      background: rgba(255, 159, 28, 0.08);
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px dashed var(--temp-gold);
+      position: relative;
+    }
+    .temp-slot {
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      background: rgba(255, 159, 28, 0.04);
+      border: 1px dashed rgba(255, 159, 28, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .temp-label {
+      position: absolute;
+      top: -9px;
+      left: 8px;
+      background: #1f1708;
+      border: 1px solid var(--temp-gold);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.58rem;
+      font-weight: bold;
+      color: var(--temp-gold);
+      letter-spacing: 0.5px;
+    }
+
+    .sell-zone {
+      width: 130px;
+      background: rgba(255,0,84,0.08);
+      border: 1px dashed var(--rose);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--rose);
+      font-size: 0.72rem;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    .sell-zone.drag-over { background: rgba(255,0,84,0.3); transform: scale(1.05); }
+
+    /* SHOP & ODDS SECTION */
+    .shop-section {
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+    }
+    .shop-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .odds-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.7rem;
+      background: rgba(255,255,255,0.03);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .odd-tag {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      font-weight: bold;
+    }
+    .odd-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    .shop-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 500px) {
+      .shop-cards { grid-template-columns: repeat(3, 1fr); }
+    }
+    .hero-card {
+      background: linear-gradient(180deg, #182238 0%, #111728 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 8px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .hero-card:hover { transform: translateY(-3px); border-color: var(--cyan); }
+    .hero-card.cost-1 { border-top: 3px solid var(--c1); }
+    .hero-card.cost-2 { border-top: 3px solid var(--c2); }
+    .hero-card.cost-3 { border-top: 3px solid var(--c3); }
+    .hero-card.cost-4 { border-top: 3px solid var(--c4); }
+    .hero-card.cost-5 { border-top: 3px solid var(--c5); box-shadow: 0 0 8px rgba(255,190,11,0.25); }
+    .card-icon { font-size: 1.6rem; margin-bottom: 2px; }
+    .card-name { font-size: 0.75rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .card-traits { font-size: 0.65rem; color: #8b9bb4; margin-bottom: 4px; }
+    .card-cost { font-size: 0.75rem; font-weight: bold; color: var(--gold); }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-card {
+      background: #131a2e;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 16px;
+      padding: 22px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 16px 45px rgba(0,0,0,0.8);
+      position: relative;
+    }
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 14px;
+      color: var(--cyan);
+      text-align: center;
+    }
+    .close-modal-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: transparent;
+      border: none;
+      color: #8b9bb4;
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+
+    /* HERO DETAIL */
+    .hero-detail-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+    }
+    .hero-detail-icon {
+      font-size: 3rem;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,242,254,0.1);
+      border: 2px solid var(--cyan);
+      border-radius: 14px;
+    }
+    .hero-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .hero-stat-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+    .hero-skill-box {
+      background: rgba(157, 78, 221, 0.12);
+      border: 1px solid rgba(157, 78, 221, 0.3);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .commander-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .cmd-choice {
+      background: #182238;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .cmd-choice:hover { border-color: var(--gold); }
+    .cmd-choice.selected { border-color: var(--gold); background: rgba(255,190,11,0.12); }
+    .cmd-choice .cmd-icon { font-size: 1.8rem; }
+    .cmd-choice .cmd-name { font-size: 0.75rem; font-weight: bold; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="game-title">⚔️ MAGIC CLASH GO (STAR 3 & TEMP SLOTS)</div>
+    <div class="header-btns">
+      <span id="rankBadge" style="font-size: 0.85rem; font-weight: bold; color: var(--gold);">🏅 Bronze III</span>
+      <button class="btn btn-gold" id="btnRestart">🔄 Main Ulang</button>
+    </div>
+  </header>
+
+  <!-- GAME CONTAINER -->
+  <div class="game-container" id="mainContainer">
+    
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="card-heading">
+        <span>KLASEMEN TURNAMEN</span>
+        <span style="font-size: 0.65rem; color: var(--cyan);">5 PESERTA</span>
+      </div>
+      <div class="tournament-list" id="tournamentStandings"></div>
+
+      <div class="card-heading" style="margin-top: 6px;">SINERGI AKTIF</div>
+      <div class="synergy-list" id="synergyList"></div>
+    </div>
+
+    <!-- ARENA WRAPPER -->
+    <div class="arena-wrapper">
+      <div class="turn-bar">
+        <div>
+          <span style="font-weight: bold; color: var(--cyan); font-size: 0.95rem;" id="roundDisplay">Ronde 1</span>
+          <span style="font-size: 0.75rem; color: #ff8fab; margin-left: 8px;" id="enemyTargetDisplay">Lawan: Bot Alpha</span>
+        </div>
+        <div>
+          Fase: <span class="phase-badge" id="phaseDisplay">Persiapan</span>
+          <span id="timerDisplay" style="margin-left: 6px; font-weight: bold; color: var(--gold);">20s</span>
+        </div>
+        <button class="btn btn-gold" id="btnStartBattle" style="padding: 5px 12px; font-size: 0.8rem;">⚔️ Mulai Duel</button>
+      </div>
+
+      <!-- BOT COMMANDER (TOP SIDELINE) -->
+      <div class="commander-sideline" id="botCommanderSideline">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="sideline-avatar" id="botCmdSidelineIcon">🤖</div>
+          <div>
+            <h4 id="botCmdSidelineName" style="font-size:0.85rem; color:var(--rose);">Bot Alpha</h4>
+            <p id="botCmdSidelineSkill" style="font-size:0.65rem; color:#8b9bb4;">Frontline Aggro</p>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span style="font-size:0.8rem; font-weight:bold; color:var(--rose);" id="botCmdSidelineHp">100 HP</span>
+        </div>
+      </div>
+
+      <!-- BOARD 6x6 -->
+      <div class="board-container" id="boardBox">
+        <canvas id="combatCanvas" width="348" height="348"></canvas>
+        <div class="board-grid" id="boardGrid"></div>
+      </div>
+
+      <!-- PLAYER COMMANDER (BOTTOM SIDELINE) -->
+      <div class="commander-sideline" id="playerCommanderSideline">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="sideline-avatar" id="playerCmdSidelineIcon">🛡️</div>
+          <div>
+            <h4 id="playerCmdSidelineName" style="font-size:0.85rem; color:var(--cyan);">Harper</h4>
+            <p id="playerCmdSidelineSkill" style="font-size:0.65rem; color:#8b9bb4;">Shield Guard (+150 HP)</p>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span style="font-size:0.8rem; font-weight:bold; color:var(--green);" id="playerCmdSidelineHp">100 HP</span>
+        </div>
+      </div>
+
+      <!-- BENCH, TEMPORARY SLOTS & SELL ZONE -->
+      <div class="bench-row">
+        <!-- Main Bench (6 Slots) -->
+        <div class="bench-grid" id="benchGrid" title="Bench Utama"></div>
+
+        <!-- Temporary Buffer Slots (2 Slots) -->
+        <div class="temp-bench-grid" id="tempBenchGrid" title="Slot Sementara (Otomatis terjual saat ronde berakhir)">
+          <div class="temp-label">SLOT SEMENTARA ⏳</div>
+          <!-- 2 slots -->
+        </div>
+
+        <!-- Sell Zone -->
+        <div class="sell-zone" id="sellZone">
+          <div>🗑️ JUAL HERO</div>
+          <div style="font-size: 0.65rem; color: #ff8fab;">Drag atau Klik Detail</div>
+        </div>
+      </div>
+
+      <!-- SHOP -->
+      <div class="shop-section">
+        <div class="shop-controls">
+          <div>
+            💰 <span id="goldDisplay" style="color: var(--gold); font-weight: bold; font-size: 1rem;">10</span> Gold | 
+            ⭐ Lv.<span id="lvlDisplay">1</span> (<span id="xpDisplay">0</span>/<span id="xpMaxDisplay">4</span> EXP)
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="btn btn-lock" id="btnLockShop" title="Kunci agar toko tidak ter-refresh">
+              <span id="lockIcon">🔓</span> <span id="lockText">Kunci</span>
+            </button>
+            <button class="btn btn-gold" id="btnLevelUp" style="font-size: 0.75rem;">Naikkan Level (4g)</button>
+            <button class="btn" id="btnReroll" style="font-size: 0.75rem;">🔄 Reroll (2g)</button>
+          </div>
+        </div>
+
+        <!-- ODDS PROBABILITY DISPLAY -->
+        <div class="odds-bar" id="oddsDisplay">
+          <span style="color:#8b9bb4; font-weight:normal;">Peluang:</span>
+          <span class="odd-tag" style="color:var(--c1)"><span class="odd-dot" style="background:var(--c1)"></span>1: <b id="odd1">100%</b></span>
+          <span class="odd-tag" style="color:var(--c2)"><span class="odd-dot" style="background:var(--c2)"></span>2: <b id="odd2">0%</b></span>
+          <span class="odd-tag" style="color:var(--c3)"><span class="odd-dot" style="background:var(--c3)"></span>3: <b id="odd3">0%</b></span>
+          <span class="odd-tag" style="color:var(--c4)"><span class="odd-dot" style="background:var(--c4)"></span>4: <b id="odd4">0%</b></span>
+          <span class="odd-tag" style="color:var(--c5)"><span class="odd-dot" style="background:var(--c5)"></span>5: <b id="odd5">0%</b></span>
+        </div>
+
+        <div class="shop-cards" id="shopCards"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: DETAIL HERO -->
+  <div class="modal-overlay hidden" id="heroDetailModal">
+    <div class="modal-card">
+      <button class="close-modal-btn" id="btnCloseDetail">✕</button>
+      <div class="hero-detail-header">
+        <div class="hero-detail-icon" id="dtIcon">🛡️</div>
+        <div>
+          <h3 id="dtName" style="font-size: 1.2rem; color: #fff;">Tigreal</h3>
+          <div id="dtStars" style="color: var(--gold); font-size: 0.9rem; margin-top: 2px;">★★☆</div>
+          <div id="dtTraits" style="font-size: 0.75rem; color: var(--cyan); margin-top: 4px;">Warrior • Mech</div>
+        </div>
+      </div>
+
+      <div class="hero-stats-grid">
+        <div class="hero-stat-box"><span>❤️ Darah (HP):</span> <b id="dtHp">650</b></div>
+        <div class="hero-stat-box"><span>⚔️ Serangan (ATK):</span> <b id="dtAtk">45</b></div>
+        <div class="hero-stat-box"><span>🎯 Jarak Serang:</span> <b id="dtRange">1 Petak</b></div>
+        <div class="hero-stat-box"><span>💧 Max Mana:</span> <b>100 MP</b></div>
+      </div>
+
+      <div class="hero-skill-box">
+        <div style="font-size: 0.8rem; font-weight: bold; color: #c77dff; margin-bottom: 4px;">
+          ✨ Ultimate Skill: <span id="dtUltName">Hammer Crash</span>
+        </div>
+        <div id="dtUltDesc" style="font-size: 0.75rem; color: #d8b4fe; line-height: 1.4;">
+          Menghantam tanah memberikan magic damage dan guncangan area ke musuh.
+        </div>
+      </div>
+
+      <div id="detailActionBtns" style="display: flex; gap: 8px;">
+        <button class="btn btn-gold" id="btnQuickSell" style="flex: 1; padding: 10px;">🗑️ Jual Hero (Refund)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PILIH COMMANDER -->
+  <div class="modal-overlay" id="startModal">
+    <div class="modal-card">
+      <div class="modal-title">TURNAMEN 5 PEMAIN (1v4 BOTS)</div>
+      <p style="font-size: 0.8rem; color: #8b9bb4; margin-bottom: 14px;">
+        Kumpulkan 3 hero bintang 2 untuk membuat <b>Hero Bintang 3 (★★★)</b> berkekuatan monster! Manfaatkan <b>Slot Sementara</b> jika bench penuh; hero yang tersisa di slot sementara akan otomatis dijual saat ronde berakhir.
+      </p>
+
+      <div style="font-size: 0.8rem; color: #8b9bb4; margin-bottom: 6px; text-align: left;">Pilih Little Commander:</div>
+      <div class="commander-grid" id="commanderGrid"></div>
+
+      <button class="btn btn-gold" id="btnStartGame" style="width: 100%; padding: 12px; font-size: 0.95rem;">MASUK ARENA TURNAMEN</button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT GAME LOGIC -->
+  <script>
+    /* ==========================================================================
+       DATA: COMMANDERS, ROSTER & LEVEL ODDS
+       ========================================================================== */
+    const COMMANDERS = [
+      { id: 'harper', name: 'Harper', icon: '🛡️', skill: 'Shield (+150 HP Frontline)', hp: 100 },
+      { id: 'remy', name: 'Remy', icon: '💰', skill: 'Diskon Reroll & Extra Gold', hp: 100 },
+      { id: 'eva', name: 'Eva', icon: '⚡', skill: 'Frenzy (+25% Atk Speed)', hp: 100 },
+      { id: 'ragnar', name: 'Ragnar', icon: '🩸', skill: 'Lifesteal (+20% Regen)', hp: 100 },
+      { id: 'yuki', name: 'Yuki', icon: '❄️', skill: 'Mana Surge (+40 Mana Awal)', hp: 100 },
+      { id: 'ling', name: 'Ling', icon: '🗡️', skill: 'Crit Mastery (+20% Crit)', hp: 100 }
+    ];
+
+    const LEVEL_EXP_REQ = {
+      1: 4,
+      2: 8,
+      3: 14,
+      4: 20,
+      5: 28,
+      6: 36,
+      7: 999
+    };
+
+    const SHOP_PROBABILITIES = {
+      1: [100, 0,  0,  0,  0],
+      2: [70,  30, 0,  0,  0],
+      3: [50,  35, 15, 0,  0],
+      4: [35,  35, 23, 7,  0],
+      5: [25,  30, 30, 12, 3],
+      6: [15,  25, 30, 20, 10],
+      7: [10,  15, 30, 25, 20]
+    };
+
+    const HERO_ROSTER = [
+      // Cost 1
+      { id: 'tigreal', name: 'Tigreal', cost: 1, role: 'Warrior', faction: 'Mech', hp: 650, atk: 45, range: 1, emoji: '🛡️', ult: 'Hammer Crash', ultDesc: 'Menghantam tanah memberikan 140 damage area.' },
+      { id: 'layla', name: 'Layla', cost: 1, role: 'Archer', faction: 'Mech', hp: 420, atk: 55, range: 4, emoji: '🏹', ult: 'Malefic Gun', ultDesc: 'Menembakkan meriam laser lurus dengan damage 200.' },
+      { id: 'eudora', name: 'Eudora', cost: 1, role: 'Mage', faction: 'Mystic', hp: 440, atk: 50, range: 3, emoji: '⚡', ult: 'Forked Lightning', ultDesc: 'Menyambar petir halilintar berdamage 220.' },
+      { id: 'saber', name: 'Saber', cost: 1, role: 'Assassin', faction: 'Mech', hp: 480, atk: 60, range: 1, emoji: '⚔️', ult: 'Orbit Swords', ultDesc: 'Melontarkan pedang putar yang menusuk musuh berkali-kali.' },
+      
+      // Cost 2
+      { id: 'alucard', name: 'Alucard', cost: 2, role: 'Warrior', faction: 'Inferno', hp: 750, atk: 65, range: 1, emoji: '🗡️', ult: 'Whirling Slash', ultDesc: 'Tebasan pedang melingkar 240 damage serap darah.' },
+      { id: 'miya', name: 'Miya', cost: 2, role: 'Archer', faction: 'Celestial', hp: 490, atk: 70, range: 4, emoji: '🎯', ult: 'Arrow Rain', ultDesc: 'Hujan panah tajam menembus garis pertahanan lawan.' },
+      { id: 'gord', name: 'Gord', cost: 2, role: 'Mage', faction: 'Mystic', hp: 500, atk: 65, range: 3, emoji: '🔮', ult: 'Mystic Beam', ultDesc: 'Semburan energi kosmik misterius 280 damage.' },
+      { id: 'helcurt', name: 'Helcurt', cost: 2, role: 'Assassin', faction: 'Shadow', hp: 550, atk: 75, range: 1, emoji: '🦂', ult: 'Night Sting', ultDesc: 'Tusukan bayangan racun instan ke musuh terdekat.' },
+
+      // Cost 3
+      { id: 'chou', name: 'Chou', cost: 3, role: 'Warrior', faction: 'Nature', hp: 900, atk: 80, range: 1, emoji: '🥊', ult: 'Jeet Kune Do', ultDesc: 'Tendangan maut kombo yang melumpuhkan target.' },
+      { id: 'lesley', name: 'Lesley', cost: 3, role: 'Archer', faction: 'Shadow', hp: 580, atk: 95, range: 4, emoji: '🎯', ult: 'Sniper Shot', ultDesc: 'Peluru jarak jauh dengan garansi serangan kritikal.' },
+      { id: 'karina', name: 'Karina', cost: 3, role: 'Assassin', faction: 'Shadow', hp: 680, atk: 90, range: 1, emoji: '🤺', ult: 'Shadow Strike', ultDesc: 'Serangan pisau ganda bayangan dengan true damage.' },
+      { id: 'estes', name: 'Estes', cost: 3, role: 'Support', faction: 'Celestial', hp: 700, atk: 40, range: 3, emoji: '🍃', ult: 'Moonlight Heal', ultDesc: 'Memulihkan 250 HP bagi kawan dengan darah terendah.' },
+
+      // Cost 4
+      { id: 'zilong', name: 'Zilong', cost: 4, role: 'Warrior', faction: 'Celestial', hp: 1100, atk: 110, range: 1, emoji: '🐉', ult: 'Spear Flip', ultDesc: 'Mencongkel musuh dan memicu serangan kecepatan penuh.' },
+      { id: 'claude', name: 'Claude', cost: 4, role: 'Archer', faction: 'Mech', hp: 750, atk: 115, range: 3, emoji: '🐒', ult: 'Blazing Duet', ultDesc: 'Menembak serentak ke segala arah di sekitarnya.' },
+      { id: 'aurora', name: 'Aurora', cost: 4, role: 'Mage', faction: 'Nature', hp: 720, atk: 105, range: 3, emoji: '❄️', ult: 'Cold Glacier', ultDesc: 'Menjatuhkan komet es raksasa yang membekukan musuh.' },
+      { id: 'grock', name: 'Grock', cost: 4, role: 'Guardian', faction: 'Nature', hp: 1450, atk: 70, range: 1, emoji: '🗿', ult: 'Wild Charge', ultDesc: 'Menabrakkan batu raksasa menembus lini musuh.' },
+
+      // Cost 5 (LEGENDARY)
+      { id: 'fanny', name: 'Fanny', cost: 5, role: 'Assassin', faction: 'Mech', hp: 850, atk: 150, range: 1, emoji: '🦅', ult: 'Steel Cable Tempest', ultDesc: 'Terbang memutar ke seluruh musuh menghasilkan 400 damage.' },
+      { id: 'thamuz', name: 'Thamuz', cost: 5, role: 'Guardian', faction: 'Inferno', hp: 1800, atk: 130, range: 1, emoji: '🔥', ult: 'Cauterant Inferno', ultDesc: 'Memancarkan lava api yang membakar seluruh area musuh.' }
+    ];
+
+    /* ==========================================================================
+       LOBBY & STATE
+       ========================================================================== */
+    let roundNumber = 1;
+    let phase = 'prep';
+    let prepTimer = 20;
+    let timerInterval = null;
+    let selectedCommanderId = 'harper';
+    let isShopLocked = false;
+
+    let p1 = {
+      id: 'player',
+      name: 'Kamu (Player)',
+      commander: COMMANDERS[0],
+      hp: 100,
+      gold: 10,
+      lvl: 1,
+      xp: 0,
+      board: Array(36).fill(null),
+      bench: Array(6).fill(null),
+      tempBench: Array(2).fill(null), // 2 SLOT SEMENTARA
+      shop: []
+    };
+
+    let bots = [
+      { id: 'bot1', name: 'Bot Alpha', commander: COMMANDERS[0], hp: 100, lvl: 1, favRole: 'Warrior', board: Array(36).fill(null) },
+      { id: 'bot2', name: 'Bot Nebula', commander: COMMANDERS[4], hp: 100, lvl: 1, favRole: 'Mage', board: Array(36).fill(null) },
+      { id: 'bot3', name: 'Bot Phantom', commander: COMMANDERS[5], hp: 100, lvl: 1, favRole: 'Assassin', board: Array(36).fill(null) },
+      { id: 'bot4', name: 'Bot Titan', commander: COMMANDERS[3], hp: 100, lvl: 1, favRole: 'Guardian', board: Array(36).fill(null) }
+    ];
+
+    let currentEnemyIndex = 0;
+    let draggedUnitData = null;
+    let inspectUnitRef = null;
+
+    // Visual FX & Canvas
+    const canvas = document.getElementById('combatCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let projectiles = [];
+    let slashes = [];
+    let floatingTexts = [];
+    let battleLoopId = null;
+
+    /* ==========================================================================
+       AUDIO SYNTHESIZER
+       ========================================================================== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSfx(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+
+      if (type === 'buy') {
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.exponentialRampToValueAtTime(900, now + 0.12);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now); osc.stop(now + 0.12);
+      } else if (type === 'hit') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, now);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now); osc.stop(now + 0.08);
+      } else if (type === 'slash') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now); osc.stop(now + 0.12);
+      } else if (type === 'ult') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(980, now + 0.35);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+        osc.start(now); osc.stop(now + 0.35);
+      } else if (type === 'sell') {
+        osc.frequency.setValueAtTime(650, now);
+        osc.frequency.exponentialRampToValueAtTime(200, now + 0.15);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now); osc.stop(now + 0.15);
+      } else if (type === 'lock') {
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.setValueAtTime(500, now + 0.06);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now); osc.stop(now + 0.12);
+      } else if (type === 'levelup') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(350, now);
+        osc.frequency.exponentialRampToValueAtTime(1050, now + 0.25);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now); osc.stop(now + 0.25);
+      } else if (type === 'star3') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.5);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+        osc.start(now); osc.stop(now + 0.5);
+      }
+    }
+
+    function triggerScreenShake() {
+      const container = document.getElementById('boardBox');
+      container.classList.remove('screen-shake');
+      void container.offsetWidth;
+      container.classList.add('screen-shake');
+    }
+
+    function triggerCommanderCheer(isPlayer) {
+      const el = document.getElementById(isPlayer ? 'playerCmdSidelineIcon' : 'botCmdSidelineIcon');
+      if (el) {
+        el.classList.remove('cheer', 'panic');
+        void el.offsetWidth;
+        el.classList.add('cheer');
+      }
+    }
+
+    function triggerCommanderPanic(isPlayer) {
+      const el = document.getElementById(isPlayer ? 'playerCmdSidelineIcon' : 'botCmdSidelineIcon');
+      if (el) {
+        el.classList.remove('cheer', 'panic');
+        void el.offsetWidth;
+        el.classList.add('panic');
+      }
+    }
+
+    /* ==========================================================================
+       SETUP & INITIALIZATION
+       ========================================================================== */
+    function init() {
+      renderCommanderChoices();
+      setupEvents();
+      buildBoardDOM();
+      buildBenchDOM();
+      buildTempBenchDOM();
+    }
+
+    function renderCommanderChoices() {
+      const grid = document.getElementById('commanderGrid');
+      grid.innerHTML = '';
+      COMMANDERS.forEach(cmd => {
+        const div = document.createElement('div');
+        div.className = `cmd-choice ${cmd.id === selectedCommanderId ? 'selected' : ''}`;
+        div.innerHTML = `
+          <div class="cmd-icon">${cmd.icon}</div>
+          <div class="cmd-name">${cmd.name}</div>
+          <div style="font-size:0.6rem; color:#8b9bb4;">${cmd.skill}</div>
+        `;
+        div.onclick = () => {
+          selectedCommanderId = cmd.id;
+          document.querySelectorAll('.cmd-choice').forEach(c => c.classList.remove('selected'));
+          div.classList.add('selected');
+        };
+        grid.appendChild(div);
+      });
+    }
+
+    function buildBoardDOM() {
+      const grid = document.getElementById('boardGrid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 36; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.index = i;
+        if (i < 18) cell.classList.add('p2-zone');
+        else cell.classList.add('p1-zone');
+
+        cell.ondragover = (e) => { e.preventDefault(); cell.classList.add('drag-over'); };
+        cell.ondragleave = () => { cell.classList.remove('drag-over'); };
+        cell.ondrop = (e) => { e.preventDefault(); cell.classList.remove('drag-over'); handleDropOnBoard(i); };
+
+        grid.appendChild(cell);
+      }
+    }
+
+    function buildBenchDOM() {
+      const bench = document.getElementById('benchGrid');
+      bench.innerHTML = '';
+      for (let i = 0; i < 6; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'bench-slot';
+        slot.dataset.index = i;
+
+        slot.ondragover = (e) => { e.preventDefault(); slot.style.borderColor = 'var(--cyan)'; };
+        slot.ondragleave = () => { slot.style.borderColor = ''; };
+        slot.ondrop = (e) => { e.preventDefault(); slot.style.borderColor = ''; handleDropOnBench(i); };
+
+        bench.appendChild(slot);
+      }
+
+      const sellZone = document.getElementById('sellZone');
+      sellZone.ondragover = (e) => { e.preventDefault(); sellZone.classList.add('drag-over'); };
+      sellZone.ondragleave = () => { sellZone.classList.remove('drag-over'); };
+      sellZone.ondrop = (e) => { e.preventDefault(); sellZone.classList.remove('drag-over'); handleSellDrop(); };
+    }
+
+    function buildTempBenchDOM() {
+      const tempGrid = document.getElementById('tempBenchGrid');
+      // Bersihkan kecuali label
+      tempGrid.querySelectorAll('.temp-slot').forEach(e => e.remove());
+      for (let i = 0; i < 2; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'temp-slot';
+        slot.dataset.index = i;
+
+        slot.ondragover = (e) => { e.preventDefault(); slot.style.borderColor = 'var(--temp-gold)'; };
+        slot.ondragleave = () => { slot.style.borderColor = ''; };
+        slot.ondrop = (e) => { e.preventDefault(); slot.style.borderColor = ''; handleDropOnTempBench(i); };
+
+        tempGrid.appendChild(slot);
+      }
+    }
+
+    function setupEvents() {
+      document.getElementById('btnRestart').onclick = () => {
+        document.getElementById('startModal').classList.remove('hidden');
+      };
+
+      document.getElementById('btnStartGame').onclick = () => {
+        p1.commander = COMMANDERS.find(c => c.id === selectedCommanderId) || COMMANDERS[0];
+        document.getElementById('playerCmdSidelineIcon').innerText = p1.commander.icon;
+        document.getElementById('playerCmdSidelineName').innerText = p1.commander.name;
+        document.getElementById('playerCmdSidelineSkill').innerText = p1.commander.skill;
+        document.getElementById('startModal').classList.add('hidden');
+        startNewTournament();
+      };
+
+      document.getElementById('btnReroll').onclick = rerollShop;
+      document.getElementById('btnLevelUp').onclick = directLevelUp;
+      document.getElementById('btnLockShop').onclick = toggleLockShop;
+
+      document.getElementById('btnStartBattle').onclick = () => {
+        if (phase === 'prep') startCombatPhase();
+      };
+
+      document.getElementById('btnCloseDetail').onclick = () => {
+        document.getElementById('heroDetailModal').classList.add('hidden');
+      };
+      document.getElementById('btnQuickSell').onclick = () => {
+        if (!inspectUnitRef) return;
+        const { from, index, hero } = inspectUnitRef;
+        const refund = calculateRefund(hero);
+        p1.gold += refund;
+        if (from === 'board') p1.board[index] = null;
+        else if (from === 'bench') p1.bench[index] = null;
+        else if (from === 'tempBench') p1.tempBench[index] = null;
+
+        playSfx('sell');
+        document.getElementById('heroDetailModal').classList.add('hidden');
+        inspectUnitRef = null;
+        updateUI();
+      };
+    }
+
+    function calculateRefund(hero) {
+      if (hero.stars === 3) return hero.cost * 9;
+      if (hero.stars === 2) return hero.cost * 3;
+      return hero.cost;
+    }
+
+    /* ==========================================================================
+       AUTO-SELL SLOT SEMENTARA SAAT RONDE SELESAI
+       ========================================================================== */
+    function autoSellTemporarySlots() {
+      let totalRefund = 0;
+      let soldCount = 0;
+
+      for (let i = 0; i < p1.tempBench.length; i++) {
+        const unit = p1.tempBench[i];
+        if (unit) {
+          const refund = calculateRefund(unit);
+          totalRefund += refund;
+          p1.tempBench[i] = null;
+          soldCount++;
+        }
+      }
+
+      if (soldCount > 0) {
+        p1.gold += totalRefund;
+        playSfx('sell');
+        spawnFloatingText(`Auto-Sell Temp: +${totalRefund}g 💰`, 174, 250, '#ff9f1c', true);
+      }
+    }
+
+    /* ==========================================================================
+       LOCK SHOP & LEVEL UP
+       ========================================================================== */
+    function toggleLockShop() {
+      isShopLocked = !isShopLocked;
+      playSfx('lock');
+      updateLockUI();
+    }
+
+    function updateLockUI() {
+      const btn = document.getElementById('btnLockShop');
+      const icon = document.getElementById('lockIcon');
+      const txt = document.getElementById('lockText');
+
+      if (isShopLocked) {
+        btn.classList.add('locked');
+        icon.innerText = '🔒';
+        txt.innerText = 'Terkunci';
+      } else {
+        btn.classList.remove('locked');
+        icon.innerText = '🔓';
+        txt.innerText = 'Kunci';
+      }
+    }
+
+    function directLevelUp() {
+      if (p1.lvl >= 7) return;
+      const targetExp = LEVEL_EXP_REQ[p1.lvl];
+      const remainingExp = Math.max(0, targetExp - p1.xp);
+
+      if (p1.gold >= remainingExp) {
+        p1.gold -= remainingExp;
+        p1.lvl++;
+        p1.xp = 0;
+        playSfx('levelup');
+        triggerCommanderCheer(true);
+        triggerScreenShake();
+        spawnFloatingText(`LEVEL UP! Lv.${p1.lvl} ⭐`, 174, 150, '#ffbe0b', true);
+        refreshShop();
+        updateUI();
+      } else {
+        alert(`Gold tidak cukup! Butuh ${remainingExp} Gold untuk langsung naik ke Level ${p1.lvl + 1}.`);
+      }
+    }
+
+    /* ==========================================================================
+       TOURNAMENT & MATCHMAKING
+       ========================================================================== */
+    function startNewTournament() {
+      roundNumber = 1;
+      p1.hp = 100; p1.gold = 10; p1.lvl = 1; p1.xp = 0;
+      p1.board = Array(36).fill(null);
+      p1.bench = Array(6).fill(null);
+      p1.tempBench = Array(2).fill(null);
+      isShopLocked = false;
+      updateLockUI();
+
+      bots = [
+        { id: 'bot1', name: 'Bot Alpha', commander: COMMANDERS[0], hp: 100, lvl: 1, favRole: 'Warrior', board: Array(36).fill(null) },
+        { id: 'bot2', name: 'Bot Nebula', commander: COMMANDERS[4], hp: 100, lvl: 1, favRole: 'Mage', board: Array(36).fill(null) },
+        { id: 'bot3', name: 'Bot Phantom', commander: COMMANDERS[5], hp: 100, lvl: 1, favRole: 'Assassin', board: Array(36).fill(null) },
+        { id: 'bot4', name: 'Bot Titan', commander: COMMANDERS[3], hp: 100, lvl: 1, favRole: 'Guardian', board: Array(36).fill(null) }
+      ];
+
+      currentEnemyIndex = 0;
+      startPrepPhase();
+    }
+
+    function selectNextEnemy() {
+      const aliveBots = bots.filter(b => b.hp > 0);
+      if (aliveBots.length === 0) return null;
+
+      for (let i = 0; i < bots.length; i++) {
+        currentEnemyIndex = (currentEnemyIndex + 1) % bots.length;
+        if (bots[currentEnemyIndex].hp > 0) {
+          break;
+        }
+      }
+      return bots[currentEnemyIndex];
+    }
+
+    function renderStandings() {
+      const container = document.getElementById('tournamentStandings');
+      container.innerHTML = '';
+
+      const standings = [
+        { name: p1.name, hp: p1.hp, isPlayer: true, icon: p1.commander.icon },
+        ...bots.map(b => ({ name: b.name, hp: b.hp, isPlayer: false, icon: b.commander.icon, id: b.id }))
+      ];
+      standings.sort((a, b) => b.hp - a.hp);
+
+      standings.forEach((p, idx) => {
+        const item = document.createElement('div');
+        const isCurrentEnemy = (!p.isPlayer && bots[currentEnemyIndex] && bots[currentEnemyIndex].id === p.id);
+        item.className = `lobby-item ${p.hp <= 0 ? 'eliminated' : ''} ${isCurrentEnemy ? 'current-enemy' : ''}`;
+        
+        item.innerHTML = `
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-weight:bold; color:${idx === 0 ? 'var(--gold)' : '#8b9bb4'};">#${idx+1}</span>
+            <span>${p.icon}</span>
+            <span style="font-weight:${p.isPlayer ? 'bold' : 'normal'}; color:${p.isPlayer ? 'var(--cyan)' : '#fff'};">
+              ${p.name} ${isCurrentEnemy ? '⚔️' : ''}
+            </span>
+          </div>
+          <div>
+            <span style="font-size:0.75rem; color:${p.hp > 25 ? 'var(--green)' : 'var(--rose)'}; font-weight:bold;">${Math.max(0, p.hp)} HP</span>
+            <div class="lobby-hp-bar">
+              <div class="lobby-hp-val" style="width:${Math.max(0, p.hp)}%; background:${p.hp > 25 ? 'var(--green)' : 'var(--rose)'};"></div>
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    /* ==========================================================================
+       ROUND PREPARATION
+       ========================================================================== */
+    function startPrepPhase() {
+      phase = 'prep';
+      clearInterval(timerInterval);
+      cancelAnimationFrame(battleLoopId);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      floatingTexts = [];
+      particles = [];
+      projectiles = [];
+      slashes = [];
+
+      let currentBot = bots[currentEnemyIndex];
+      if (!currentBot || currentBot.hp <= 0) {
+        currentBot = selectNextEnemy();
+      }
+
+      if (!currentBot) {
+        alert('🏆 SELAMAT! Kamu berhasil mengeliminasi semua 4 Bot dan keluar sebagai JUARA 1!');
+        document.getElementById('startModal').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('enemyTargetDisplay').innerText = `Lawan: ${currentBot.name} (${currentBot.commander.name})`;
+      document.getElementById('botCmdSidelineIcon').innerText = currentBot.commander.icon;
+      document.getElementById('botCmdSidelineName').innerText = `${currentBot.name} (${currentBot.commander.name})`;
+      document.getElementById('botCmdSidelineSkill').innerText = currentBot.commander.skill;
+      document.getElementById('botCmdSidelineHp').innerText = `${currentBot.hp} HP`;
+
+      // 1. Gold Income
+      p1.gold += 5 + Math.min(5, Math.floor(p1.gold / 10));
+
+      // 2. AUTO EXP (+2 XP per ronde)
+      if (p1.lvl < 7) {
+        p1.xp += 2;
+        spawnFloatingText('+2 EXP Ronde! ⭐', 174, 174, '#06d6a0');
+        const reqExp = LEVEL_EXP_REQ[p1.lvl];
+        if (p1.xp >= reqExp) {
+          p1.lvl++;
+          p1.xp = 0;
+          playSfx('levelup');
+          triggerCommanderCheer(true);
+        }
+      }
+
+      // 3. Refresh Shop jika tidak dikunci
+      if (!isShopLocked) {
+        refreshShop();
+      } else {
+        isShopLocked = false;
+        updateLockUI();
+      }
+
+      buildBotSquad(currentBot);
+
+      prepTimer = 20;
+      document.getElementById('phaseDisplay').innerText = 'Persiapan';
+      document.getElementById('roundDisplay').innerText = `Ronde ${roundNumber}`;
+      updateUI();
+      renderStandings();
+
+      timerInterval = setInterval(() => {
+        prepTimer--;
+        document.getElementById('timerDisplay').innerText = `${prepTimer}s`;
+        if (prepTimer <= 0) {
+          clearInterval(timerInterval);
+          startCombatPhase();
+        }
+      }, 1000);
+    }
+
+    function buildBotSquad(bot) {
+      bot.board = Array(36).fill(null);
+      const unitCapacity = Math.min(6, Math.max(1, Math.floor(roundNumber / 2) + 1));
+      
+      const candidates = HERO_ROSTER.filter(h => h.role === bot.favRole || h.cost <= (p1.lvl >= 5 ? 4 : 2));
+      for (let i = 0; i < unitCapacity; i++) {
+        const heroData = candidates[Math.floor(Math.random() * candidates.length)] || HERO_ROSTER[0];
+        let tile = (heroData.role === 'Warrior' || heroData.role === 'Guardian') 
+          ? (12 + (i % 6))
+          : (i % 6);
+        
+        bot.board[tile] = createUnit(heroData, 2, tile);
+        // Bot bisa punya bintang 2 & bintang 3 di ronde akhir
+        if (roundNumber >= 6 && Math.random() < 0.25) {
+          upgradeUnitStats(bot.board[tile], 3);
+        } else if (roundNumber >= 3 && Math.random() < 0.5) {
+          upgradeUnitStats(bot.board[tile], 2);
+        }
+      }
+    }
+
+    /* ==========================================================================
+       SHOP & DUAL-BENCH HERO BUYING (BENCH + TEMPORARY SLOTS)
+       ========================================================================== */
+    function getRandomHeroByLevel(level) {
+      const odds = SHOP_PROBABILITIES[level] || SHOP_PROBABILITIES[1];
+      const roll = Math.random() * 100;
+      let cumulative = 0;
+      let chosenCost = 1;
+
+      for (let i = 0; i < odds.length; i++) {
+        cumulative += odds[i];
+        if (roll < cumulative) {
+          chosenCost = i + 1;
+          break;
+        }
+      }
+
+      let pool = HERO_ROSTER.filter(h => h.cost === chosenCost);
+      if (pool.length === 0) pool = HERO_ROSTER.filter(h => h.cost === 1);
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function refreshShop() {
+      p1.shop = [];
+      for (let i = 0; i < 5; i++) {
+        p1.shop.push(getRandomHeroByLevel(p1.lvl));
+      }
+      renderShopDOM();
+    }
+
+    function renderShopDOM() {
+      const shopCards = document.getElementById('shopCards');
+      shopCards.innerHTML = '';
+      p1.shop.forEach((hero, index) => {
+        if (!hero) {
+          const empty = document.createElement('div');
+          empty.className = 'hero-card';
+          empty.style.opacity = '0.3';
+          empty.innerHTML = `<span style="font-size:0.8rem;">TERJUAL</span>`;
+          shopCards.appendChild(empty);
+          return;
+        }
+
+        const card = document.createElement('div');
+        card.className = `hero-card cost-${hero.cost}`;
+        card.innerHTML = `
+          <div class="card-icon">${hero.emoji}</div>
+          <div class="card-name">${hero.name}</div>
+          <div class="card-traits">${hero.role} • ${hero.faction}</div>
+          <div class="card-cost">💰 ${hero.cost}</div>
+        `;
+        card.onclick = () => buyHero(index);
+        shopCards.appendChild(card);
+      });
+
+      const odds = SHOP_PROBABILITIES[p1.lvl] || SHOP_PROBABILITIES[1];
+      document.getElementById('odd1').innerText = `${odds[0]}%`;
+      document.getElementById('odd2').innerText = `${odds[1]}%`;
+      document.getElementById('odd3').innerText = `${odds[2]}%`;
+      document.getElementById('odd4').innerText = `${odds[3]}%`;
+      document.getElementById('odd5').innerText = `${odds[4]}%`;
+    }
+
+    function rerollShop() {
+      const cost = (p1.commander.id === 'remy') ? 1 : 2;
+      if (p1.gold >= cost) {
+        p1.gold -= cost;
+        playSfx('buy');
+        refreshShop();
+        updateUI();
+      }
+    }
+
+    function buyHero(shopIndex) {
+      const hero = p1.shop[shopIndex];
+      if (!hero || p1.gold < hero.cost) return;
+
+      // Prioritas 1: Cari Bench Utama yang kosong
+      let targetType = 'bench';
+      let freeSlot = p1.bench.findIndex(s => s === null);
+
+      // Prioritas 2: Jika Bench penuh, gunakan Slot Sementara
+      if (freeSlot === -1) {
+        targetType = 'temp';
+        freeSlot = p1.tempBench.findIndex(s => s === null);
+      }
+
+      // Jika bench utama & slot sementara sama-sama penuh
+      if (freeSlot === -1) {
+        alert('Bench Utama dan Slot Sementara sudah penuh!');
+        return;
+      }
+
+      p1.gold -= hero.cost;
+      const newUnit = createUnit(hero, 1, freeSlot);
+
+      if (targetType === 'bench') {
+        p1.bench[freeSlot] = newUnit;
+      } else {
+        p1.tempBench[freeSlot] = newUnit;
+        spawnFloatingText('Masuk Slot Sementara ⏳', 280, 290, '#ff9f1c');
+      }
+
+      p1.shop[shopIndex] = null;
+      playSfx('buy');
+
+      // Evaluasi Upgrade Bintang (★1 -> ★2 -> ★3)
+      checkAutoUpgrade(1, hero.id);
+      updateUI();
+      renderShopDOM();
+    }
+
+    /* ==========================================================================
+       SISTEM BINTANG 3 (★★★) BERTINGKAT
+       ========================================================================== */
+    function upgradeUnitStats(unit, targetStar) {
+      unit.stars = targetStar;
+      if (targetStar === 2) {
+        unit.maxHp = Math.floor(unit.hp * 1.8);
+        unit.currentHp = unit.maxHp;
+        unit.atk = Math.floor(unit.atk * 1.7);
+      } else if (targetStar === 3) {
+        unit.maxHp = Math.floor(unit.hp * 3.4);
+        unit.currentHp = unit.maxHp;
+        unit.atk = Math.floor(unit.atk * 3.2);
+      }
+    }
+
+    function checkAutoUpgrade(playerOwner, heroId) {
+      const player = (playerOwner === 1) ? p1 : null;
+      if (!player) return;
+
+      // Kumpulkan semua unit sejenis di Board, Bench, dan TempBench
+      function getAllUnits(starLevel) {
+        const list = [];
+        player.board.forEach((u, i) => { if (u && u.id === heroId && u.stars === starLevel) list.push({ loc: 'board', idx: i, u }); });
+        player.bench.forEach((u, i) => { if (u && u.id === heroId && u.stars === starLevel) list.push({ loc: 'bench', idx: i, u }); });
+        player.tempBench.forEach((u, i) => { if (u && u.id === heroId && u.stars === starLevel) list.push({ loc: 'tempBench', idx: i, u }); });
+        return list;
+      }
+
+      function removeUnit(ref) {
+        if (ref.loc === 'board') player.board[ref.idx] = null;
+        else if (ref.loc === 'bench') player.bench[ref.idx] = null;
+        else if (ref.loc === 'tempBench') player.tempBench[ref.idx] = null;
+      }
+
+      // Step 1: Upgrade ★1 ke ★2
+      let star1List = getAllUnits(1);
+      while (star1List.length >= 3) {
+        const keep = star1List[0];
+        const del1 = star1List[1];
+        const del2 = star1List[2];
+
+        removeUnit(del1);
+        removeUnit(del2);
+        upgradeUnitStats(keep.u, 2);
+
+        playSfx('ult');
+        triggerScreenShake();
+        spawnFloatingText(`UPGRADE! ★★☆ ${keep.u.name}`, 174, 150, '#00f2fe', true);
+        star1List = getAllUnits(1);
+      }
+
+      // Step 2: Upgrade ★2 ke ★3
+      let star2List = getAllUnits(2);
+      while (star2List.length >= 3) {
+        const keep = star2List[0];
+        const del1 = star2List[1];
+        const del2 = star2List[2];
+
+        removeUnit(del1);
+        removeUnit(del2);
+        upgradeUnitStats(keep.u, 3);
+
+        playSfx('star3');
+        triggerScreenShake();
+        triggerCommanderCheer(true);
+        spawnFloatingText(`MAX POWER! ★★★ ${keep.u.name}!`, 174, 130, '#ffd700', true);
+        star2List = getAllUnits(2);
+      }
+    }
+
+    /* ==========================================================================
+       DRAG & DROP SYSTEM (BOARD, BENCH, TEMP BENCH, SELL)
+       ========================================================================== */
+    function handleDropOnBoard(boardIndex) {
+      if (phase !== 'prep' || !draggedUnitData) return;
+      if (boardIndex < 18) return;
+
+      const activeCount = p1.board.filter(u => u && u.owner === 1).length;
+      const isNewPlacement = (draggedUnitData.from !== 'board' && !p1.board[boardIndex]);
+
+      if (isNewPlacement && activeCount >= p1.lvl) {
+        alert('Kapasitas hero di arena penuh! Naikkan Level untuk menaruh hero lebih banyak.');
+        return;
+      }
+
+      let sourceUnit = getDraggedUnit();
+      let targetUnit = p1.board[boardIndex];
+
+      p1.board[boardIndex] = sourceUnit;
+      setDraggedUnit(targetUnit);
+
+      draggedUnitData = null;
+      updateUI();
+    }
+
+    function handleDropOnBench(benchIndex) {
+      if (phase !== 'prep' || !draggedUnitData) return;
+
+      let sourceUnit = getDraggedUnit();
+      let targetUnit = p1.bench[benchIndex];
+
+      p1.bench[benchIndex] = sourceUnit;
+      setDraggedUnit(targetUnit);
+
+      draggedUnitData = null;
+      updateUI();
+    }
+
+    function handleDropOnTempBench(tempIndex) {
+      if (phase !== 'prep' || !draggedUnitData) return;
+
+      let sourceUnit = getDraggedUnit();
+      let targetUnit = p1.tempBench[tempIndex];
+
+      p1.tempBench[tempIndex] = sourceUnit;
+      setDraggedUnit(targetUnit);
+
+      draggedUnitData = null;
+      updateUI();
+    }
+
+    function getDraggedUnit() {
+      if (!draggedUnitData) return null;
+      if (draggedUnitData.from === 'board') return p1.board[draggedUnitData.index];
+      if (draggedUnitData.from === 'bench') return p1.bench[draggedUnitData.index];
+      if (draggedUnitData.from === 'tempBench') return p1.tempBench[draggedUnitData.index];
+      return null;
+    }
+
+    function setDraggedUnit(unit) {
+      if (!draggedUnitData) return;
+      if (draggedUnitData.from === 'board') p1.board[draggedUnitData.index] = unit;
+      else if (draggedUnitData.from === 'bench') p1.bench[draggedUnitData.index] = unit;
+      else if (draggedUnitData.from === 'tempBench') p1.tempBench[draggedUnitData.index] = unit;
+    }
+
+    function handleSellDrop() {
+      if (phase !== 'prep' || !draggedUnitData) return;
+      let unit = getDraggedUnit();
+      if (unit) {
+        const refund = calculateRefund(unit);
+        p1.gold += refund;
+        setDraggedUnit(null);
+        playSfx('sell');
+      }
+      draggedUnitData = null;
+      updateUI();
+    }
+
+    function openHeroDetail(unit, from, index) {
+      inspectUnitRef = { from, index, hero: unit };
+      document.getElementById('dtIcon').innerText = unit.emoji;
+      document.getElementById('dtName').innerText = unit.name;
+      document.getElementById('dtStars').innerText = '★'.repeat(unit.stars);
+      document.getElementById('dtTraits').innerText = `${unit.role} • ${unit.faction}`;
+      document.getElementById('dtHp').innerText = `${unit.currentHp} / ${unit.maxHp}`;
+      document.getElementById('dtAtk').innerText = unit.atk;
+      document.getElementById('dtRange').innerText = `${unit.range} Petak`;
+      document.getElementById('dtUltName').innerText = unit.ult;
+      document.getElementById('dtUltDesc').innerText = unit.ultDesc || 'Skill pamungkas berdamage tinggi.';
+
+      const sellBtn = document.getElementById('btnQuickSell');
+      if (unit.owner === 1 && phase === 'prep') {
+        const refund = calculateRefund(unit);
+        sellBtn.innerText = `🗑️ Jual Hero (Refund: ${refund}g)`;
+        sellBtn.style.display = 'block';
+      } else {
+        sellBtn.style.display = 'none';
+      }
+
+      document.getElementById('heroDetailModal').classList.remove('hidden');
+    }
+
+    /* ==========================================================================
+       UI UPDATES
+       ========================================================================== */
+    function updateUI() {
+      document.getElementById('goldDisplay').innerText = p1.gold;
+      document.getElementById('lvlDisplay').innerText = p1.lvl;
+      document.getElementById('xpDisplay').innerText = p1.xp;
+
+      const maxExp = LEVEL_EXP_REQ[p1.lvl] || 999;
+      document.getElementById('xpMaxDisplay').innerText = (p1.lvl >= 7) ? 'MAX' : maxExp;
+
+      const lvlBtn = document.getElementById('btnLevelUp');
+      if (p1.lvl >= 7) {
+        lvlBtn.innerText = 'Max Level';
+        lvlBtn.disabled = true;
+        lvlBtn.style.opacity = '0.5';
+      } else {
+        const remainingGold = Math.max(0, maxExp - p1.xp);
+        lvlBtn.innerText = `Naikkan Lv (${remainingGold}g)`;
+        lvlBtn.disabled = false;
+        lvlBtn.style.opacity = '1';
+      }
+
+      document.getElementById('playerCmdSidelineHp').innerText = `${p1.hp} HP`;
+
+      const currentBot = bots[currentEnemyIndex];
+      if (currentBot) {
+        document.getElementById('botCmdSidelineHp').innerText = `${currentBot.hp} HP`;
+      }
+
+      // Board Pieces
+      for (let i = 0; i < 36; i++) {
+        const cell = document.querySelector(`.cell[data-index="${i}"]`);
+        cell.innerHTML = '';
+        const unit = p1.board[i] || (currentBot ? currentBot.board[i] : null);
+        if (unit) {
+          const piece = createPieceDOM(unit, i, 'board');
+          cell.appendChild(piece);
+        }
+      }
+
+      // Bench Pieces (6 slots)
+      for (let i = 0; i < 6; i++) {
+        const slot = document.querySelector(`.bench-slot[data-index="${i}"]`);
+        slot.innerHTML = '';
+        const unit = p1.bench[i];
+        if (unit) {
+          const piece = createPieceDOM(unit, i, 'bench');
+          slot.appendChild(piece);
+        }
+      }
+
+      // Temp Bench Pieces (2 slots)
+      for (let i = 0; i < 2; i++) {
+        const slot = document.querySelector(`.temp-slot[data-index="${i}"]`);
+        slot.innerHTML = '';
+        const unit = p1.tempBench[i];
+        if (unit) {
+          const piece = createPieceDOM(unit, i, 'tempBench');
+          slot.appendChild(piece);
+        }
+      }
+
+      calculateSynergies();
+    }
+
+    function createUnit(baseHero, owner, position) {
+      return {
+        ...baseHero,
+        owner,
+        position,
+        stars: 1,
+        currentHp: baseHero.hp,
+        maxHp: baseHero.hp,
+        currentMana: (owner === 1 && p1.commander.id === 'yuki') ? 40 : 0,
+        maxMana: 100,
+        target: null
+      };
+    }
+
+    function createPieceDOM(unit, index, from) {
+      const piece = document.createElement('div');
+      piece.className = `hero-piece p${unit.owner} ${unit.stars === 3 ? 'star-3' : ''}`;
+      piece.draggable = (phase === 'prep' && unit.owner === 1);
+
+      piece.ondragstart = () => {
+        draggedUnitData = { from, index, hero: unit };
+      };
+
+      piece.onclick = (e) => {
+        e.stopPropagation();
+        openHeroDetail(unit, from, index);
+      };
+
+      const stars = '★'.repeat(unit.stars);
+      const hpPct = Math.max(0, (unit.currentHp / unit.maxHp) * 100);
+      const manaPct = Math.min(100, (unit.currentMana / unit.maxMana) * 100);
+
+      piece.innerHTML = `
+        <div class="stars">${stars}</div>
+        <div class="hero-emoji">${unit.emoji}</div>
+        <div class="mana-bar-wrap"><div class="mana-bar" style="width:${manaPct}%"></div></div>
+        <div class="hp-bar-wrap"><div class="hp-bar" style="width:${hpPct}%"></div></div>
+      `;
+      return piece;
+    }
+
+    function calculateSynergies() {
+      const roles = {};
+      const factions = {};
+
+      p1.board.forEach(u => {
+        if (u && u.owner === 1) {
+          roles[u.role] = (roles[u.role] || 0) + 1;
+          factions[u.faction] = (factions[u.faction] || 0) + 1;
+        }
+      });
+
+      const list = document.getElementById('synergyList');
+      list.innerHTML = '';
+      const allTraits = { ...roles, ...factions };
+
+      for (let trait in allTraits) {
+        const count = allTraits[trait];
+        const isActive = count >= 2;
+        const item = document.createElement('div');
+        item.className = `synergy-item ${isActive ? 'active' : ''}`;
+        item.innerHTML = `<span>${trait}</span> <b>${count}/2</b>`;
+        list.appendChild(item);
+      }
+    }
+
+    /* ==========================================================================
+       COMBAT ENGINE
+       ========================================================================== */
+    function startCombatPhase() {
+      // 1. Eksekusi Auto-Sell Slot Sementara sebelum pertempuran dimulai
+      autoSellTemporarySlots();
+      updateUI();
+
+      phase = 'battle';
+      document.getElementById('phaseDisplay').innerText = 'Bertarung!';
+      clearInterval(timerInterval);
+
+      const currentBot = bots[currentEnemyIndex];
+
+      let combatants = [];
+      p1.board.forEach((u, i) => { 
+        if (u) combatants.push({ 
+          ...u, 
+          pos: i, 
+          baseX: (i % 6) * 58 + 29, 
+          baseY: Math.floor(i / 6) * 58 + 29,
+          x: (i % 6) * 58 + 29, 
+          y: Math.floor(i / 6) * 58 + 29,
+          lungeX: 0, lungeY: 0,
+          hitShake: 0,
+          attackCooldown: Math.random() * 0.5
+        }); 
+      });
+      if (currentBot) {
+        currentBot.board.forEach((u, i) => { 
+          if (u) combatants.push({ 
+            ...u, 
+            pos: i, 
+            baseX: (i % 6) * 58 + 29, 
+            baseY: Math.floor(i / 6) * 58 + 29,
+            x: (i % 6) * 58 + 29, 
+            y: Math.floor(i / 6) * 58 + 29,
+            lungeX: 0, lungeY: 0,
+            hitShake: 0,
+            attackCooldown: Math.random() * 0.5
+          }); 
+        });
+      }
+
+      // Assassin Jump
+      combatants.forEach(unit => {
+        if (unit.role === 'Assassin') {
+          unit.y = unit.owner === 1 ? 30 : 310;
+          unit.baseY = unit.y;
+          spawnSparks(unit.x, unit.y, '#9d4edd', 12);
+        }
+      });
+
+      let lastTime = performance.now();
+
+      function combatLoop(now) {
+        const dt = Math.min(0.05, (now - lastTime) / 1000);
+        lastTime = now;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Update Projectiles
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+          const pr = projectiles[i];
+          const dx = pr.target.x - pr.x;
+          const dy = pr.target.y - pr.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist < 15 || pr.target.currentHp <= 0) {
+            applyDamage(pr.attacker, pr.target, pr.damage, pr.isUlt);
+            projectiles.splice(i, 1);
+            continue;
+          }
+
+          const move = pr.speed * dt;
+          pr.x += (dx / dist) * move;
+          pr.y += (dy / dist) * move;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(pr.x, pr.y, pr.isUlt ? 6 : 4, 0, Math.PI * 2);
+          ctx.fillStyle = pr.color;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = pr.color;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Update Slashes
+        for (let i = slashes.length - 1; i >= 0; i--) {
+          const s = slashes[i];
+          s.life -= dt;
+          if (s.life <= 0) {
+            slashes.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.strokeStyle = s.color;
+          ctx.lineWidth = 4 * (s.life / 0.2);
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, 22, s.angle - 0.9, s.angle + 0.9);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Update Units
+        combatants.forEach(unit => {
+          if (unit.currentHp <= 0) return;
+
+          if (unit.hitShake > 0) unit.hitShake -= dt * 5;
+          unit.lungeX *= 0.85;
+          unit.lungeY *= 0.85;
+
+          if (!unit.target || unit.target.currentHp <= 0) {
+            const enemies = combatants.filter(e => e.owner !== unit.owner && e.currentHp > 0);
+            if (enemies.length > 0) {
+              enemies.sort((a, b) => {
+                const distA = Math.hypot(a.x - unit.x, a.y - unit.y);
+                const distB = Math.hypot(b.x - unit.x, b.y - unit.y);
+                return distA - distB;
+              });
+              unit.target = enemies[0];
+            }
+          }
+
+          if (unit.target && unit.target.currentHp > 0) {
+            const dist = Math.hypot(unit.target.x - unit.x, unit.target.y - unit.y);
+            const attackRange = unit.range * 55;
+
+            unit.attackCooldown -= dt;
+
+            if (dist <= attackRange) {
+              if (unit.attackCooldown <= 0) {
+                unit.attackCooldown = 0.9;
+                unit.currentMana += 25;
+
+                const isUlt = unit.currentMana >= unit.maxMana;
+                const damage = isUlt ? Math.floor(unit.atk * 2.5) : unit.atk;
+
+                if (isUlt) {
+                  unit.currentMana = 0;
+                  triggerCommanderCheer(unit.owner === 1);
+                  triggerScreenShake();
+                  playSfx('ult');
+                }
+
+                if (unit.range > 1) {
+                  projectiles.push({
+                    attacker: unit,
+                    target: unit.target,
+                    x: unit.x,
+                    y: unit.y,
+                    damage,
+                    isUlt,
+                    speed: 380,
+                    color: isUlt ? '#ff0054' : '#00f2fe'
+                  });
+                } else {
+                  const angle = Math.atan2(unit.target.y - unit.y, unit.target.x - unit.x);
+                  unit.lungeX = Math.cos(angle) * 16;
+                  unit.lungeY = Math.sin(angle) * 16;
+
+                  slashes.push({
+                    x: (unit.x + unit.target.x) / 2,
+                    y: (unit.y + unit.target.y) / 2,
+                    angle,
+                    color: isUlt ? '#ffbe0b' : '#00f2fe',
+                    life: 0.2
+                  });
+                  playSfx(isUlt ? 'ult' : 'slash');
+                  applyDamage(unit, unit.target, damage, isUlt);
+                }
+              }
+            } else {
+              const angle = Math.atan2(unit.target.y - unit.y, unit.target.x - unit.x);
+              unit.x += Math.cos(angle) * 45 * dt;
+              unit.y += Math.sin(angle) * 45 * dt;
+            }
+          }
+
+          drawUnit(unit);
+        });
+
+        drawParticles(dt);
+        drawFloatingTexts(dt);
+
+        const p1Alive = combatants.some(u => u.owner === 1 && u.currentHp > 0);
+        const p2Alive = combatants.some(u => u.owner === 2 && u.currentHp > 0);
+
+        if (!p1Alive || !p2Alive) {
+          endCombatPhase(p1Alive, p2Alive);
+          return;
+        }
+
+        battleLoopId = requestAnimationFrame(combatLoop);
+      }
+
+      battleLoopId = requestAnimationFrame(combatLoop);
+    }
+
+    function applyDamage(attacker, target, damage, isUlt) {
+      target.currentHp -= damage;
+      target.hitShake = 1.0;
+
+      spawnSparks(target.x, target.y, isUlt ? '#ff0054' : '#ffbe0b', isUlt ? 20 : 8);
+      playSfx('hit');
+
+      if (isUlt) {
+        spawnFloatingText(`CRIT! -${damage} 💥`, target.x, target.y - 12, '#ff0054', true);
+      } else {
+        spawnFloatingText(`-${damage}`, target.x, target.y - 8, '#ffbe0b', false);
+      }
+
+      if (target.currentHp <= 0) {
+        triggerCommanderPanic(target.owner === 1);
+        spawnSparks(target.x, target.y, '#ffffff', 25);
+      }
+    }
+
+    function drawUnit(unit) {
+      const shakeOffset = (Math.random() - 0.5) * unit.hitShake * 6;
+      const renderX = unit.x + unit.lungeX + shakeOffset;
+      const renderY = unit.y + unit.lungeY + shakeOffset;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(renderX, renderY + 16, 14, 6, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.fill();
+
+      // Star 3 Rainbow Glow ring on Canvas
+      if (unit.stars === 3) {
+        ctx.beginPath();
+        ctx.arc(renderX, renderY, 22, 0, Math.PI * 2);
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = '#ffd700';
+        ctx.stroke();
+      }
+
+      ctx.beginPath();
+      ctx.arc(renderX, renderY, 18, 0, Math.PI * 2);
+      ctx.fillStyle = unit.owner === 1 ? 'rgba(0,229,255,0.2)' : 'rgba(255,51,102,0.2)';
+      ctx.strokeStyle = unit.owner === 1 ? '#00e5ff' : '#ff3366';
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = '18px "Segoe UI Emoji", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(unit.emoji, renderX, renderY);
+
+      const hpPct = Math.max(0, unit.currentHp / unit.maxHp);
+      ctx.fillStyle = 'rgba(0,0,0,0.8)';
+      ctx.fillRect(renderX - 16, renderY - 24, 32, 4);
+      ctx.fillStyle = unit.owner === 1 ? '#06d6a0' : '#ff0054';
+      ctx.fillRect(renderX - 16, renderY - 24, 32 * hpPct, 4);
+
+      const manaPct = Math.min(1, unit.currentMana / unit.maxMana);
+      ctx.fillStyle = '#00f2fe';
+      ctx.fillRect(renderX - 16, renderY - 20, 32 * manaPct, 2);
+
+      ctx.restore();
+    }
+
+    function spawnSparks(x, y, color, count) {
+      for (let i = 0; i < count; i++) {
+        const speed = Math.random() * 120 + 30;
+        const angle = Math.random() * Math.PI * 2;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          color,
+          size: Math.random() * 4 + 2,
+          life: 0.35
+        });
+      }
+    }
+
+    function spawnFloatingText(text, x, y, color, isBig = false) {
+      floatingTexts.push({ text, x, y, color, isBig, vy: -45, alpha: 1, scale: isBig ? 1.5 : 1 });
+    }
+
+    function drawParticles(dt) {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+    }
+
+    function drawFloatingTexts(dt) {
+      ctx.save();
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y += ft.vy * dt;
+        ft.alpha -= dt * 1.3;
+        if (ft.alpha <= 0) {
+          floatingTexts.splice(i, 1);
+          continue;
+        }
+        ctx.font = ft.isBig ? 'bold 15px "Segoe UI", sans-serif' : 'bold 12px "Segoe UI", sans-serif';
+        ctx.fillStyle = ft.color;
+        ctx.globalAlpha = Math.max(0, ft.alpha);
+        ctx.textAlign = 'center';
+        ctx.fillText(ft.text, ft.x, ft.y);
+      }
+      ctx.restore();
+    }
+
+    function endCombatPhase(p1Won, p2Won) {
+      cancelAnimationFrame(battleLoopId);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const currentBot = bots[currentEnemyIndex];
+
+      if (p1Won && !p2Won) {
+        currentBot.hp = Math.max(0, currentBot.hp - 25);
+        triggerCommanderCheer(true);
+        triggerCommanderPanic(false);
+        alert(`🎉 Kamu menang ronde ini! ${currentBot.name} kehilangan 25 HP.`);
+        if (currentBot.hp <= 0) {
+          alert(`💀 ${currentBot.name} TELAH TERELIMINASI DARI TURNAMEN!`);
+        }
+      } else if (!p1Won && p2Won) {
+        p1.hp = Math.max(0, p1.hp - 20);
+        triggerCommanderPanic(true);
+        triggerCommanderCheer(false);
+        alert(`💥 Pasukanmu kalah! Kamu kehilangan 20 HP dari serangan ${currentBot.name}.`);
+      } else {
+        alert('🤝 Hasil pertempuran ronde ini SERI!');
+      }
+
+      bots.forEach((b, idx) => {
+        if (idx !== currentEnemyIndex && b.hp > 0) {
+          b.hp = Math.max(0, b.hp - (Math.floor(Math.random() * 12) + 5));
+        }
+      });
+
+      renderStandings();
+
+      if (p1.hp <= 0) {
+        alert('💀 KAMU TELAH TERELIMINASI! Turnamen Berakhir.');
+        document.getElementById('startModal').classList.remove('hidden');
+        return;
+      }
+
+      const aliveBots = bots.filter(b => b.hp > 0);
+      if (aliveBots.length === 0) {
+        alert('🏆 SELAMAT! Seluruh bot telah gugur. KAMU ADALAH JUARA 1 TURNAMEN!');
+        document.getElementById('startModal').classList.remove('hidden');
+        return;
+      }
+
+      selectNextEnemy();
+      roundNumber++;
+      startPrepPhase();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

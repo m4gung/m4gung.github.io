@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pintar Sholat - 17 Rukun</title>
+
+    <!-- Menggunakan font Quicksand untuk Latin dan font serif standar/Amiri untuk teks Arab -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Quicksand:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Quicksand', 'sans-serif'],
+                        'arabic': ['Amiri', 'serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            green: '#d1fae5', /* hijau muda lembut */
+                            darkgreen: '#065F46',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+            transition: background-color 0.5s ease;
+            background-color: #ecfdf5;
+            /* Background hijau sangat muda */
+        }
+
+        .btn-bouncy {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+            box-shadow: 0 6px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:active:not(:disabled) {
+            transform: translateY(6px) scale(0.95);
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bouncy:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .animate-pop {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .arabic-text {
+            direction: rtl;
+            line-height: 1.8;
+        }
+
+        /* Styling scrollbar untuk card jika konten terlalu panjang */
+        .card-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .card-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .card-scroll::-webkit-scrollbar-thumb {
+            background: #a7f3d0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-gray-800 flex flex-col font-sans overflow-hidden">
+
+    <div class="max-w-2xl mx-auto px-4 py-4 flex flex-col h-screen w-full relative">
+
+        <header class="text-center mb-4 z-10 shrink-0">
+            <h1
+                class="text-2xl md:text-4xl font-black text-emerald-700 mb-2 drop-shadow-sm flex items-center justify-center gap-2">
+                🕌 Belajar Rukun Sholat
+            </h1>
+            <p
+                class="text-sm md:text-base font-bold text-emerald-600 bg-emerald-100 inline-block px-4 py-1 rounded-full shadow-sm border border-emerald-200">
+                17 Rukun Mazhab Syafi'i 🌟
+            </p>
+        </header>
+
+        <main id="mode-learn" class="flex-1 flex flex-col z-10 w-full min-h-0 relative">
+
+            <!-- Flashcard Container (Scrollable jika teks panjang) -->
+            <div id="flashcard"
+                class="bg-white rounded-[2rem] p-5 md:p-6 shadow-lg border-4 border-emerald-200 flex-1 flex flex-col items-center text-center max-w-lg mx-auto w-full transition-transform card-scroll overflow-y-auto mb-4 relative">
+
+                <!-- Indikator Angka -->
+                <div id="step-badge"
+                    class="absolute top-4 left-4 bg-yellow-400 text-yellow-900 font-black text-xl w-12 h-12 flex items-center justify-center rounded-full shadow-md border-2 border-white">
+                    1
+                </div>
+
+                <!-- Gambar/Ilustrasi -->
+                <div class="mt-8 mb-4 w-full flex justify-center shrink-0">
+                    <img id="fc-img" src="https://placehold.co/400x400/D1FAE5/065F46?text=Animasi+Niat" alt="Ilustrasi"
+                        class="w-40 h-40 md:w-48 md:h-48 object-cover rounded-3xl border-4 border-emerald-100 shadow-sm animate-pulse-once">
+                </div>
+
+                <!-- Judul Rukun & Penjelasan -->
+                <h2 id="fc-title" class="text-2xl md:text-3xl font-black text-emerald-700 mb-2">Niat</h2>
+                <p id="fc-desc" class="text-base md:text-lg text-gray-600 font-bold mb-4 px-2">
+                    Menyengaja di dalam hati untuk melakukan ibadah sholat.
+
+
+                </p>
+
+                <!-- Bagian Bacaan (Bisa disembunyikan jika rukun tidak ada bacaan) -->
+                <div id="fc-reading-box" class="w-full flex flex-col gap-3 my-2 shrink-0 ">
+
+                    <p id="fc-arabic"
+                        class="font-arabic arabic-text  text-emerald-800 font-bold text-2xl md:text-3xl !leading-[2] md:!leading-[2]">
+                        Arab</p>
+
+                    <div class="bg-gray-50 p-4 rounded-2xl border-2 border-gray-200">
+                        <p id="fc-latin" class="text-lg md:text-xl text-gray-700 font-bold mb-2 italic">Latin</p>
+                        <p id="fc-meaning" class="text-sm md:text-base text-gray-500 font-medium">Arti</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Navigation Buttons (Fixed at bottom) -->
+            <div class="shrink-0 flex justify-between items-center max-w-lg mx-auto w-full gap-3 pb-4">
+                <button id="btn-prev" onclick="changeCard(-1)"
+                    class="flex-1 bg-white text-emerald-600 border-4 border-emerald-200 py-3 rounded-2xl font-bold text-base md:text-lg btn-bouncy flex justify-center items-center">
+                    ⬅️ Mundur
+                </button>
+
+                <button onclick="readCurrentCard()"
+                    class="flex-none bg-yellow-400 text-yellow-900 w-14 h-14 md:w-16 md:h-16 rounded-full font-bold text-2xl btn-bouncy flex items-center justify-center border-4 border-yellow-200 shadow-md">
+                    🔊
+                </button>
+
+                <button id="btn-next" onclick="changeCard(1)"
+                    class="flex-1 bg-emerald-500 text-white border-4 border-emerald-600 py-3 rounded-2xl font-bold text-base md:text-lg btn-bouncy flex justify-center items-center">
+                    Maju ➡️
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const sholatSequence = [
+            {
+                id: 1, title: "Niat",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436966.png",
+                desc: `Berada di dalam hati menyengaja untuk mengerjakan sholat, bersamaan dengan Takbiratul Ihram. `
+            },
+            {
+                id: 1.1,
+                title: "Niat Sholat Subuh",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436966.png",
+                desc: `Berada di dalam hati menyengaja untuk mengerjakan sholat, bersamaan dengan Takbiratul Ihram`,
+                arabic: "أُصَلِّى فَرْضَ الصُّبْحِ رَكْعَتَيْنِ مُسْتَقْبِلَ الْقِبْلَةِ أَدَاءً (مَأْمُوْمًا/إِمَامًا) لِلّٰهِ تَعَالَى",
+                latin: "Ushalli fardash shub-hi rak'ataini mustaqbilal qiblati adaa'an (ma'muman/imaman) lillaahi ta'aalaa.",
+                meaning: "Saya berniat sholat fardhu subuh dua rakaat menghadap kiblat, tunai karena Allah Ta'ala."
+            },
+            {
+                id: 1.2,
+                title: "Niat Sholat Dzuhur",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436966.png",
+                desc: `Berada di dalam hati menyengaja untuk mengerjakan sholat, bersamaan dengan Takbiratul Ihram`,
+                arabic: "اُصَلِّيْ فَرْضَ الظُّهْرِ أَرْبَعَ رَكَعاَتٍ مُسْتَقْبِلَ الْقِبْلَةِ أَدَاءً (مَأْمُوْمًا/إِمَامًا) لله تَعَالَى",
+                latin: "Ushalli fardhadh dzuhri arba'a raka'atin mustaqbilal qiblati adaa'an (ma'muman/imaman) lillaahi ta'aalaa.",
+                meaning: "Aku sengaja sholat fardhu Zuhur empat rakaat menghadap kiblat (mak'mum/imam) karena Allah. Allah Mahabesar."
+            },
+            {
+                id: 1.3,
+                title: "Niat Sholat Ashar",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436966.png",
+                desc: `Berada di dalam hati menyengaja untuk mengerjakan sholat, bersamaan dengan Takbiratul Ihram`,
+                arabic: "",
+                latin: "",
+                meaning: ""
+            },
+            {
+                id: 1.4,
+                title: "Niat Sholat Maghrib",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436966.png",
+                desc: `Berada di dalam hati menyengaja untuk mengerjakan sholat, bersamaan dengan Takbiratul Ihram`,
+                arabic: "",
+                latin: "",
+                meaning: "Aku sengaja sholat fardhu Maghrib tiga rakaat menghadap kiblat (mak'mum/imam) karena Allah. Allah Mahabesar."
+            },
+            {
+                id: 1.5,
+                title: "Niat Sholat Isya",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436966.png",
+                desc: `Berada di dalam hati menyengaja untuk mengerjakan sholat, bersamaan dengan Takbiratul Ihram`,
+                arabic: "",
+                latin: "",
+                meaning: ""
+            },
+
+            {
+                id: 2, title: "Berdiri",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436966.png",
+                desc: "Berdiri tegak menghadap kiblat bagi yang mampu saat sholat fardhu."
+            },
+            {
+                id: 3, title: "Takbiratul Ihram",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436965.png",
+                desc: "Mengangkat kedua tangan dan mengucapkan takbir pembuka.",
+                arabic: "اللَّهُ أَكْبَرُ",
+                latin: "Allahu Akbar",
+                meaning: "Allah Maha Besar"
+            },
+            {
+                id: 4, title: "Membaca Al-Fatihah",
+                imgText: "https://png.pngtree.com/png-clipart/20221220/original/pngtree-prayer-movement-illustration-png-image_8782872.png",
+                desc: "Membaca surah Al-Fatihah yang wajib dibaca pada setiap rakaat.",
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ ...",
+                latin: "Bismillahir-rahmanir-rahim...",
+                meaning: "Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang..."
+            },
+            {
+                id: 5, title: "Rukuk",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436970.png",
+                desc: "Membungkukkan badan dengan punggung rata dan tangan memegang lutut.",
+                arabic: "سُبْحَانَ رَبِّيَ الْعَظِيمِ وَبِحَمْدِهِ",
+                latin: "Subhaana rabbiyal 'azhiimi wa bihamdih",
+                meaning: "Maha Suci Tuhanku Yang Maha Agung dan dengan memuji-Nya (dibaca 3x)"
+            },
+            {
+                id: 6, title: "Thuma'ninah Rukuk",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436970.png",
+                desc: "Diam sejenak dan tenang setelah posisi rukuk sempurna (tidak terburu-buru)."
+            },
+            {
+                id: 7, title: "I'tidal",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436965.png",
+                desc: "Bangkit dari rukuk dan berdiri tegak kembali.",
+                arabic: "سَمِعَ اللَّهُ لِمَنْ حَمِدَهُ",
+                latin: "Sami'allaahu liman hamidah",
+                meaning: "Allah Maha Mendengar orang yang memuji-Nya"
+            },
+            {
+                id: 8, title: "Thuma'ninah I'tidal",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436965.png",
+                desc: "Diam sejenak dan tenang dalam posisi berdiri i'tidal."
+            },
+            {
+                id: 9, title: "Sujud",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436969.png",
+                desc: "Menempelkan dahi, hidung, kedua telapak tangan, lutut, dan ujung kaki ke lantai. Dilakukan 2 kali tiap rakaat.",
+                arabic: "سُبْحَانَ رَبِّيَ الأَعْلَى وَبِحَمْدِهِ",
+                latin: "Subhaana rabbiyal a'laa wa bihamdih",
+                meaning: "Maha Suci Tuhanku Yang Maha Tinggi dan dengan memuji-Nya (dibaca 3x)"
+            },
+            {
+                id: 10, title: "Thuma'ninah Sujud",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436969.png",
+                desc: "Diam sejenak dan tenang saat dahi menempel di tempat sujud."
+            },
+            {
+                id: 11, title: "Duduk Antara 2 Sujud",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436968.png",
+                desc: "Duduk sejenak memisahkan sujud pertama dan sujud kedua.",
+                arabic: "رَبِّ اغْفِرْ لِي وَارْحَمْنِي",
+                latin: "Rabbighfirlii warhamnii...",
+                meaning: "Ya Tuhanku, ampunilah aku dan sayangilah aku..."
+            },
+            {
+                id: 12, title: "Thuma'ninah Duduk",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436968.png",
+                desc: "Tenang sejenak saat posisi duduk di antara dua sujud."
+            },
+            {
+                id: 13, title: "Duduk Tasyahud Akhir",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436968.png",
+                desc: "Posisi duduk tawarruk (duduk menyilang kaki) pada rakaat paling terakhir."
+            },
+            {
+                id: 14, title: "Membaca Tasyahud",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436968.png",
+                desc: "Melafalkan bacaan tahiyat akhir.",
+                arabic: "التَّحِيَّاتُ الْمُبَارَكَاتُ الصَّلَوَاتُ الطَّيِّبَاتُ لِلَّهِ",
+                latin: "Attahiyyaatul mubaarakaatush shalawaatuth thayyibaatulillaah...",
+                meaning: "Segala penghormatan, keberkahan, shalawat dan kebaikan hanya milik Allah..."
+            },
+            {
+                id: 15, title: "Membaca Shalawat",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436968.png",
+                desc: "Membaca shalawat kepada Nabi Muhammad SAW setelah bacaan tasyahud.",
+                arabic: "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ",
+                latin: "Allahumma shalli 'alaa Muhammad",
+                meaning: "Ya Allah, limpahkanlah rahmat kepada Nabi Muhammad"
+            },
+            {
+                id: 16, title: "Salam",
+                imgText: "https://png.pngtree.com/png-clipart/20221109/ourmid/pngtree-prayer-movement-illustration-png-image_6436967.png",
+                desc: "Mengucapkan salam pertama sambil menolehkan wajah ke arah kanan, lalu ke kiri.",
+                arabic: "السَّلاَمُ عَلَيْكُمْ وَرَحْمَةُ اللهِ",
+                latin: "Assalaamu'alaikum wa rahmatullah",
+                meaning: "Semoga keselamatan dan rahmat Allah dilimpahkan kepadamu"
+            },
+            {
+                id: 17, title: "Tertib",
+                imgText: "Harus\nBerurutan",
+                desc: "Melakukan seluruh rukun (langkah) secara berurutan dari awal nomor 1 hingga akhir nomor 16. Tidak boleh diacak!"
+            }
+        ];
+
+        let currentStepIndex = 0;
+
+        function speak(text, callback = null) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.pitch = 1.3; // Suara lebih ramah untuk anak
+            utterance.rate = 0.9;  // Biraz lambat agar artikulasi jelas
+            if (callback) utterance.onend = callback;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function getImageUrl(text) {
+            // Encode teks agar valid untuk URL placehold.co
+            const encoded = encodeURIComponent(text);
+            return `${encoded}`;
+        }
+
+        function updateFlashcardUI() {
+            const data = sholatSequence[currentStepIndex];
+            const card = document.getElementById('flashcard');
+
+            // Animasi transisi
+            card.classList.remove('animate-pop');
+            void card.offsetWidth;
+            card.classList.add('animate-pop');
+
+            // Update Teks Dasar & Gambar
+            document.getElementById('step-badge').textContent = data.id;
+            document.getElementById('fc-title').textContent = data.title;
+            document.getElementById('fc-desc').innerHTML = "";
+            data.desc.split('\n').forEach((baris, indeks) => {
+                if (indeks > 0) {
+                    document.getElementById('fc-desc').appendChild(document.createElement('br')); // Tambah <br> antar baris
+                }
+                document.getElementById('fc-desc').appendChild(document.createTextNode(baris)); // Tambah teksnya
+            });
+
+
+            document.getElementById('fc-img').src = data.imgText;
+
+            // Update Kotak Bacaan (Tampil jika ada, Sembunyi jika tidak)
+            const readingBox = document.getElementById('fc-reading-box');
+            if (data.arabic) {
+                readingBox.classList.remove('hidden');
+                document.getElementById('fc-arabic').textContent = data.arabic;
+                document.getElementById('fc-latin').textContent = `"${data.latin}"`;
+                document.getElementById('fc-meaning').textContent = `Artinya: ${data.meaning}`;
+            } else {
+                readingBox.classList.add('hidden');
+            }
+
+            // Atur ketersediaan Tombol Navigasi
+            document.getElementById('btn-prev').disabled = currentStepIndex === 0;
+            document.getElementById('btn-next').disabled = currentStepIndex === sholatSequence.length - 1;
+
+            // Gulir otomatis kembali ke atas jika teks sebelumnya panjang
+            card.scrollTop = 0;
+        }
+
+        function changeCard(direction) {
+            window.speechSynthesis.cancel();
+            const newIndex = currentStepIndex + direction;
+            if (newIndex >= 0 && newIndex < sholatSequence.length) {
+                currentStepIndex = newIndex;
+                updateFlashcardUI();
+
+                // Opsional: Langsung membacakan saat halaman berganti (Bisa di-uncomment jika ingin otomatis bicara)
+                // readCurrentCard(); 
+            }
+        }
+
+        function readCurrentCard() {
+            const data = sholatSequence[currentStepIndex];
+
+            // Merangkai kalimat untuk asisten suara
+            let textToRead = `Nomor ${data.id}. ${data.title}. ${data.desc}`;
+
+            if (data.latin) {
+                textToRead += ` Bacaannya adalah: ${data.latin}. Artinya: ${data.meaning}.`;
+            }
+
+            speak(textToRead);
+        }
+
+        // Inisialisasi saat aplikasi dimuat pertama kali
+        window.onload = () => {
+            updateFlashcardUI();
+        };
+    </script>
+</body>
+
+</html>
