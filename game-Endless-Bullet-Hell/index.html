@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chrono Danmaku - Endless Bullet Hell</title>
+  <style>
+    :root {
+      --bg: #030712;
+      --panel: #0f172a;
+      --border: #1e293b;
+      --cyan: #38bdf8;
+      --gold: #facc15;
+      --magenta: #f43f5e;
+      --text: #f8fafc;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      padding: 10px;
+    }
+    #game-container {
+      position: relative;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.15);
+      background: #02040a;
+    }
+    canvas {
+      display: block;
+    }
+    .hud-bar {
+      width: 760px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .val-score { color: var(--gold); }
+    .val-graze { color: var(--cyan); }
+    .val-best { color: #a855f7; }
+
+    .help-bar {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #64748b;
+      display: flex;
+      gap: 20px;
+    }
+    .help-bar span strong {
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top HUD -->
+  <div class="hud-bar">
+    <div>SCORE: <span class="val-score" id="score-txt">0</span></div>
+    <div>GRAZE: <span class="val-graze" id="graze-txt">0</span></div>
+    <div>MULTIPLIER: <span id="mult-txt" style="color: #4ade80;">1.0x</span></div>
+    <div>BEST: <span class="val-best" id="best-txt">0</span></div>
+  </div>
+
+  <!-- Game Canvas -->
+  <div id="game-container">
+    <canvas id="gameCanvas" width="760" height="760"></canvas>
+  </div>
+
+  <!-- Controls Reference -->
+  <div class="help-bar">
+    <span>Gerak: <strong>W, A, S, D</strong> / <strong>Panah</strong></span>
+    <span>Focus / Slow: <strong>Tahan Shift</strong> (Presisi Hitbox)</span>
+    <span>Dash: <strong>Spasi</strong> (Invulnerable)</span>
+  </div>
+
+<script>
+// --- AUDIO FX SYNTHESIZER ---
+class DanmakuAudio {
+  constructor() {
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+  }
+  playGraze() {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    const now = this.ctx.currentTime;
+    osc.frequency.setValueAtTime(1200 + Math.random() * 300, now);
+    osc.frequency.exponentialRampToValueAtTime(1800, now + 0.05);
+    gain.gain.setValueAtTime(0.04, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+  playDash() {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    const now = this.ctx.currentTime;
+    osc.frequency.setValueAtTime(300, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.15);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.15);
+  }
+  playExplode() {
+    this.init();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(25, now + 0.5);
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.5);
+  }
+}
+const sfx = new DanmakuAudio();
+
+// --- CANVAS & STATE ---
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const KEYS = {};
+window.addEventListener("keydown", (e) => {
+  KEYS[e.key.toLowerCase()] = true;
+  if (e.code === "Space") e.preventDefault();
+});
+window.addEventListener("keyup", (e) => {
+  KEYS[e.key.toLowerCase()] = false;
+});
+
+let isGameOver = false;
+let gameTime = 0;
+let score = 0;
+let grazeCount = 0;
+let bestScore = parseInt(localStorage.getItem("danmaku_best") || "0", 10);
+
+// --- PLAYER ENTITY ---
+const player = {
+  x: canvas.width / 2,
+  y: canvas.height * 0.78,
+  baseSpeed: 4.8,
+  focusSpeed: 2.1,
+  dashSpeed: 16.0,
+  coreRadius: 3.5,    // Mungil: Titik mematikan (Hitbox Touhou)
+  grazeRadius: 24,    // Lingkaran luar untuk graze
+  dashTimer: 0,
+  dashCooldown: 0,
+  isInvulnerable: false
+};
+
+// Objek Game
+let bullets = [];
+let particles = [];
+
+// --- BOSS / BULLET PATTERN CONTROLLER ---
+const emitter = {
+  x: canvas.width / 2,
+  y: 190,
+  angle1: 0,
+  angle2: 0,
+  spiralTimer: 0,
+  flowerTimer: 0,
+  aimedTimer: 0
+};
+
+function spawnBullets(dt) {
+  emitter.angle1 += 1.8 * dt;
+  emitter.angle2 -= 1.2 * dt;
+
+  // 1. Double Spiral Streams
+  emitter.spiralTimer += dt;
+  const spiralInterval = Math.max(0.05, 0.12 - (gameTime * 0.0008));
+  if (emitter.spiralTimer >= spiralInterval) {
+    emitter.spiralTimer = 0;
+    const arms = 4;
+    for (let i = 0; i < arms; i++) {
+      const theta = emitter.angle1 + (i * (Math.PI * 2 / arms));
+      bullets.push({
+        x: emitter.x + Math.cos(theta) * 20,
+        y: emitter.y + Math.sin(theta) * 20,
+        vx: Math.cos(theta) * 2.8,
+        vy: Math.sin(theta) * 2.8,
+        radius: 4,
+        color: '#f43f5e', // Magenta
+        grazed: false
+      });
+    }
+  }
+
+  // 2. Pulsing Flower Rings (Harmonic Sine Pattern)
+  emitter.flowerTimer += dt;
+  if (emitter.flowerTimer >= 1.4) {
+    emitter.flowerTimer = 0;
+    const petals = 16;
+    for (let i = 0; i < petals; i++) {
+      const baseTheta = (i * (Math.PI * 2 / petals)) + emitter.angle2;
+      const speed = 1.9 + Math.sin(i * 3 + gameTime) * 0.6;
+      bullets.push({
+        x: emitter.x,
+        y: emitter.y,
+        vx: Math.cos(baseTheta) * speed,
+        vy: Math.sin(baseTheta) * speed,
+        radius: 5,
+        color: '#38bdf8', // Cyan
+        grazed: false
+      });
+    }
+  }
+
+  // 3. Aimed Waves (Menembak langsung ke arah pemain)
+  if (gameTime > 12) {
+    emitter.aimedTimer += dt;
+    if (emitter.aimedTimer >= 2.2) {
+      emitter.aimedTimer = 0;
+      const directAngle = Math.atan2(player.y - emitter.y, player.x - emitter.x);
+      // Fan spread 3 peluru terarah
+      [-0.2, 0, 0.2].forEach(spread => {
+        bullets.push({
+          x: emitter.x,
+          y: emitter.y,
+          vx: Math.cos(directAngle + spread) * 3.6,
+          vy: Math.sin(directAngle + spread) * 3.6,
+          radius: 6,
+          color: '#facc15', // Gold
+          grazed: false
+        });
+      });
+    }
+  }
+}
+
+// --- PARTICLES & FX ---
+function createGrazeSparks(x, y) {
+  for (let i = 0; i < 4; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const spd = 1.5 + Math.random() * 2.5;
+    particles.push({
+      x, y,
+      vx: Math.cos(ang) * spd,
+      vy: Math.sin(ang) * spd,
+      life: 0.25,
+      maxLife: 0.25,
+      color: '#38bdf8',
+      size: 2
+    });
+  }
+}
+
+function createPlayerExplosion(x, y) {
+  for (let i = 0; i < 60; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const spd = 1 + Math.random() * 8;
+    particles.push({
+      x, y,
+      vx: Math.cos(ang) * spd,
+      vy: Math.sin(ang) * spd,
+      life: 0.8,
+      maxLife: 0.8,
+      color: Math.random() > 0.5 ? '#f43f5e' : '#facc15',
+      size: 3
+    });
+  }
+}
+
+// --- UPDATE LOOP ---
+function update(dt) {
+  if (isGameOver) return;
+
+  gameTime += dt;
+
+  // 1. Kontrol Pemain & Focus Mode
+  const isFocus = KEYS['shift'];
+  let currentSpeed = isFocus ? player.focusSpeed : player.baseSpeed;
+
+  let moveX = 0;
+  let moveY = 0;
+  if (KEYS['w'] || KEYS['arrowup']) moveY -= 1;
+  if (KEYS['s'] || KEYS['arrowdown']) moveY += 1;
+  if (KEYS['a'] || KEYS['arrowleft']) moveX -= 1;
+  if (KEYS['d'] || KEYS['arrowright']) moveX += 1;
+
+  if (moveX !== 0 && moveY !== 0) {
+    moveX *= 0.7071;
+    moveY *= 0.7071;
+  }
+
+  // Dash Mechanics
+  player.dashCooldown = Math.max(0, player.dashCooldown - dt);
+  if (KEYS[' '] && player.dashCooldown <= 0 && (moveX !== 0 || moveY !== 0)) {
+    player.dashTimer = 0.18; // durasi invulnerable dash
+    player.dashCooldown = 1.2; // jeda sebelum bisa dash lagi
+    player.isInvulnerable = true;
+    sfx.playDash();
+  }
+
+  if (player.dashTimer > 0) {
+    player.dashTimer -= dt;
+    currentSpeed = player.dashSpeed;
+    if (player.dashTimer <= 0) {
+      player.isInvulnerable = false;
+    }
+  }
+
+  player.x += moveX * currentSpeed * 60 * dt;
+  player.y += moveY * currentSpeed * 60 * dt;
+
+  // Batas Arena
+  player.x = Math.max(16, Math.min(canvas.width - 16, player.x));
+  player.y = Math.max(16, Math.min(canvas.height - 16, player.y));
+
+  // 2. Pemancar Pola Peluru
+  spawnBullets(dt);
+
+  // 3. Update & Tabrakan Peluru
+  const multiplier = 1 + (grazeCount * 0.05);
+  score += 15 * multiplier * dt;
+
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const b = bullets[i];
+    b.x += b.vx * 60 * dt;
+    b.y += b.vy * 60 * dt;
+
+    // Hapus peluru di luar batas arena
+    if (b.x < -30 || b.x > canvas.width + 30 || b.y < -30 || b.y > canvas.height + 30) {
+      bullets.splice(i, 1);
+      continue;
+    }
+
+    const dist = Math.hypot(b.x - player.x, b.y - player.y);
+
+    // Deteksi Graze (Hanya jika belum pernah di-graze)
+    if (!b.grazed && dist < player.grazeRadius + b.radius) {
+      b.grazed = true;
+      grazeCount++;
+      score += 250 * multiplier;
+      sfx.playGraze();
+      createGrazeSparks(player.x, player.y);
+    }
+
+    // Deteksi Kematian (Tabrakan dengan Core Hitbox)
+    if (!player.isInvulnerable && dist < player.coreRadius + b.radius) {
+      isGameOver = true;
+      sfx.playExplode();
+      createPlayerExplosion(player.x, player.y);
+      if (score > bestScore) {
+        bestScore = Math.floor(score);
+        localStorage.setItem("danmaku_best", bestScore);
+      }
+      break;
+    }
+  }
+
+  // 4. Update Partikel
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+
+  // Update Tampilan HUD
+  document.getElementById("score-txt").textContent = Math.floor(score).toLocaleString();
+  document.getElementById("graze-txt").textContent = grazeCount;
+  document.getElementById("mult-txt").textContent = multiplier.toFixed(1) + "x";
+  document.getElementById("best-txt").textContent = bestScore.toLocaleString();
+}
+
+// --- RENDER GEOMETRI & CANVAS ---
+function draw() {
+  // Latar trail glow gelap
+  ctx.fillStyle = "rgba(3, 7, 18, 0.35)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 1. Gambar Inti Pemancar / Boss Core
+  ctx.save();
+  ctx.translate(emitter.x, emitter.y);
+  ctx.rotate(emitter.angle1);
+  ctx.strokeStyle = "rgba(244, 63, 94, 0.4)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(-25, -25, 50, 50);
+  ctx.rotate(-emitter.angle1 * 2);
+  ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
+  ctx.strokeRect(-18, -18, 36, 36);
+  ctx.restore();
+
+  // 2. Gambar Peluru dengan Glow
+  bullets.forEach(b => {
+    ctx.fillStyle = b.color;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = b.color;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.shadowBlur = 0; // reset glow
+
+  // 3. Render Partikel
+  particles.forEach(p => {
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.life / p.maxLife;
+    ctx.fillRect(p.x, p.y, p.size, p.size);
+  });
+  ctx.globalAlpha = 1.0;
+
+  // 4. Gambar Pesawat Pemain
+  if (!isGameOver) {
+    // Lingkaran Jangkauan Graze
+    ctx.strokeStyle = player.isInvulnerable ? "rgba(250, 204, 21, 0.6)" : "rgba(56, 189, 248, 0.15)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.grazeRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Badan Pesawat (Segitiga Geometris)
+    ctx.fillStyle = player.isInvulnerable ? "#facc15" : "#38bdf8";
+    ctx.beginPath();
+    ctx.moveTo(player.x, player.y - 12);
+    ctx.lineTo(player.x - 9, player.y + 10);
+    ctx.lineTo(player.x, player.y + 6);
+    ctx.lineTo(player.x + 9, player.y + 10);
+    ctx.closePath();
+    ctx.fill();
+
+    // Core Hitbox Touhou (Titik presisi terlihat saat Focus / Tahan Shift)
+    const isFocus = KEYS['shift'];
+    ctx.fillStyle = isFocus ? "#ffffff" : "rgba(255, 255, 255, 0.6)";
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.coreRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#f43f5e";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // 5. Layar Game Over
+  if (isGameOver) {
+    ctx.fillStyle = "rgba(3, 7, 18, 0.85)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#f43f5e";
+    ctx.font = "bold 34px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("RUN TERMINATED", canvas.width / 2, canvas.height / 2 - 40);
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.font = "16px monospace";
+    ctx.fillText(`Final Score: ${Math.floor(score).toLocaleString()}`, canvas.width / 2, canvas.height / 2 + 5);
+    ctx.fillText(`Total Grazes: ${grazeCount}`, canvas.width / 2, canvas.height / 2 + 30);
+
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillText("Tekan [ ENTER ] atau [ KLIK ] untuk Mengulang", canvas.width / 2, canvas.height / 2 + 80);
+    ctx.textAlign = "start";
+  }
+}
+
+// --- RESTART HANDLER ---
+function restartGame() {
+  if (!isGameOver) return;
+  bullets = [];
+  particles = [];
+  score = 0;
+  grazeCount = 0;
+  gameTime = 0;
+  player.x = canvas.width / 2;
+  player.y = canvas.height * 0.78;
+  player.dashTimer = 0;
+  player.dashCooldown = 0;
+  player.isInvulnerable = false;
+  isGameOver = false;
+}
+
+window.addEventListener("keydown", (e) => {
+  if (isGameOver && e.key === "Enter") restartGame();
+});
+canvas.addEventListener("click", () => {
+  if (isGameOver) restartGame();
+});
+
+// --- ENGINE LOOP ---
+let lastTime = performance.now();
+function gameLoop(currentTime) {
+  const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+  lastTime = currentTime;
+
+  update(dt);
+  draw();
+
+  requestAnimationFrame(gameLoop);
+}
+
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>

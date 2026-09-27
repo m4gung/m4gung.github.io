@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slay the Abyss - Roguelite Deckbuilder</title>
+  <style>
+    :root {
+      --bg: #090a0f;
+      --panel: #131722;
+      --border: #2a324b;
+      --accent: #e2b714;
+      --text: #e0e6ed;
+    }
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #game-container {
+      position: relative;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+      background: #0d1117;
+    }
+    canvas {
+      display: block;
+    }
+    .hud-controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 15px;
+      font-size: 0.85rem;
+      color: #7d8590;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <canvas id="gameCanvas" width="960" height="600"></canvas>
+  </div>
+  <div class="hud-controls">
+    <span>Tip: Klik kartu di giliran Anda untuk memainkannya. Klik 'End Turn' saat energi habis.</span>
+  </div>
+
+<script>
+// --- AUDIO SYNTHESIZER ENGINE (Web Audio API) ---
+class SoundController {
+  constructor() {
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+  playSlash() {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.12);
+  }
+  playShield() {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(280, this.ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.15);
+  }
+  playBuff() {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(260, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(520, this.ctx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.2);
+  }
+}
+const sfx = new SoundController();
+
+// --- CARD DATABASE & TYPES ---
+const CARD_POOL = [
+  { id: 'strike', name: 'Slash', cost: 1, type: 'ATTACK', val: 6, desc: 'Beri 6 Damage', color: '#b91c1c' },
+  { id: 'defend', name: 'Guard', cost: 1, type: 'SKILL', val: 5, desc: 'Beri 5 Block', color: '#1d4ed8' },
+  { id: 'heavy_blade', name: 'Heavy Blow', cost: 2, type: 'ATTACK', val: 14, desc: 'Beri 14 Damage', color: '#b91c1c' },
+  { id: 'quick_stab', name: 'Quick Shiv', cost: 0, type: 'ATTACK', val: 4, desc: 'Beri 4 Damage', color: '#b91c1c' },
+  { id: 'iron_wall', name: 'Fortress', cost: 2, type: 'SKILL', val: 12, desc: 'Beri 12 Block', color: '#1d4ed8' },
+  { id: 'sharpen', name: 'Enrage', cost: 1, type: 'BUFF', val: 2, desc: '+2 Strength permanen', color: '#b45309' },
+  { id: 'drain', name: 'Life Leech', cost: 1, type: 'ATTACK', val: 4, heal: 3, desc: 'Beri 4 Dmg, pulihkan 3 HP', color: '#4d194d' }
+];
+
+// --- GAME CORE STATE ---
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const STATE = {
+  MAP: 'MAP',
+  COMBAT: 'COMBAT',
+  REWARD: 'REWARD',
+  CAMPFIRE: 'CAMPFIRE',
+  GAMEOVER: 'GAMEOVER',
+  VICTORY: 'VICTORY'
+};
+
+let gameState = STATE.MAP;
+
+// Player Attributes
+let player = {
+  maxHp: 65,
+  hp: 65,
+  block: 0,
+  energy: 3,
+  maxEnergy: 3,
+  strength: 0,
+  deck: [
+    { ...CARD_POOL[0] }, { ...CARD_POOL[0] }, { ...CARD_POOL[0] }, { ...CARD_POOL[0] },
+    { ...CARD_POOL[1] }, { ...CARD_POOL[1] }, { ...CARD_POOL[1] }, { ...CARD_POOL[1] }
+  ],
+  drawPile: [],
+  hand: [],
+  discardPile: [],
+  relics: [{ name: 'Vampiric Fang', desc: 'Sembuhkan 2 HP setiap memenangkan pertempuran.' }]
+};
+
+// Enemy Data Model
+let enemy = null;
+const ENEMY_TEMPLATES = [
+  { name: 'Abyss Cultist', hp: 32, maxHp: 32, moves: [{ type: 'ATK', val: 6 }, { type: 'ATK', val: 9 }, { type: 'DEF', val: 6 }] },
+  { name: 'Spike Beast', hp: 42, maxHp: 42, moves: [{ type: 'DEF', val: 8 }, { type: 'ATK', val: 12 }] },
+  { name: 'Shadow Horror (Boss)', hp: 75, maxHp: 75, moves: [{ type: 'BUFF', val: 2 }, { type: 'ATK', val: 14 }, { type: 'ATK', val: 18 }] }
+];
+
+// Dungeon Node Map
+const mapNodes = [
+  { id: 0, type: 'BATTLE', title: 'Koridor Depan', row: 0, cleared: false },
+  { id: 1, type: 'BATTLE', title: 'Ruang Labirin', row: 1, cleared: false },
+  { id: 2, type: 'CAMPFIRE', title: 'Api Unggun Relaksasi', row: 2, cleared: false },
+  { id: 3, type: 'BOSS', title: 'Gerbang Sang Penguasa', row: 3, cleared: false }
+];
+let currentFloor = 0;
+let rewardCards = [];
+
+// Layout Hand
+let handPositions = [];
+
+// --- MAP & PROGRESSION ---
+function startCombat(nodeType) {
+  gameState = STATE.COMBAT;
+  let template = nodeType === 'BOSS' ? ENEMY_TEMPLATES[2] : (currentFloor === 0 ? ENEMY_TEMPLATES[0] : ENEMY_TEMPLATES[1]);
+  enemy = {
+    ...template,
+    block: 0,
+    currentMoveIndex: 0,
+    strength: 0
+  };
+  
+  player.drawPile = shuffle([...player.deck]);
+  player.hand = [];
+  player.discardPile = [];
+  player.block = 0;
+  player.strength = 0;
+  
+  startPlayerTurn();
+}
+
+function startPlayerTurn() {
+  player.energy = player.maxEnergy;
+  player.block = 0;
+  drawCards(4);
+}
+
+function drawCards(count) {
+  for (let i = 0; i < count; i++) {
+    if (player.drawPile.length === 0) {
+      if (player.discardPile.length === 0) break;
+      player.drawPile = shuffle([...player.discardPile]);
+      player.discardPile = [];
+    }
+    if (player.hand.length < 7) {
+      player.hand.push(player.drawPile.pop());
+    }
+  }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// --- COMBAT LOGIC ---
+function playCard(index) {
+  const card = player.hand[index];
+  if (!card || player.energy < card.cost) return;
+
+  player.energy -= card.cost;
+
+  if (card.type === 'ATTACK') {
+    sfx.playSlash();
+    let dmg = card.val + player.strength;
+    applyDamageToTarget(enemy, dmg);
+    if (card.heal) {
+      player.hp = Math.min(player.maxHp, player.hp + card.heal);
+    }
+  } else if (card.type === 'SKILL') {
+    sfx.playShield();
+    player.block += card.val;
+  } else if (card.type === 'BUFF') {
+    sfx.playBuff();
+    player.strength += card.val;
+  }
+
+  player.discardPile.push(player.hand.splice(index, 1)[0]);
+
+  // Check Enemy Death
+  if (enemy.hp <= 0) {
+    onCombatWin();
+  }
+}
+
+function applyDamageToTarget(target, incomingDmg) {
+  if (target.block >= incomingDmg) {
+    target.block -= incomingDmg;
+  } else {
+    let unblocked = incomingDmg - target.block;
+    target.block = 0;
+    target.hp = Math.max(0, target.hp - unblocked);
+  }
+}
+
+function endTurn() {
+  // Pindahkan kartu tangan ke discard pile
+  while (player.hand.length > 0) {
+    player.discardPile.push(player.hand.pop());
+  }
+
+  // Enemy Turn
+  setTimeout(() => {
+    executeEnemyTurn();
+    if (player.hp > 0 && enemy.hp > 0) {
+      startPlayerTurn();
+    }
+  }, 400);
+}
+
+function executeEnemyTurn() {
+  enemy.block = 0;
+  const move = enemy.moves[enemy.currentMoveIndex % enemy.moves.length];
+
+  if (move.type === 'ATK') {
+    sfx.playSlash();
+    applyDamageToTarget(player, move.val + enemy.strength);
+  } else if (move.type === 'DEF') {
+    sfx.playShield();
+    enemy.block += move.val;
+  } else if (move.type === 'BUFF') {
+    sfx.playBuff();
+    enemy.strength += move.val;
+  }
+
+  enemy.currentMoveIndex++;
+
+  if (player.hp <= 0) {
+    gameState = STATE.GAMEOVER;
+  }
+}
+
+function onCombatWin() {
+  // Efek relic pasif: regenerasi
+  player.hp = Math.min(player.maxHp, player.hp + 2);
+
+  mapNodes[currentFloor].cleared = true;
+  if (mapNodes[currentFloor].type === 'BOSS') {
+    gameState = STATE.VICTORY;
+    return;
+  }
+
+  // Siapkan reward draft 3 kartu acak
+  rewardCards = [
+    { ...CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)] },
+    { ...CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)] },
+    { ...CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)] }
+  ];
+  gameState = STATE.REWARD;
+}
+
+// --- RENDER FUNCTIONS ---
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (gameState === STATE.MAP) renderMap();
+  else if (gameState === STATE.COMBAT) renderCombat();
+  else if (gameState === STATE.REWARD) renderReward();
+  else if (gameState === STATE.CAMPFIRE) renderCampfire();
+  else if (gameState === STATE.GAMEOVER) renderEndScreen("ANDA GUGUR DI RUANG KEGELAPAN", "#ef4444");
+  else if (gameState === STATE.VICTORY) renderEndScreen("KEMENANGAN TELAH DIRAIH!", "#e2b714");
+
+  requestAnimationFrame(draw);
+}
+
+function renderMap() {
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(0, 0, canvas.width, 60);
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = "bold 20px sans-serif";
+  ctx.fillText("PETA DUNGEON", 40, 38);
+  ctx.font = "14px sans-serif";
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText(`Darah: ${player.hp}/${player.maxHp} | Deck: ${player.deck.length} Kartu`, 220, 38);
+
+  mapNodes.forEach((node, i) => {
+    let y = 140 + i * 105;
+    let isCurrent = currentFloor === i;
+    
+    ctx.strokeStyle = isCurrent ? "#e2b714" : (node.cleared ? "#334155" : "#475569");
+    ctx.lineWidth = 2;
+    ctx.strokeRect(320, y, 320, 70);
+
+    ctx.fillStyle = isCurrent ? "rgba(226, 183, 20, 0.12)" : "#111827";
+    ctx.fillRect(320, y, 320, 70);
+
+    ctx.fillStyle = node.cleared ? "#64748b" : (isCurrent ? "#f8fafc" : "#94a3b8");
+    ctx.font = "bold 16px sans-serif";
+    ctx.fillText(`${node.title}`, 340, y + 32);
+
+    ctx.font = "13px sans-serif";
+    ctx.fillStyle = node.type === 'BOSS' ? '#ef4444' : (node.type === 'CAMPFIRE' ? '#22c55e' : '#38bdf8');
+    ctx.fillText(`Tipe: ${node.type}`, 340, y + 54);
+
+    if (isCurrent) {
+      ctx.fillStyle = "#e2b714";
+      ctx.beginPath();
+      ctx.arc(300, y + 35, 8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  // Enter button
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillRect(380, 520, 200, 45);
+  ctx.fillStyle = "#0f172a";
+  ctx.font = "bold 16px sans-serif";
+  ctx.fillText("MASUK RUANGAN", 415, 548);
+}
+
+function renderCombat() {
+  // Top HUD Bar
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, canvas.width, 50);
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = "14px sans-serif";
+  ctx.fillText(`Player HP: ${player.hp}/${player.maxHp} | Block: ${player.block} | STR: +${player.strength}`, 30, 30);
+  ctx.fillText(`Relic: ${player.relics[0].name}`, 400, 30);
+
+  // Player Entity Box
+  ctx.fillStyle = "#2563eb";
+  ctx.fillRect(140, 220, 80, 120);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "14px sans-serif";
+  ctx.fillText("KNIGHT", 152, 285);
+  if (player.block > 0) {
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillText(`🛡️ ${player.block}`, 155, 205);
+  }
+
+  // Enemy Entity Box
+  ctx.fillStyle = "#dc2626";
+  ctx.fillRect(720, 210, 95, 130);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 14px sans-serif";
+  ctx.fillText(enemy.name, 720, 180);
+  ctx.fillText(`HP: ${enemy.hp}/${enemy.maxHp}`, 720, 200);
+
+  if (enemy.block > 0) {
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillText(`🛡️ ${enemy.block}`, 720, 360);
+  }
+
+  // Enemy Intent Display
+  const nextMove = enemy.moves[enemy.currentMoveIndex % enemy.moves.length];
+  ctx.fillStyle = "#fbbf24";
+  ctx.font = "italic 13px sans-serif";
+  let intentText = nextMove.type === 'ATK' ? `Serang: ${nextMove.val + enemy.strength} Dmg` : (nextMove.type === 'DEF' ? `Block: +${nextMove.val}` : `Buff: +${nextMove.val} STR`);
+  ctx.fillText(`Intensi: [${intentText}]`, 720, 155);
+
+  // Cards Area (Hand)
+  renderHand();
+
+  // Energy & Deck Counters
+  ctx.fillStyle = "#f59e0b";
+  ctx.beginPath();
+  ctx.arc(60, 480, 32, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#000000";
+  ctx.font = "bold 20px sans-serif";
+  ctx.fillText(`${player.energy}/${player.maxEnergy}`, 44, 486);
+
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "12px sans-serif";
+  ctx.fillText(`Draw: ${player.drawPile.length}`, 30, 530);
+  ctx.fillText(`Discard: ${player.discardPile.length}`, 30, 548);
+
+  // End Turn Button
+  ctx.fillStyle = "#e11d48";
+  ctx.fillRect(810, 470, 110, 45);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 14px sans-serif";
+  ctx.fillText("END TURN", 828, 498);
+}
+
+function renderHand() {
+  handPositions = [];
+  const cardWidth = 110;
+  const cardHeight = 150;
+  const startX = 170;
+  const gap = 15;
+
+  player.hand.forEach((card, i) => {
+    let x = startX + i * (cardWidth + gap);
+    let y = 420;
+    handPositions.push({ x, y, w: cardWidth, h: cardHeight, index: i });
+
+    // Background Card
+    ctx.fillStyle = card.color;
+    ctx.fillRect(x, y, cardWidth, cardHeight);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, cardWidth, cardHeight);
+
+    // Energy Orb on Card
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.arc(x + 16, y + 16, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText(`${card.cost}`, x + 12, y + 20);
+
+    // Title & Description
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText(card.name, x + 34, y + 20);
+
+    ctx.font = "11px sans-serif";
+    ctx.fillText(card.desc, x + 8, y + 80);
+  });
+}
+
+function renderReward() {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#facc15";
+  ctx.font = "bold 24px sans-serif";
+  ctx.fillText("PILIH KARTU HADIAH UNTUK DECK ANDA", 260, 160);
+
+  const cardWidth = 140;
+  const cardHeight = 200;
+  const startX = 230;
+
+  rewardCards.forEach((c, idx) => {
+    let x = startX + idx * (cardWidth + 40);
+    let y = 220;
+
+    ctx.fillStyle = c.color;
+    ctx.fillRect(x, y, cardWidth, cardHeight);
+    ctx.strokeStyle = "#facc15";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, cardWidth, cardHeight);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 14px sans-serif";
+    ctx.fillText(c.name, x + 12, y + 30);
+    ctx.font = "12px sans-serif";
+    ctx.fillText(`Biaya: ${c.cost} Energi`, x + 12, y + 55);
+    ctx.fillText(c.desc, x + 12, y + 100);
+  });
+
+  ctx.fillStyle = "#64748b";
+  ctx.fillRect(400, 470, 160, 40);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 14px sans-serif";
+  ctx.fillText("Lewati Hadiah", 435, 495);
+}
+
+function renderCampfire() {
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#22c55e";
+  ctx.font = "bold 28px sans-serif";
+  ctx.fillText("API UNGGUN PERISTIRAHATAN", 270, 180);
+
+  ctx.font = "15px sans-serif";
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText(`Kesehatan Anda: ${player.hp}/${player.maxHp}`, 400, 220);
+
+  // Option Heal
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(320, 280, 320, 60);
+  ctx.strokeStyle = "#3b82f6";
+  ctx.strokeRect(320, 280, 320, 60);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 16px sans-serif";
+  ctx.fillText("Beristirahat (Pulihkan 20 HP)", 370, 316);
+
+  // Option Remove Strike
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(320, 360, 320, 60);
+  ctx.strokeStyle = "#f43f5e";
+  ctx.strokeRect(320, 360, 320, 60);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("Bakar Kartu (Hapus 1 Strike dasar)", 355, 396);
+}
+
+function renderEndScreen(text, color) {
+  ctx.fillStyle = "rgba(10, 15, 25, 0.9)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = color;
+  ctx.font = "bold 32px sans-serif";
+  ctx.fillText(text, 220, 260);
+
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillRect(380, 330, 200, 50);
+  ctx.fillStyle = "#090a0f";
+  ctx.font = "bold 16px sans-serif";
+  ctx.fillText("MAIN KEMBALI", 425, 360);
+}
+
+// --- INTERACTION & INPUT CONTROLLER ---
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  if (gameState === STATE.MAP) {
+    // Tombol Masuk Ruangan
+    if (mx >= 380 && mx <= 580 && my >= 520 && my <= 565) {
+      let node = mapNodes[currentFloor];
+      if (node.type === 'BATTLE' || node.type === 'BOSS') {
+        startCombat(node.type);
+      } else if (node.type === 'CAMPFIRE') {
+        gameState = STATE.CAMPFIRE;
+      }
+    }
+  } else if (gameState === STATE.COMBAT) {
+    // Tombol End Turn
+    if (mx >= 810 && mx <= 920 && my >= 470 && my <= 515) {
+      endTurn();
+      return;
+    }
+
+    // Klik Kartu di Tangan
+    for (let i = handPositions.length - 1; i >= 0; i--) {
+      let pos = handPositions[i];
+      if (mx >= pos.x && mx <= pos.x + pos.w && my >= pos.y && my <= pos.y + pos.h) {
+        playCard(pos.index);
+        break;
+      }
+    }
+  } else if (gameState === STATE.REWARD) {
+    // Pilihan 3 Kartu
+    const cardWidth = 140;
+    const cardHeight = 200;
+    const startX = 230;
+    rewardCards.forEach((c, idx) => {
+      let x = startX + idx * (cardWidth + 40);
+      let y = 220;
+      if (mx >= x && mx <= x + cardWidth && my >= y && my <= y + cardHeight) {
+        player.deck.push(c);
+        currentFloor++;
+        gameState = STATE.MAP;
+      }
+    });
+    // Lewati Hadiah
+    if (mx >= 400 && mx <= 560 && my >= 470 && my <= 510) {
+      currentFloor++;
+      gameState = STATE.MAP;
+    }
+  } else if (gameState === STATE.CAMPFIRE) {
+    // Heal
+    if (mx >= 320 && mx <= 640 && my >= 280 && my <= 340) {
+      player.hp = Math.min(player.maxHp, player.hp + 20);
+      mapNodes[currentFloor].cleared = true;
+      currentFloor++;
+      gameState = STATE.MAP;
+    }
+    // Delete 1 Strike
+    if (mx >= 320 && mx <= 640 && my >= 360 && my <= 420) {
+      let strikeIdx = player.deck.findIndex(c => c.id === 'strike');
+      if (strikeIdx !== -1) player.deck.splice(strikeIdx, 1);
+      mapNodes[currentFloor].cleared = true;
+      currentFloor++;
+      gameState = STATE.MAP;
+    }
+  } else if (gameState === STATE.GAMEOVER || gameState === STATE.VICTORY) {
+    // Restart Run
+    if (mx >= 380 && mx <= 580 && my >= 330 && my <= 380) {
+      location.reload();
+    }
+  }
+});
+
+// Jalankan Loop Render
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

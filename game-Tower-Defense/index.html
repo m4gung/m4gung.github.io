@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aegis Grid: Maze Tower Defense</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #131b2e;
+      --border: #263554;
+      --accent: #38bdf8;
+      --gold: #facc15;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .hud-header {
+      width: 960px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px 8px 0 0;
+      padding: 12px 20px;
+    }
+    .stats-group {
+      display: flex;
+      gap: 24px;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .val-gold { color: var(--gold); }
+    .val-life { color: var(--danger); }
+    .val-wave { color: var(--accent); }
+
+    #canvas-container {
+      position: relative;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      background: #060911;
+    }
+    canvas {
+      display: block;
+    }
+
+    .bottom-panel {
+      width: 960px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+    .build-options {
+      display: flex;
+      gap: 12px;
+    }
+    .btn-tower {
+      background: #1e293b;
+      border: 2px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      font-size: 0.85rem;
+      min-width: 140px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .btn-tower.active {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+    }
+    .btn-tower span.cost {
+      font-size: 0.75rem;
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .action-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .primary-btn {
+      background: #2563eb;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .primary-btn:hover:not(:disabled) {
+      background: #1d4ed8;
+    }
+    .primary-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .selected-tower-panel {
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-left: 1px solid var(--border);
+      padding-left: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top HUD -->
+  <div class="hud-header">
+    <div class="stats-group">
+      <div class="stat-item">Gold: <span class="val-gold" id="gold-val">120</span></div>
+      <div class="stat-item">Core HP: <span class="val-life" id="life-val">20</span></div>
+      <div class="stat-item">Wave: <span class="val-wave" id="wave-val">1 / 10</span></div>
+    </div>
+    <div id="tip-msg" style="font-size: 0.85rem; color: var(--muted);">Bangun labirin menara untuk memperpanjang rute musuh!</div>
+  </div>
+
+  <!-- Game Arena Canvas -->
+  <div id="canvas-container">
+    <canvas id="gameCanvas" width="960" height="600"></canvas>
+  </div>
+
+  <!-- Bottom Command Bar -->
+  <div class="bottom-panel">
+    <div class="build-options">
+      <button class="btn-tower active" id="btn-sniper" onclick="selectTowerType('SNIPER')">
+        <strong>⚡ Dart Cannon</strong>
+        <span class="cost">Cost: 35 G</span>
+        <small style="color: var(--muted);">Single-target tinggi</small>
+      </button>
+      <button class="btn-tower" id="btn-freeze" onclick="selectTowerType('FREEZE')">
+        <strong>❄️ Frost Beam</strong>
+        <span class="cost">Cost: 45 G</span>
+        <small style="color: var(--muted);">Slow area 45%</small>
+      </button>
+      <button class="btn-tower" id="btn-mortar" onclick="selectTowerType('MORTAR')">
+        <strong>💥 Blast Mortar</strong>
+        <span class="cost">Cost: 65 G</span>
+        <small style="color: var(--muted);">Splash AOE damage</small>
+      </button>
+    </div>
+
+    <div class="selected-tower-panel" id="tower-info-box" style="display: none;">
+      <div id="tower-details">Pilih menara</div>
+      <button class="primary-btn" id="upgrade-btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="upgradeSelectedTower()">Upgrade</button>
+      <button class="primary-btn" id="sell-btn" style="padding: 6px 12px; font-size: 0.8rem; background: var(--danger);" onclick="sellSelectedTower()">Jual</button>
+    </div>
+
+    <div class="action-controls">
+      <button class="primary-btn" id="wave-btn" onclick="startWave()">Mulai Wave 1</button>
+    </div>
+  </div>
+
+<script>
+// --- AUDIO FX (Web Audio API) ---
+class AudioSynthesizer {
+  constructor() {
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+  }
+  playShoot(type) {
+    this.init();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    if (type === 'SNIPER') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.start(now); osc.stop(now + 0.08);
+    } else if (type === 'FREEZE') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(900, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + 0.12);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+      osc.start(now); osc.stop(now + 0.12);
+    } else { // MORTAR
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(160, now);
+      osc.frequency.exponentialRampToValueAtTime(30, now + 0.2);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start(now); osc.stop(now + 0.2);
+    }
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+  }
+}
+const sfx = new AudioSynthesizer();
+
+// --- GRID & MAP DEFINITION ---
+const COLS = 16;
+const ROWS = 10;
+const TILE_SIZE = 60; // 960x600 canvas
+
+const START_TILE = { c: 0, r: 4 };
+const END_TILE = { c: COLS - 1, r: 5 };
+
+// Inisialisasi grid (0 = Kosong, 1 = Menara)
+let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+
+// Path array yang menampung urutan titik koordinat [{c, r}, ...]
+let activePath = [];
+
+// --- TOWER CONFIGURATION ---
+const TOWER_SPECS = {
+  SNIPER: { name: 'Dart Cannon', cost: 35, range: 170, damage: 22, rate: 0.8, color: '#38bdf8', bulletType: 'BEAM' },
+  FREEZE: { name: 'Frost Beam', cost: 45, range: 130, damage: 4, rate: 1.2, color: '#67e8f9', slowRatio: 0.45, slowDuration: 1.8, bulletType: 'ICE' },
+  MORTAR: { name: 'Blast Mortar', cost: 65, range: 220, damage: 45, rate: 2.2, splash: 90, color: '#f97316', bulletType: 'BALL' }
+};
+
+let currentBuildType = 'SNIPER';
+let selectedTower = null;
+
+// Entitas Game
+let towers = [];
+let enemies = [];
+let projectiles = [];
+let particles = [];
+
+// Game Stats
+let gold = 120;
+let coreHp = 20;
+let currentWave = 1;
+const MAX_WAVES = 10;
+let waveInProgress = false;
+let waveQueue = [];
+let spawnClock = 0;
+
+// Canvas Setup
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// --- BFS PATHFINDING ALGORITHM ---
+// Menghitung rute tercepat dari START_TILE ke END_TILE di sekitar rintangan menara.
+function calculatePath(testGrid) {
+  const queue = [{ c: START_TILE.c, r: START_TILE.r, parent: null }];
+  const visited = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+  visited[START_TILE.r][START_TILE.c] = true;
+
+  const parents = {};
+  let targetNode = null;
+
+  const dirs = [
+    { dc: 1, dr: 0 }, { dc: -1, dr: 0 },
+    { dc: 0, dr: 1 }, { dc: 0, dr: -1 }
+  ];
+
+  while (queue.length > 0) {
+    const curr = queue.shift();
+
+    if (curr.c === END_TILE.c && curr.r === END_TILE.r) {
+      targetNode = curr;
+      break;
+    }
+
+    for (let d of dirs) {
+      const nc = curr.c + d.dc;
+      const nr = curr.r + d.dr;
+
+      if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS) {
+        if (!visited[nr][nc] && testGrid[nr][nc] === 0) {
+          visited[nr][nc] = true;
+          const node = { c: nc, r: nr, parent: curr };
+          queue.push(node);
+        }
+      }
+    }
+  }
+
+  if (!targetNode) return null; // Terblokir total
+
+  // Rekonstruksi rute dari target ke start
+  const path = [];
+  let curr = targetNode;
+  while (curr) {
+    path.unshift({ c: curr.c, r: curr.r });
+    curr = curr.parent;
+  }
+  return path;
+}
+
+// Perbarui rute global
+activePath = calculatePath(grid);
+
+// --- TOWER MANAGEMENT ---
+function selectTowerType(type) {
+  currentBuildType = type;
+  document.querySelectorAll('.btn-tower').forEach(b => b.classList.remove('active'));
+  document.getElementById(`btn-${type.toLowerCase()}`).classList.add('active');
+}
+
+function tryBuildTower(c, r) {
+  // Cegah pembangunan di start, goal, atau tile yang sudah terisi
+  if ((c === START_TILE.c && r === START_TILE.r) || (c === END_TILE.c && r === END_TILE.r)) return;
+  if (grid[r][c] !== 0) return;
+
+  const spec = TOWER_SPECS[currentBuildType];
+  if (gold < spec.cost) {
+    flashTip("Gold tidak cukup!");
+    return;
+  }
+
+  // Uji apakah penempatan ini memblokir total rute labirin
+  grid[r][c] = 1;
+  const newPath = calculatePath(grid);
+
+  if (!newPath) {
+    grid[r][c] = 0; // Kembalikan jika jalan tertutup rapat
+    flashTip("Peringatan: Tidak boleh menutup rute musuh secara total!");
+    return;
+  }
+
+  // Sahkan penempatan menara
+  gold -= spec.cost;
+  activePath = newPath;
+
+  const tower = {
+    c, r,
+    x: c * TILE_SIZE + TILE_SIZE / 2,
+    y: r * TILE_SIZE + TILE_SIZE / 2,
+    type: currentBuildType,
+    level: 1,
+    costInvested: spec.cost,
+    range: spec.range,
+    damage: spec.damage,
+    rate: spec.rate,
+    slowRatio: spec.slowRatio || 0,
+    slowDuration: spec.slowDuration || 0,
+    splash: spec.splash || 0,
+    cooldown: 0
+  };
+  towers.push(tower);
+  updateUI();
+
+  // Redirect ulang target path bagi musuh yang sedang berjalan
+  enemies.forEach(e => {
+    e.path = calculatePathFromNode(e.x, e.y);
+    e.pathIdx = 0;
+  });
+}
+
+function calculatePathFromNode(pixelX, pixelY) {
+  const startC = Math.max(0, Math.min(COLS - 1, Math.floor(pixelX / TILE_SIZE)));
+  const startR = Math.max(0, Math.min(ROWS - 1, Math.floor(pixelY / TILE_SIZE)));
+  
+  const queue = [{ c: startC, r: startR, parent: null }];
+  const visited = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+  visited[startR][startC] = true;
+  let target = null;
+
+  const dirs = [{ dc: 1, dr: 0 }, { dc: -1, dr: 0 }, { dc: 0, dr: 1 }, { dc: 0, dr: -1 }];
+
+  while (queue.length > 0) {
+    const curr = queue.shift();
+    if (curr.c === END_TILE.c && curr.r === END_TILE.r) {
+      target = curr;
+      break;
+    }
+    for (let d of dirs) {
+      const nc = curr.c + d.dc;
+      const nr = curr.r + d.dr;
+      if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS) {
+        if (!visited[nr][nc] && grid[nr][nc] === 0) {
+          visited[nr][nc] = true;
+          queue.push({ c: nc, r: nr, parent: curr });
+        }
+      }
+    }
+  }
+
+  const p = [];
+  let curr = target;
+  while (curr) {
+    p.unshift({ c: curr.c, r: curr.r });
+    curr = curr.parent;
+  }
+  return p.length > 0 ? p : activePath;
+}
+
+function upgradeSelectedTower() {
+  if (!selectedTower) return;
+  const upgradeCost = Math.floor(selectedTower.costInvested * 0.8);
+  if (gold < upgradeCost) {
+    flashTip("Gold tidak cukup untuk upgrade!");
+    return;
+  }
+  gold -= upgradeCost;
+  selectedTower.level++;
+  selectedTower.costInvested += upgradeCost;
+  selectedTower.damage = Math.floor(selectedTower.damage * 1.5);
+  selectedTower.range = Math.floor(selectedTower.range * 1.15);
+  selectedTower.rate = Math.max(0.3, selectedTower.rate * 0.9);
+  updateSelectedTowerPanel();
+  updateUI();
+}
+
+function sellSelectedTower() {
+  if (!selectedTower) return;
+  const refund = Math.floor(selectedTower.costInvested * 0.7);
+  gold += refund;
+  grid[selectedTower.r][selectedTower.c] = 0;
+  towers = towers.filter(t => t !== selectedTower);
+  activePath = calculatePath(grid);
+  selectedTower = null;
+  document.getElementById("tower-info-box").style.display = "none";
+  updateUI();
+
+  enemies.forEach(e => {
+    e.path = calculatePathFromNode(e.x, e.y);
+    e.pathIdx = 0;
+  });
+}
+
+// --- WAVE & SPAWN MECHANICS ---
+function startWave() {
+  if (waveInProgress || currentWave > MAX_WAVES) return;
+  waveInProgress = true;
+  document.getElementById("wave-btn").disabled = true;
+
+  // Konfigurasi komposisi musuh
+  const count = 8 + currentWave * 4;
+  waveQueue = [];
+  for (let i = 0; i < count; i++) {
+    let type = 'SCOUT';
+    let hp = 40 + currentWave * 18;
+    let speed = 1.6;
+    let reward = 6;
+    let radius = 10;
+    let color = '#38bdf8';
+
+    if (currentWave >= 3 && i % 4 === 0) {
+      type = 'TANK';
+      hp = 110 + currentWave * 45;
+      speed = 0.9;
+      reward = 12;
+      radius = 14;
+      color = '#e11d48';
+    } else if (currentWave >= 5 && i % 3 === 0) {
+      type = 'SWARM';
+      hp = 25 + currentWave * 8;
+      speed = 2.4;
+      reward = 4;
+      radius = 8;
+      color = '#facc15';
+    }
+
+    waveQueue.push({ type, hp, maxHp: hp, speed, reward, radius, color });
+  }
+}
+
+function spawnEnemyFromQueue(template) {
+  enemies.push({
+    ...template,
+    x: START_TILE.c * TILE_SIZE + TILE_SIZE / 2,
+    y: START_TILE.r * TILE_SIZE + TILE_SIZE / 2,
+    path: [...activePath],
+    pathIdx: 0,
+    slowTimer: 0,
+    currentSpeed: template.speed
+  });
+}
+
+// --- UPDATE LOGIC LOOP ---
+function update(dt) {
+  // 1. Spawning
+  if (waveQueue.length > 0) {
+    spawnClock += dt;
+    if (spawnClock >= 0.75) {
+      spawnClock = 0;
+      spawnEnemyFromQueue(waveQueue.shift());
+    }
+  }
+
+  // 2. Pergerakan Musuh Melalui Titik Path
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    const e = enemies[i];
+
+    // Status efek perlambatan (Freeze)
+    if (e.slowTimer > 0) {
+      e.slowTimer -= dt;
+      e.currentSpeed = e.speed * (1 - (e.slowRatio || 0.45));
+    } else {
+      e.currentSpeed = e.speed;
+    }
+
+    if (e.path && e.pathIdx < e.path.length) {
+      const targetTile = e.path[e.pathIdx];
+      const targetX = targetTile.c * TILE_SIZE + TILE_SIZE / 2;
+      const targetY = targetTile.r * TILE_SIZE + TILE_SIZE / 2;
+
+      const dist = Math.hypot(targetX - e.x, targetY - e.y);
+      const step = e.currentSpeed * 65 * dt;
+
+      if (dist <= step) {
+        e.x = targetX;
+        e.y = targetY;
+        e.pathIdx++;
+      } else {
+        const angle = Math.atan2(targetY - e.y, targetX - e.x);
+        e.x += Math.cos(angle) * step;
+        e.y += Math.sin(angle) * step;
+      }
+    } else {
+      // Sampai di base (Core)
+      coreHp -= 1;
+      enemies.splice(i, 1);
+      updateUI();
+      if (coreHp <= 0) {
+        alert("Game Over! Inti markas Anda telah hancur.");
+        location.reload();
+      }
+      continue;
+    }
+
+    // Kematian Musuh
+    if (e.hp <= 0) {
+      gold += e.reward;
+      createExplosion(e.x, e.y, e.color, 10);
+      enemies.splice(i, 1);
+      updateUI();
+    }
+  }
+
+  // 3. Menara Menembak
+  towers.forEach(t => {
+    t.cooldown -= dt;
+    if (t.cooldown <= 0) {
+      // Temukan musuh dalam jangkauan yang terjauh di sepanjang path
+      let inRange = enemies.filter(e => Math.hypot(e.x - t.x, e.y - t.y) <= t.range);
+      if (inRange.length > 0) {
+        // Prioritas musuh dengan progress path terjauh
+        inRange.sort((a, b) => b.pathIdx - a.pathIdx);
+        const target = inRange[0];
+
+        t.cooldown = t.rate;
+        sfx.playShoot(t.type);
+
+        if (t.type === 'MORTAR') {
+          // Proyektil fisik balistik
+          projectiles.push({
+            type: 'BALL',
+            x: t.x, y: t.y,
+            tx: target.x, ty: target.y,
+            speed: 380,
+            damage: t.damage,
+            splash: t.splash,
+            color: '#f97316'
+          });
+        } else if (t.type === 'FREEZE') {
+          // Efek es instan
+          target.hp -= t.damage;
+          target.slowTimer = t.slowDuration;
+          target.slowRatio = t.slowRatio;
+          createExplosion(target.x, target.y, '#67e8f9', 6);
+        } else {
+          // Laser beam instan
+          target.hp -= t.damage;
+          projectiles.push({
+            type: 'BEAM',
+            x1: t.x, y1: t.y,
+            x2: target.x, y2: target.y,
+            life: 0.1,
+            color: '#38bdf8'
+          });
+        }
+      }
+    }
+  });
+
+  // 4. Update Proyektil Mortar & Beam
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    if (p.type === 'BEAM') {
+      p.life -= dt;
+      if (p.life <= 0) projectiles.splice(i, 1);
+    } else if (p.type === 'BALL') {
+      const dist = Math.hypot(p.tx - p.x, p.ty - p.y);
+      const step = p.speed * dt;
+      if (dist <= step) {
+        // Ledakan Splash Area
+        createExplosion(p.tx, p.ty, p.color, 16);
+        enemies.forEach(e => {
+          const d = Math.hypot(e.x - p.tx, e.y - p.ty);
+          if (d <= p.splash) {
+            e.hp -= Math.floor(p.damage * (1 - d / p.splash));
+          }
+        });
+        projectiles.splice(i, 1);
+      } else {
+        const angle = Math.atan2(p.ty - p.y, p.tx - p.x);
+        p.x += Math.cos(angle) * step;
+        p.y += Math.sin(angle) * step;
+      }
+    }
+  }
+
+  // 5. Partikel visual
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const pt = particles[i];
+    pt.x += pt.vx;
+    pt.y += pt.vy;
+    pt.life -= dt;
+    if (pt.life <= 0) particles.splice(i, 1);
+  }
+
+  // 6. Cek Penyelesaian Wave
+  if (waveInProgress && waveQueue.length === 0 && enemies.length === 0) {
+    waveInProgress = false;
+    currentWave++;
+    if (currentWave > MAX_WAVES) {
+      alert("SELAMAT! Anda berhasil mempertahankan seluruh gelombang serbuan!");
+    } else {
+      document.getElementById("wave-btn").disabled = false;
+      document.getElementById("wave-btn").textContent = `Mulai Wave ${currentWave}`;
+    }
+    updateUI();
+  }
+}
+
+function createExplosion(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 20 + Math.random() * 60;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed * 0.02,
+      vy: Math.sin(angle) * speed * 0.02,
+      life: 0.35,
+      color
+    });
+  }
+}
+
+// --- RENDER ARENA ---
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 1. Gambar Grid Petak Labirin
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+      ctx.strokeRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    }
+  }
+
+  // 2. Render Rute Aktif Jalur Musuh (Glow Path)
+  if (activePath && activePath.length > 1) {
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.15)";
+    ctx.lineWidth = 14;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    activePath.forEach((pt, idx) => {
+      const px = pt.c * TILE_SIZE + TILE_SIZE / 2;
+      const py = pt.r * TILE_SIZE + TILE_SIZE / 2;
+      if (idx === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+  }
+
+  // 3. Titik Awal Spawn & Akhir Base
+  ctx.fillStyle = "#22c55e"; // Start Portal
+  ctx.fillRect(START_TILE.c * TILE_SIZE + 6, START_TILE.r * TILE_SIZE + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 11px sans-serif";
+  ctx.fillText("SPAWN", START_TILE.c * TILE_SIZE + 10, START_TILE.r * TILE_SIZE + 34);
+
+  ctx.fillStyle = "#ef4444"; // End Base
+  ctx.fillRect(END_TILE.c * TILE_SIZE + 6, END_TILE.r * TILE_SIZE + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("CORE", END_TILE.c * TILE_SIZE + 14, END_TILE.r * TILE_SIZE + 34);
+
+  // 4. Gambar Menara
+  towers.forEach(t => {
+    ctx.fillStyle = TOWER_SPECS[t.type].color;
+    ctx.fillRect(t.c * TILE_SIZE + 4, t.r * TILE_SIZE + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+
+    // Border level
+    ctx.strokeStyle = selectedTower === t ? "#ffffff" : "rgba(0,0,0,0.5)";
+    ctx.lineWidth = selectedTower === t ? 3 : 1;
+    ctx.strokeRect(t.c * TILE_SIZE + 4, t.r * TILE_SIZE + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+
+    // Label Level
+    ctx.fillStyle = "#000";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText(`L${t.level}`, t.x - 7, t.y + 4);
+  });
+
+  // Jangkauan Jarak Menara yang Terpilih
+  if (selectedTower) {
+    ctx.beginPath();
+    ctx.arc(selectedTower.x, selectedTower.y, selectedTower.range, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(56, 189, 248, 0.08)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // 5. Gambar Musuh
+  enemies.forEach(e => {
+    ctx.fillStyle = e.slowTimer > 0 ? '#67e8f9' : e.color;
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bar Darah Musuh
+    const bw = 24;
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(e.x - bw / 2, e.y - e.radius - 6, bw, 3);
+    ctx.fillStyle = "#22c55e";
+    ctx.fillRect(e.x - bw / 2, e.y - e.radius - 6, (e.hp / e.maxHp) * bw, 3);
+  });
+
+  // 6. Gambar Proyektil & Efek Sinar
+  projectiles.forEach(p => {
+    if (p.type === 'BEAM') {
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(p.x1, p.y1);
+      ctx.lineTo(p.x2, p.y2);
+      ctx.stroke();
+    } else if (p.type === 'BALL') {
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  // 7. Render Partikel
+  particles.forEach(pt => {
+    ctx.fillStyle = pt.color;
+    ctx.fillRect(pt.x, pt.y, 3, 3);
+  });
+
+  requestAnimationFrame(gameLoop);
+}
+
+// --- CONTROLLER & EVENT LISTENERS ---
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const c = Math.floor(mx / TILE_SIZE);
+  const r = Math.floor(my / TILE_SIZE);
+
+  if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
+
+  const clickedTower = towers.find(t => t.c === c && t.r === r);
+
+  if (clickedTower) {
+    selectedTower = clickedTower;
+    updateSelectedTowerPanel();
+  } else {
+    selectedTower = null;
+    document.getElementById("tower-info-box").style.display = "none";
+    tryBuildTower(c, r);
+  }
+});
+
+function updateSelectedTowerPanel() {
+  if (!selectedTower) return;
+  const box = document.getElementById("tower-info-box");
+  const details = document.getElementById("tower-details");
+  const upBtn = document.getElementById("upgrade-btn");
+  const sellBtn = document.getElementById("sell-btn");
+
+  const upCost = Math.floor(selectedTower.costInvested * 0.8);
+  const refund = Math.floor(selectedTower.costInvested * 0.7);
+
+  box.style.display = "flex";
+  details.innerHTML = `<strong>${TOWER_SPECS[selectedTower.type].name} (Lvl ${selectedTower.level})</strong> | Dmg: ${selectedTower.damage} | Rng: ${selectedTower.range}`;
+  upBtn.textContent = `Upgrade (${upCost} G)`;
+  sellBtn.textContent = `Jual (${refund} G)`;
+}
+
+function flashTip(msg) {
+  const tip = document.getElementById("tip-msg");
+  tip.textContent = msg;
+  tip.style.color = "var(--gold)";
+  setTimeout(() => {
+    tip.textContent = "Bangun labirin menara untuk memperpanjang rute musuh!";
+    tip.style.color = "var(--muted)";
+  }, 2500);
+}
+
+function updateUI() {
+  document.getElementById("gold-val").textContent = gold;
+  document.getElementById("life-val").textContent = coreHp;
+  document.getElementById("wave-val").textContent = `${currentWave} / ${MAX_WAVES}`;
+}
+
+// --- CYCLE ENGINE LOOP ---
+let lastTime = performance.now();
+function gameLoop(currentTime) {
+  const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+  lastTime = currentTime;
+
+  update(dt);
+  draw();
+}
+
+updateUI();
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>

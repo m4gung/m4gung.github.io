@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crimson Survivor - 2D Arena Survival</title>
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card: #151a28;
+      --border: #3b4261;
+      --accent: #e0af68;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #game-container {
+      position: relative;
+      border: 3px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 0 35px rgba(0, 0, 0, 0.9);
+      background: #000;
+    }
+    canvas {
+      display: block;
+    }
+    /* Modal Level Up */
+    #upgrade-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 12, 20, 0.85);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .modal-title {
+      font-size: 2rem;
+      color: var(--accent);
+      margin-bottom: 24px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(224, 175, 104, 0.5);
+    }
+    .cards-container {
+      display: flex;
+      gap: 16px;
+    }
+    .upgrade-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      width: 220px;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .upgrade-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(224, 175, 104, 0.3);
+    }
+    .upgrade-card h3 {
+      font-size: 1.1rem;
+      color: #7aa2f7;
+      margin-bottom: 10px;
+    }
+    .upgrade-card p {
+      font-size: 0.85rem;
+      color: #a9b1d6;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+    .upgrade-card .tag {
+      margin-top: auto;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+    .instructions {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #565f89;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <canvas id="gameCanvas" width="960" height="600"></canvas>
+    
+    <!-- Level Up Modal Overlay -->
+    <div id="upgrade-modal">
+      <div class="modal-title">LEVEL UP!</div>
+      <div class="cards-container" id="cards-wrapper"></div>
+    </div>
+  </div>
+
+  <div class="instructions">
+    Navigasi: <strong>W, A, S, D</strong> atau <strong>Tombol Panah</strong>. Serangan dan auto-aim berjalan otomatis.
+  </div>
+
+<script>
+// --- AUDIO FX SYNTHESIZER ---
+class SoundSystem {
+  constructor() {
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+  playShoot() {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(480, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.06);
+    gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.06);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.06);
+  }
+  playHit() {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.05);
+    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.05);
+  }
+  playGem() {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.08);
+  }
+  playLevelUp() {
+    this.init();
+    const now = this.ctx.currentTime;
+    [392, 523, 659, 784].forEach((freq, i) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + i * 0.08);
+      gain.gain.setValueAtTime(0.12, now + i * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.2);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now + i * 0.08);
+      osc.stop(now + i * 0.08 + 0.2);
+    });
+  }
+}
+const sfx = new SoundSystem();
+
+// --- SETUP CANVAS & STATE ---
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const upgradeModal = document.getElementById("upgrade-modal");
+const cardsWrapper = document.getElementById("cards-wrapper");
+
+let isPaused = false;
+let isGameOver = false;
+let gameTimer = 0; // dalam detik
+
+// Keyboard input tracker
+const keys = {};
+window.addEventListener("keydown", (e) => {
+  keys[e.key.toLowerCase()] = true;
+});
+window.addEventListener("keyup", (e) => {
+  keys[e.key.toLowerCase()] = false;
+});
+
+// Entitas Player
+const player = {
+  x: 0,
+  y: 0,
+  radius: 14,
+  speed: 2.7,
+  hp: 100,
+  maxHp: 100,
+  level: 1,
+  xp: 0,
+  nextXp: 10,
+  kills: 0,
+  pickupRange: 120,
+  // Weapon stats
+  wandCooldown: 0.6,
+  wandTimer: 0,
+  wandDamage: 25,
+  wandCount: 1,
+  // Orbiting shields
+  orbCount: 1,
+  orbDamage: 15,
+  orbAngle: 0,
+  orbRadius: 75
+};
+
+// Pools & Objek Dunia
+let enemies = [];
+let projectiles = [];
+let gems = [];
+let floatingTexts = [];
+
+// Upgrade Pool Definition
+const UPGRADES = [
+  { id: 'wand_dmg', title: 'Power Wand', desc: 'Meningkatkan damage tembakan sihir sebesar +10.', apply: () => { player.wandDamage += 10; } },
+  { id: 'wand_cdr', title: 'Rapid Fire', desc: 'Menembak 20% lebih cepat.', apply: () => { player.wandCooldown *= 0.8; } },
+  { id: 'wand_multi', title: 'Split Wand', desc: 'Menembakkan +1 proyektil tambahan sekaligus.', apply: () => { player.wandCount += 1; } },
+  { id: 'orb_add', title: 'Holy Shield', desc: 'Menambahkan 1 pelindung orb yang berputar di sekitar pemain.', apply: () => { player.orbCount += 1; } },
+  { id: 'orb_dmg', title: 'Heavy Aura', desc: 'Meningkatkan damage Holy Orb sebesar +10.', apply: () => { player.orbDamage += 10; } },
+  { id: 'magnet', title: 'Arcane Magnet', desc: 'Memperluas jangkauan magnet penarik XP Gem sebesar +40%.', apply: () => { player.pickupRange *= 1.4; } },
+  { id: 'speed', title: 'Boots of Agility', desc: 'Kecepatan lari karakter meningkat +15%.', apply: () => { player.speed += 0.45; } },
+  { id: 'heal', title: 'Vitality Stone', desc: '+30 Max HP dan pulihkan 40 HP seketika.', apply: () => { player.maxHp += 30; player.hp = Math.min(player.maxHp, player.hp + 40); } }
+];
+
+// --- SPAWN SYSTEM ---
+let spawnTimer = 0;
+function spawnEnemies(dt) {
+  spawnTimer += dt;
+  // Semakin lama waktu berlalu, monster muncul semakin rapat
+  const spawnRate = Math.max(0.12, 1.0 - (gameTimer / 180));
+  
+  if (spawnTimer >= spawnRate) {
+    spawnTimer = 0;
+    // Spawn di luar viewport kamera
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 580;
+    const spawnX = player.x + Math.cos(angle) * distance;
+    const spawnY = player.y + Math.sin(angle) * distance;
+
+    // Varian musuh berdasarkan waktu bermain
+    let type = 'zombie';
+    let hp = 15 + Math.floor(gameTimer * 0.4);
+    let speed = 1.3 + Math.random() * 0.4;
+    let radius = 12;
+    let color = '#22c55e'; // Hijau
+
+    if (gameTimer > 40 && Math.random() < 0.35) {
+      type = 'bat';
+      hp = 8 + Math.floor(gameTimer * 0.2);
+      speed = 2.4;
+      radius = 9;
+      color = '#a855f7'; // Ungu
+    } else if (gameTimer > 90 && Math.random() < 0.2) {
+      type = 'brute';
+      hp = 60 + Math.floor(gameTimer * 1.2);
+      speed = 0.9;
+      radius = 18;
+      color = '#ef4444'; // Merah
+    }
+
+    enemies.push({ x: spawnX, y: spawnY, hp, maxHp: hp, speed, radius, color, type });
+  }
+}
+
+// --- WEAPON MECHANICS ---
+function handleWeapons(dt) {
+  // 1. Orbiting Orbs rotation
+  player.orbAngle += 2.5 * dt;
+
+  // 2. Wand Auto-fire
+  player.wandTimer += dt;
+  if (player.wandTimer >= player.wandCooldown) {
+    // Cari musuh terdekat
+    let targets = [...enemies].sort((a, b) => {
+      const da = Math.hypot(a.x - player.x, a.y - player.y);
+      const db = Math.hypot(b.x - player.x, b.y - player.y);
+      return da - db;
+    });
+
+    if (targets.length > 0) {
+      player.wandTimer = 0;
+      sfx.playShoot();
+      
+      const count = Math.min(player.wandCount, targets.length);
+      for (let i = 0; i < count; i++) {
+        const target = targets[i];
+        const angle = Math.atan2(target.y - player.y, target.x - player.x);
+        projectiles.push({
+          x: player.x,
+          y: player.y,
+          vx: Math.cos(angle) * 8.5,
+          vy: Math.sin(angle) * 8.5,
+          radius: 5,
+          damage: player.wandDamage,
+          life: 1.8
+        });
+      }
+    }
+  }
+}
+
+// --- FLOATING TEXT ---
+function addFloatingText(x, y, text, color) {
+  floatingTexts.push({ x, y, text, color, life: 0.6, maxLife: 0.6 });
+}
+
+// --- LEVEL UP LOGIC ---
+function triggerLevelUp() {
+  isPaused = true;
+  sfx.playLevelUp();
+  cardsWrapper.innerHTML = '';
+
+  // Pilih 3 opsi acak
+  const shuffled = [...UPGRADES].sort(() => 0.5 - Math.random());
+  const options = shuffled.slice(0, 3);
+
+  options.forEach(opt => {
+    const card = document.createElement('div');
+    card.className = 'upgrade-card';
+    card.innerHTML = `
+      <h3>${opt.title}</h3>
+      <p>${opt.desc}</p>
+      <div class="tag">EQUIP MOD</div>
+    `;
+    card.onclick = () => {
+      opt.apply();
+      upgradeModal.style.display = 'none';
+      isPaused = false;
+      lastTime = performance.now(); // reset delta timer
+    };
+    cardsWrapper.appendChild(card);
+  });
+
+  upgradeModal.style.display = 'flex';
+}
+
+// --- UPDATE LOOP ---
+function update(dt) {
+  if (isPaused || isGameOver) return;
+
+  gameTimer += dt;
+
+  // 1. Pergerakan Player
+  let dx = 0;
+  let dy = 0;
+  if (keys['w'] || keys['arrowup']) dy -= 1;
+  if (keys['s'] || keys['arrowdown']) dy += 1;
+  if (keys['a'] || keys['arrowleft']) dx -= 1;
+  if (keys['d'] || keys['arrowright']) dx += 1;
+
+  if (dx !== 0 && dy !== 0) {
+    dx *= 0.7071;
+    dy *= 0.7071;
+  }
+  player.x += dx * player.speed * 60 * dt;
+  player.y += dy * player.speed * 60 * dt;
+
+  // 2. Senjata & Spawning
+  handleWeapons(dt);
+  spawnEnemies(dt);
+
+  // 3. Update Proyektil
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= dt;
+
+    if (p.life <= 0) {
+      projectiles.splice(i, 1);
+      continue;
+    }
+
+    // Deteksi Tabrakan Proyektil vs Musuh
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const e = enemies[j];
+      const dist = Math.hypot(p.x - e.x, p.y - e.y);
+      if (dist < p.radius + e.radius) {
+        e.hp -= p.damage;
+        sfx.playHit();
+        addFloatingText(e.x, e.y - 10, p.damage, '#fff');
+        projectiles.splice(i, 1);
+        break;
+      }
+    }
+  }
+
+  // 4. Update Posisi Musuh & Deteksi Orbit Shield
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    const e = enemies[i];
+    
+    // Kejar Player
+    const angle = Math.atan2(player.y - e.y, player.x - e.x);
+    e.x += Math.cos(angle) * e.speed * 60 * dt;
+    e.y += Math.sin(angle) * e.speed * 60 * dt;
+
+    // Cek tabrakan dengan Orbiting Holy Orbs
+    for (let o = 0; o < player.orbCount; o++) {
+      const oAngle = player.orbAngle + (o * (Math.PI * 2 / player.orbCount));
+      const orbX = player.x + Math.cos(oAngle) * player.orbRadius;
+      const orbY = player.y + Math.sin(oAngle) * player.orbRadius;
+      if (Math.hypot(orbX - e.x, orbY - e.y) < 14 + e.radius) {
+        e.hp -= player.orbDamage * dt * 8; // continuous tick damage
+        sfx.playHit();
+      }
+    }
+
+    // Cek tabrakan dengan Tubuh Player (Beri Damage ke Player)
+    const distToPlayer = Math.hypot(player.x - e.x, player.y - e.y);
+    if (distToPlayer < player.radius + e.radius) {
+      player.hp -= 20 * dt;
+      if (player.hp <= 0) {
+        isGameOver = true;
+      }
+    }
+
+    // Kematian Musuh -> Drop XP Gem
+    if (e.hp <= 0) {
+      player.kills++;
+      gems.push({ x: e.x, y: e.y, val: 2 });
+      enemies.splice(i, 1);
+    }
+  }
+
+  // 5. Update Gems & Magnet
+  for (let i = gems.length - 1; i >= 0; i--) {
+    const g = gems[i];
+    const dist = Math.hypot(player.x - g.x, player.y - g.y);
+    
+    // Ditarik jika masuk pickup range
+    if (dist < player.pickupRange) {
+      const angle = Math.atan2(player.y - g.y, player.x - g.x);
+      const pullSpeed = 7.5;
+      g.x += Math.cos(angle) * pullSpeed;
+      g.y += Math.sin(angle) * pullSpeed;
+    }
+
+    // Diambil Player
+    if (dist < player.radius + 8) {
+      sfx.playGem();
+      player.xp += g.val;
+      gems.splice(i, 1);
+
+      // Cek Naik Level
+      if (player.xp >= player.nextXp) {
+        player.xp -= player.nextXp;
+        player.level++;
+        player.nextXp = Math.floor(player.nextXp * 1.35);
+        triggerLevelUp();
+        break;
+      }
+    }
+  }
+
+  // 6. Floating texts
+  for (let i = floatingTexts.length - 1; i >= 0; i--) {
+    const ft = floatingTexts[i];
+    ft.y -= 30 * dt;
+    ft.life -= dt;
+    if (ft.life <= 0) floatingTexts.splice(i, 1);
+  }
+}
+
+// --- RENDER ARENA & CAMERA ---
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Pusat Kamera mengikuti Player di tengah canvas
+  const camX = canvas.width / 2 - player.x;
+  const camY = canvas.height / 2 - player.y;
+
+  ctx.save();
+  ctx.translate(camX, camY);
+
+  // Gambar Latar Belakang Kotak-kotak (Infinite Grid)
+  const gridSize = 80;
+  const startX = Math.floor((player.x - canvas.width / 2) / gridSize) * gridSize;
+  const endX = startX + canvas.width + gridSize;
+  const startY = Math.floor((player.y - canvas.height / 2) / gridSize) * gridSize;
+  const endY = startY + canvas.height + gridSize;
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = startX; x <= endX; x += gridSize) {
+    ctx.moveTo(x, startY);
+    ctx.lineTo(x, endY);
+  }
+  for (let y = startY; y <= endY; y += gridSize) {
+    ctx.moveTo(startX, y);
+    ctx.lineTo(endX, y);
+  }
+  ctx.stroke();
+
+  // Gambar Gems (Diamond Shape)
+  gems.forEach(g => {
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.moveTo(g.x, g.y - 6);
+    ctx.lineTo(g.x + 5, g.y);
+    ctx.lineTo(g.x, g.y + 6);
+    ctx.lineTo(g.x - 5, g.y);
+    ctx.closePath();
+    ctx.fill();
+  });
+
+  // Gambar Musuh
+  enemies.forEach(e => {
+    ctx.fillStyle = e.color;
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bar HP Monster jika terluka
+    if (e.hp < e.maxHp) {
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.fillRect(e.x - 12, e.y - e.radius - 8, 24, 4);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(e.x - 12, e.y - e.radius - 8, (e.hp / e.maxHp) * 24, 4);
+    }
+  });
+
+  // Gambar Proyektil Sihir
+  ctx.fillStyle = '#facc15';
+  projectiles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Gambar Holy Orbs
+  for (let o = 0; o < player.orbCount; o++) {
+    const oAngle = player.orbAngle + (o * (Math.PI * 2 / player.orbCount));
+    const orbX = player.x + Math.cos(oAngle) * player.orbRadius;
+    const orbY = player.y + Math.sin(oAngle) * player.orbRadius;
+    ctx.fillStyle = '#67e8f9';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#67e8f9';
+    ctx.beginPath();
+    ctx.arc(orbX, orbY, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0; // reset glow
+  }
+
+  // Gambar Karakter Utama
+  ctx.fillStyle = '#3b82f6';
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Floating Damage Texts
+  floatingTexts.forEach(ft => {
+    ctx.fillStyle = ft.color;
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(ft.text, ft.x, ft.y);
+  });
+
+  ctx.restore();
+
+  // --- TOP HUD OVERLAY ---
+  // XP Bar (Full Width At Top)
+  ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+  ctx.fillRect(0, 0, canvas.width, 10);
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillRect(0, 0, (player.xp / player.nextXp) * canvas.width, 10);
+
+  // HP Bar & Stats
+  const minutes = Math.floor(gameTimer / 60).toString().padStart(2, '0');
+  const seconds = Math.floor(gameTimer % 60).toString().padStart(2, '0');
+
+  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+  ctx.fillRect(15, 20, 220, 48);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+  ctx.strokeRect(15, 20, 220, 48);
+
+  ctx.fillStyle = "#e0af68";
+  ctx.font = "bold 15px monospace";
+  ctx.fillText(`LVL ${player.level}   SURVIVED ${minutes}:${seconds}`, 25, 40);
+
+  // Health Bar
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(25, 48, 190, 10);
+  ctx.fillStyle = "#ef4444";
+  ctx.fillRect(25, 48, Math.max(0, (player.hp / player.maxHp) * 190), 10);
+
+  // Kill Count Tracker
+  ctx.fillStyle = "#fff";
+  ctx.font = "14px sans-serif";
+  ctx.fillText(`Kills: ${player.kills}`, canvas.width - 100, 36);
+
+  // Game Over Screen Overlay
+  if (isGameOver) {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ef4444";
+    ctx.font = "bold 36px sans-serif";
+    ctx.fillText("ANDA TEWAS", canvas.width / 2 - 110, canvas.height / 2 - 20);
+    ctx.fillStyle = "#fff";
+    ctx.font = "16px sans-serif";
+    ctx.fillText(`Bertahan: ${minutes}:${seconds} | Total Kills: ${player.kills}`, canvas.width / 2 - 130, canvas.height / 2 + 20);
+    ctx.fillStyle = "#e0af68";
+    ctx.fillText("Muat ulang halaman (F5) untuk bertarung lagi", canvas.width / 2 - 150, canvas.height / 2 + 60);
+  }
+}
+
+// --- ENGINE CYCLE LOOP ---
+let lastTime = performance.now();
+function gameLoop(currentTime) {
+  const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+  lastTime = currentTime;
+
+  update(dt);
+  draw();
+
+  requestAnimationFrame(gameLoop);
+}
+
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
