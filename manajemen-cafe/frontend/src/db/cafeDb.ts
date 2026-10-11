@@ -259,9 +259,9 @@ export async function logLocalAudit(action: string, entityType: string, entityId
 
 // Initial Seeding jika DB lokal masih kosong
 export async function seedInitialLocalDataIfEmpty() {
-  const count = await db.products.count();
-  if (count === 0) {
-    // 1. Initial Outlet
+  // 1. Initial Outlet
+  const outletCount = await db.outlets.count();
+  if (outletCount === 0) {
     await db.outlets.put({
       id: 1,
       tenantId: 1,
@@ -274,16 +274,22 @@ export async function seedInitialLocalDataIfEmpty() {
       serviceChargePercentage: 5,
       isActive: true
     });
+  }
 
-    // 2. Initial Categories
+  // 2. Initial Categories
+  const categoryCount = await db.categories.count();
+  if (categoryCount === 0) {
     await db.categories.bulkPut([
       { id: 1, outletId: 1, name: 'Coffee (Espresso Based)', sortOrder: 1, isActive: true },
       { id: 2, outletId: 1, name: 'Non-Coffee', sortOrder: 2, isActive: true },
       { id: 3, outletId: 1, name: 'Tea & Tisane', sortOrder: 3, isActive: true },
       { id: 4, outletId: 1, name: 'Pastry & Snacks', sortOrder: 4, isActive: true },
     ]);
+  }
 
-    // 3. Initial Products
+  // 3. Initial Products
+  const count = await db.products.count();
+  if (count === 0) {
     await db.products.bulkPut([
       { id: 1, outletId: 1, categoryId: 1, name: 'Kopi Susu Gula Aren', code: 'KPS-01', basePrice: 20000, isActive: true },
       { id: 2, outletId: 1, categoryId: 1, name: 'Americano', code: 'AME-01', basePrice: 18000, isActive: true },
@@ -295,8 +301,11 @@ export async function seedInitialLocalDataIfEmpty() {
       { id: 8, outletId: 1, categoryId: 4, name: 'Butter Croissant', code: 'PAS-01', basePrice: 20000, isActive: true },
       { id: 9, outletId: 1, categoryId: 4, name: 'Kentang Goreng (French Fries)', code: 'SNK-01', basePrice: 18000, isActive: true },
     ]);
+  }
 
-    // 4. Initial Tables
+  // 4. Initial Tables
+  const tableCount = await db.diningTables.count();
+  if (tableCount === 0) {
     await db.diningTables.bulkPut([
       { id: 1, outletId: 1, tableNumber: 'Meja 01', capacity: 2, status: 'AVAILABLE' },
       { id: 2, outletId: 1, tableNumber: 'Meja 02', capacity: 4, status: 'AVAILABLE' },
@@ -304,8 +313,23 @@ export async function seedInitialLocalDataIfEmpty() {
       { id: 4, outletId: 1, tableNumber: 'Meja 04', capacity: 6, status: 'AVAILABLE' },
       { id: 5, outletId: 1, tableNumber: 'VIP 1', capacity: 8, status: 'AVAILABLE' },
     ]);
+  }
 
-    // 5. Default App Settings
+  // 4b. Initial Modifiers
+  const modifierCount = await db.modifiers.count();
+  if (modifierCount === 0) {
+    await db.modifiers.bulkPut([
+      { id: 1, name: 'Extra Shot Espresso', price: 6000 },
+      { id: 2, name: 'Ganti Oat Milk', price: 8000 },
+      { id: 3, name: 'Extra Sirup Karamel', price: 5000 },
+      { id: 4, name: 'Less Sugar 50%', price: 0 },
+      { id: 5, name: 'Extra Ice', price: 0 },
+    ]);
+  }
+
+  // 5. Default App Settings
+  const settingCount = await db.appSettings.count();
+  if (settingCount === 0) {
     await db.appSettings.put({ key: 'cafeName', value: 'CafeFlow Nusantara' });
     await db.appSettings.put({ key: 'activeOutletId', value: 1 });
     await db.appSettings.put({ key: 'backendMode', value: 'SPRING_BOOT' }); // 'SPRING_BOOT' | 'APPS_SCRIPT' | 'DUAL'

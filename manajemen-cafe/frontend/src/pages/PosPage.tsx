@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import {
   db,
+  seedInitialLocalDataIfEmpty,
   deductStockForLocalOrder,
   type LocalCategory,
   type LocalProduct,
@@ -46,7 +47,7 @@ function createNewSyncId(): string {
 }
 
 export const PosPage: React.FC = () => {
-  const { activeOutlet } = useApp();
+  const { activeOutlet, isReady } = useApp();
   const [categories, setCategories] = useState<LocalCategory[]>([]);
   const [products, setProducts] = useState<LocalProduct[]>([]);
   const [tables, setTables] = useState<LocalTable[]>([]);
@@ -76,17 +77,26 @@ export const PosPage: React.FC = () => {
 
   useEffect(() => {
     async function loadPosData() {
-      const cats = await db.categories.where('isActive').equals(1).toArray();
-      const prods = await db.products.where('isActive').equals(1).toArray();
+      // Mengambil semua kategori & produk lalu filter isActive (kompatibel boolean true maupun number 1 di IndexedDB)
+      const allCats = await db.categories.toArray();
+      const allProds = await db.products.toArray();
       const tbls = await db.diningTables.toArray();
       const mods = await db.modifiers.toArray();
-      setCategories(cats);
-      setProducts(prods);
+
+      const activeCats = allCats.filter((c) => Boolean(c.isActive));
+      const activeProds = allProds.filter((p) => Boolean(p.isActive));
+
+      setCategories(activeCats);
+      setProducts(activeProds);
       setTables(tbls);
       setAvailableModifiers(mods);
+
+      if (tbls.length > 0 && !selectedTable) {
+        setSelectedTable(tbls[0].tableNumber);
+      }
     }
     loadPosData();
-  }, [activeOutlet]);
+  }, [activeOutlet, isReady]);
 
   const filteredProducts = products.filter((p) => {
     const matchCategory = selectedCategory === null || p.categoryId === selectedCategory;
@@ -314,6 +324,30 @@ export const PosPage: React.FC = () => {
               </div>
             </div>
           ))}
+          {filteredProducts.length === 0 && (
+            <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-dashed border-stone-300 p-6 space-y-3">
+              <UtensilsCrossed className="w-10 h-10 text-stone-300 mx-auto" />
+              <p className="text-sm font-semibold text-stone-600">Tidak ada produk menu yang ditemukan</p>
+              <p className="text-xs text-stone-400">
+                {searchQuery || selectedCategory !== null
+                  ? 'Coba ubah kata kunci pencarian atau kategori menu'
+                  : 'Database menu lokal kosong atau sedang disiapkan'}
+              </p>
+              <button
+                type="button"
+                onClick={async () => {
+                  await seedInitialLocalDataIfEmpty();
+                  const prods = await db.products.toArray();
+                  const cats = await db.categories.toArray();
+                  setProducts(prods.filter(p => Boolean(p.isActive)));
+                  setCategories(cats.filter(c => Boolean(c.isActive)));
+                }}
+                className="mt-2 px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold hover:bg-amber-700 transition"
+              >
+                Muat Ulang / Inisialisasi Menu Default
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

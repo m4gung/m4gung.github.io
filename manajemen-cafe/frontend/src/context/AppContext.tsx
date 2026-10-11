@@ -28,6 +28,7 @@ interface AppContextType {
   setUser: React.Dispatch<React.SetStateAction<{ username: string; role: string; fullName: string } | null>>;
   activeTab: 'POS' | 'KITCHEN' | 'ORDERS' | 'MENU' | 'INVENTORY' | 'EXPENSES' | 'REPORTS' | 'SETTINGS';
   setActiveTab: (tab: 'POS' | 'KITCHEN' | 'ORDERS' | 'MENU' | 'INVENTORY' | 'EXPENSES' | 'REPORTS' | 'SETTINGS') => void;
+  isReady: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -52,6 +53,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     fullName: 'Pemilik Kafe'
   });
   const [activeTab, setActiveTab] = useState<'POS' | 'KITCHEN' | 'ORDERS' | 'MENU' | 'INVENTORY' | 'EXPENSES' | 'REPORTS' | 'SETTINGS'>('POS');
+  const [isReady, setIsReady] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadData() {
@@ -74,6 +76,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const allOutlets = await db.outlets.toArray();
       setOutlets(allOutlets);
+      setIsReady(true);
     }
 
     loadData();
@@ -152,7 +155,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         user,
         setUser,
         activeTab,
-        setActiveTab
+        setActiveTab,
+        isReady
       }}
     >
       {children}
