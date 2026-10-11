@@ -1,0 +1,9 @@
+export { PosPage } from './PosPage';
+export { AttendancePage } from './AttendancePage';
+export { SettingsPage } from './SettingsPage';
+export { ServicesPage } from './ServicesPage';
+export { ProductsPage } from './ProductsPage';
+export { BarbersPage } from './BarbersPage';
+export { CustomersPage } from './CustomersPage';
+export { PayrollPage } from './PayrollPage';
+export { ReportsPage } from './ReportsPage';

@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: barbershop-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/barbershop_db}
+    username: ${SPRING_DATASOURCE_USERNAME:barbershop_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:barbershop_secret}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.barbershop: INFO
