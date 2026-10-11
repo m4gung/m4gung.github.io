@@ -9,13 +9,15 @@ import {
   Banknote, 
   QrCode, 
   CreditCard, 
-  Calendar, 
   CheckCircle2, 
   Printer, 
   Copy, 
   X, 
   User,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle,
+  UserPlus,
+  RefreshCw
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { formatRupiah, formatTanggal } from '../utils/format';
@@ -34,6 +36,18 @@ export const KasirPage: React.FC = () => {
   const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [notes, setNotes] = useState<string>('');
 
+  // State Pemilihan Pelanggan POS
+  // '' = Pelanggan Umum
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
+
+  // State Modal Tambah Pelanggan Cepat
+  const [isQuickCustomerModalOpen, setIsQuickCustomerModalOpen] = useState(false);
+  const [quickCustomerName, setQuickCustomerName] = useState('');
+  const [quickCustomerPhone, setQuickCustomerPhone] = useState('');
+  const [quickCustomerAddress, setQuickCustomerAddress] = useState('');
+  const [quickCustomerLimit, setQuickCustomerLimit] = useState<number>(5000000);
+  const [savingCustomer, setSavingCustomer] = useState(false);
+
   // State Pencarian & Scanner
   const [searchQuery, setSearchQuery] = useState('');
   const [barcodeInput, setBarcodeInput] = useState('');
@@ -43,7 +57,6 @@ export const KasirPage: React.FC = () => {
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [cashReceived, setCashReceived] = useState<number>(0);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>(customers[0]?.id || '');
   const [dueDate, setDueDate] = useState<string>(
     new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
   );
@@ -53,6 +66,10 @@ export const KasirPage: React.FC = () => {
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [copiedBank, setCopiedBank] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [checkoutErrorMessage, setCheckoutErrorMessage] = useState<string | null>(null);
+
+  // Objek Pelanggan Terpilih
+  const selectedCustomer = customers.find((c) => c.id === selectedCustomerId) || null;
 
   // Filter Produk di Katalog Kasir
   const filteredProducts = products.filter((p) => {
@@ -137,6 +154,37 @@ export const KasirPage: React.FC = () => {
     }
   };
 
+  // Quick Add Customer Handler
+  const handleQuickAddCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickCustomerName.trim()) {
+      alert('Nama pelanggan wajib diisi!');
+      return;
+    }
+
+    setSavingCustomer(true);
+    try {
+      const created = await provider.saveCustomer({
+        name: quickCustomerName.trim(),
+        phone: quickCustomerPhone.trim(),
+        address: quickCustomerAddress.trim(),
+        creditLimit: Number(quickCustomerLimit) || 5000000,
+      });
+
+      await refreshData();
+      setSelectedCustomerId(created.id);
+      setIsQuickCustomerModalOpen(false);
+      setQuickCustomerName('');
+      setQuickCustomerPhone('');
+      setQuickCustomerAddress('');
+      setQuickCustomerLimit(5000000);
+    } catch (err: any) {
+      alert('Gagal menambah pelanggan: ' + err.message);
+    } finally {
+      setSavingCustomer(false);
+    }
+  };
+
   // Kalkulasi Keuangan Kasir
   const subtotal = cart.reduce(
     (sum, item) => sum + item.product.sellingPrice * item.quantity,
@@ -153,6 +201,7 @@ export const KasirPage: React.FC = () => {
     }
     setPaymentMethod('CASH');
     setCashReceived(finalTotal); // default pas
+    setCheckoutErrorMessage(null);
     setIsCheckoutModalOpen(true);
   };
 
@@ -165,18 +214,24 @@ export const KasirPage: React.FC = () => {
     }
   };
 
-  // Eksekusi Transaksi Checkout Kasir
+  // Eksekusi Transaksi Checkout Kasir (Dilindungi Anti Double-Click)
   const handleProcessCheckout = async () => {
+    if (processing) return; // Mencegah double submit / debounce guard
+
     if (paymentMethod === 'CASH' && cashReceived < finalTotal) {
-      alert('Jumlah uang tunai yang diterima kurang dari total belanja!');
+      setCheckoutErrorMessage('Jumlah uang tunai yang diterima kurang dari total belanja!');
+      return;
+    }
+
+    if (paymentMethod === 'CREDIT' && !selectedCustomer) {
+      setCheckoutErrorMessage('Untuk pembayaran tempo/kredit, Anda wajib memilih Pelanggan Terdaftar!');
       return;
     }
 
     setProcessing(true);
+    setCheckoutErrorMessage(null);
     try {
-      const selectedCustomer = customers.find((c) => c.id === selectedCustomerId);
-      const customerName =
-        paymentMethod === 'CREDIT' ? selectedCustomer?.name || 'Pelanggan Kredit' : 'Pelanggan Umum';
+      const customerName = selectedCustomer ? selectedCustomer.name : 'Pelanggan Umum';
 
       const checkoutPayload = {
         totalAmount: subtotal,
@@ -187,7 +242,7 @@ export const KasirPage: React.FC = () => {
         changeAmount: paymentMethod === 'CASH' ? changeAmount : 0,
         paymentStatus: (paymentMethod === 'CREDIT' ? 'UNPAID' : 'PAID') as 'PAID' | 'UNPAID',
         notes,
-        customerId: paymentMethod === 'CREDIT' ? selectedCustomerId : undefined,
+        customerId: selectedCustomer ? selectedCustomer.id : undefined,
         customerName,
         dueDate: paymentMethod === 'CREDIT' ? dueDate : undefined,
         items: cart.map((item) => ({
@@ -206,7 +261,8 @@ export const KasirPage: React.FC = () => {
       setCompletedSale({
         ...checkoutPayload,
         invoiceNo: result.invoiceNo,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        customerDebtSnapshot: selectedCustomer ? selectedCustomer.currentDebt + (paymentMethod === 'CREDIT' ? finalTotal : 0) : 0
       });
 
       // Reset Keranjang
@@ -216,7 +272,7 @@ export const KasirPage: React.FC = () => {
       setIsCheckoutModalOpen(false);
       setIsReceiptModalOpen(true);
     } catch (err: any) {
-      alert('Gagal memproses transaksi kasir: ' + err.message);
+      setCheckoutErrorMessage('Gagal memproses transaksi kasir: ' + (err.message || 'Terjadi kesalahan sistem'));
     } finally {
       setProcessing(false);
     }
@@ -233,7 +289,7 @@ export const KasirPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Kasir Penjualan (POS)</h2>
-          <p className="text-xs text-gray-500">Transaksi cepat & multi-metode pembayaran</p>
+          <p className="text-xs text-gray-500">Transaksi cepat, deteksi utang pelanggan & multi-metode bayar</p>
         </div>
 
         {/* Input Barcode Scanner */}
@@ -250,90 +306,194 @@ export const KasirPage: React.FC = () => {
           </div>
           <button
             type="submit"
-            className="px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-sm"
+            className="px-3 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 shadow-sm transition-all"
           >
-            Input
+            Enter
           </button>
         </form>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* KOLOM KIRI: KATALOG PRODUK CEPAT (7 Kolom) */}
-        <div className="lg:col-span-7 space-y-4">
-          {/* Filter & Search Bar */}
-          <div className="bg-white p-3 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* KOLOM KIRI: KATALOG PRODUK (7 Kolom) */}
+        <div className="lg:col-span-7 space-y-3">
+          {/* Filter Bar (Search & Categories) */}
+          <div className="bg-white p-3 rounded-2xl border border-gray-200 shadow-sm space-y-2.5">
+            <div className="relative">
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama barang..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                placeholder="Cari nama barang atau SKU..."
+                className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-1.5 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none"
-            >
-              <option value="ALL">Semua Kategori</option>
+
+            {/* Tombol Kategori Cepat */}
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+              <button
+                type="button"
+                onClick={() => setSelectedCategory('ALL')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  selectedCategory === 'ALL'
+                    ? 'bg-brand-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Semua Kategori
+              </button>
               {categories.map((c) => (
-                <option key={c.id} value={c.name}>
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(c.name)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    selectedCategory === c.name
+                      ? 'bg-brand-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
                   {c.name}
-                </option>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
           {/* Grid Kartu Produk */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[calc(100vh-250px)] overflow-y-auto p-1">
-            {filteredProducts.map((p) => {
-              const isOutOfStock = p.stock <= 0;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => addToCart(p)}
-                  disabled={isOutOfStock}
-                  className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between shadow-sm active:scale-95 ${
-                    isOutOfStock
-                      ? 'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed'
-                      : 'bg-white border-gray-200 hover:border-brand-500 hover:shadow-md cursor-pointer'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] text-gray-400 font-bold uppercase mb-1">
-                      <span className="truncate">{p.category}</span>
-                      <span className={p.stock <= p.minStock ? 'text-amber-600 font-bold' : 'text-gray-500'}>
-                        {p.stock} {p.unit}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[580px] overflow-y-auto pr-1">
+            {filteredProducts.length === 0 ? (
+              <div className="col-span-full py-16 text-center text-gray-400 bg-white rounded-2xl border border-dashed border-gray-200">
+                <p className="text-sm">Produk tidak ditemukan</p>
+                <p className="text-xs text-gray-400 mt-1">Coba kata kunci pencarian atau kategori lain</p>
+              </div>
+            ) : (
+              filteredProducts.map((p) => {
+                const isOutOfStock = p.stock <= 0;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    disabled={isOutOfStock}
+                    onClick={() => addToCart(p)}
+                    className={`p-3 bg-white rounded-2xl border text-left transition-all relative flex flex-col justify-between min-h-[110px] ${
+                      isOutOfStock
+                        ? 'opacity-50 border-gray-200 cursor-not-allowed bg-gray-50'
+                        : 'hover:border-brand-500 hover:shadow-md border-gray-200 active:scale-[0.98]'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 mb-1">
+                        <span className="truncate max-w-[80px]">{p.category}</span>
+                        <span
+                          className={`font-semibold px-1.5 py-0.5 rounded ${
+                            p.stock <= p.minStock
+                              ? 'bg-rose-50 text-rose-600'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          Stok: {p.stock}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-gray-900 text-xs sm:text-sm line-clamp-2 leading-tight">
+                        {p.name}
+                      </h4>
+                    </div>
+
+                    <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
+                      <span className="text-xs font-black text-brand-700">
+                        {formatRupiah(p.sellingPrice)}
+                      </span>
+                      <span className="w-5 h-5 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center text-xs font-bold">
+                        +
                       </span>
                     </div>
-                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2">
-                      {p.name}
-                    </h4>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-xs sm:text-sm font-bold text-brand-600">
-                      {formatRupiah(p.sellingPrice)}
-                    </span>
-                    <span className="p-1 rounded-md bg-brand-50 text-brand-600">
-                      <Plus className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
 
-        {/* KOLOM KANAN: KERANJANG BELANJA & CHECKOUT (5 Kolom) */}
+        {/* KOLOM KANAN: KERANJANG BELANJA & PILIH PELANGGAN (5 Kolom) */}
         <div className="lg:col-span-5 bg-white rounded-3xl border border-gray-200 shadow-md p-4 sm:p-5 flex flex-col justify-between min-h-[580px]">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
+            {/* 1. SELEKTOR PELANGGAN & DETEKSI UTANG (FITUR KUNCI) */}
+            <div className="mb-4 pb-3 border-b border-gray-100 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-brand-600" />
+                  Pelanggan Transaksi:
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsQuickCustomerModalOpen(true)}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-600 hover:text-brand-700 hover:underline"
+                >
+                  <UserPlus className="w-3.5 h-3.5" /> + Pelanggan Baru
+                </button>
+              </div>
+
+              {/* Dropdown Pelanggan */}
+              <select
+                value={selectedCustomerId}
+                onChange={(e) => setSelectedCustomerId(e.target.value)}
+                className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white"
+              >
+                <option value="">👤 -- Pelanggan Umum (Tanpa Utang) --</option>
+                {customers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    👤 {c.name} {c.currentDebt > 0 ? `(⚠️ Utang: ${formatRupiah(c.currentDebt)})` : '(✓ Lancar)'}
+                  </option>
+                ))}
+              </select>
+
+              {/* TAMPILAN STATUS UTANG PELANGGAN */}
+              {selectedCustomer ? (
+                selectedCustomer.currentDebt > 0 ? (
+                  /* Pelanggan Memiliki Utang Berjalan */
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-2.5 animate-fade-in shadow-sm">
+                    <AlertTriangle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-rose-950">Pelanggan Memiliki Utang Aktif!</span>
+                        <span className="font-black text-rose-600 text-sm">
+                          {formatRupiah(selectedCustomer.currentDebt)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-rose-800/80 mt-1 pt-1 border-t border-rose-200/60">
+                        <span>Limit Kredit: {formatRupiah(selectedCustomer.creditLimit)}</span>
+                        <span>
+                          Sisa Plafon: {formatRupiah(Math.max(0, selectedCustomer.creditLimit - selectedCustomer.currentDebt))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Pelanggan Bersih / Tanpa Utang */
+                  <div className="py-2 px-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-800">
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>Pelanggan Bersih (Tidak Ada Utang)</span>
+                    </div>
+                    <span className="text-[11px] text-emerald-700 font-bold">
+                      Limit: {formatRupiah(selectedCustomer.creditLimit)}
+                    </span>
+                  </div>
+                )
+              ) : (
+                /* Pelanggan Umum */
+                <div className="py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between text-[11px] text-gray-500">
+                  <span>Pelanggan Umum (Tanpa Catatan Piutang)</span>
+                  <span className="text-[10px] text-gray-400">Pilih pelanggan untuk nota tempo</span>
+                </div>
+              )}
+            </div>
+
+            {/* 2. HEADER KERANJANG */}
+            <div className="flex items-center justify-between pb-2 mb-2">
               <div className="flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5 text-brand-600" />
-                <h3 className="font-bold text-gray-900 text-base">Keranjang Kasir</h3>
+                <ShoppingCart className="w-4 h-4 text-brand-600" />
+                <h3 className="font-bold text-gray-900 text-sm">Keranjang Belanja</h3>
                 <span className="text-xs bg-brand-100 text-brand-800 font-bold px-2 py-0.5 rounded-full">
                   {cart.length} Item
                 </span>
@@ -350,10 +510,10 @@ export const KasirPage: React.FC = () => {
             </div>
 
             {/* List Item Keranjang */}
-            <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1 divide-y divide-gray-50">
+            <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 divide-y divide-gray-50">
               {cart.length === 0 ? (
-                <div className="text-center py-16 text-gray-400">
-                  <ShoppingCart className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                <div className="text-center py-12 text-gray-400">
+                  <ShoppingCart className="w-10 h-10 mx-auto mb-1.5 opacity-30" />
                   <p className="text-xs">Keranjang masih kosong</p>
                   <p className="text-[11px] text-gray-400">Pilih barang dari katalog atau scan barcode</p>
                 </div>
@@ -405,7 +565,7 @@ export const KasirPage: React.FC = () => {
           </div>
 
           {/* Rincian Total & Tombol Bayar */}
-          <div className="pt-4 border-t border-gray-100 space-y-3 mt-4">
+          <div className="pt-3 border-t border-gray-100 space-y-2.5 mt-3">
             <div className="flex items-center justify-between text-xs text-gray-600">
               <span>Subtotal:</span>
               <span className="font-semibold text-gray-900">{formatRupiah(subtotal)}</span>
@@ -424,76 +584,127 @@ export const KasirPage: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t border-gray-200 text-base font-extrabold text-gray-900">
-              <span>Total Tagihan:</span>
+              <div>
+                <span>Total Tagihan:</span>
+                {selectedCustomer && (
+                  <p className="text-[10px] text-gray-400 font-normal">
+                    Pelanggan: <strong className="text-gray-700">{selectedCustomer.name}</strong>
+                  </p>
+                )}
+              </div>
               <span className="text-brand-700 text-lg">{formatRupiah(finalTotal)}</span>
             </div>
 
             <button
               type="button"
-              onClick={handleOpenCheckout}
               disabled={cart.length === 0}
-              className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+              onClick={handleOpenCheckout}
+              className="w-full py-3 bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-bold rounded-2xl text-sm shadow-lg shadow-brand-500/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
             >
-              <Banknote className="w-5 h-5" />
-              Proses Pembayaran ({formatRupiah(finalTotal)})
+              <Banknote className="w-4 h-4" />
+              Bayar / Checkout ({formatRupiah(finalTotal)})
             </button>
           </div>
         </div>
       </div>
 
-      {/* MODAL CHECKOUT PEMBAYARAN TERPADU */}
+      {/* MODAL CHECKOUT KASIR (MULTI-METODE BAYAR) */}
       {isCheckoutModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-5 sm:p-6 animate-scale-in my-8">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Pembayaran Kasir</h3>
-                <p className="text-xs text-gray-500">Pilih metode pembayaran yang digunakan pelanggan</p>
+                <h3 className="font-extrabold text-gray-900 text-lg">Checkout Pembayaran Kasir</h3>
+                <p className="text-xs text-gray-500">Pilih metode pelunasan tagihan</p>
               </div>
               <button
+                type="button"
                 onClick={() => setIsCheckoutModalOpen(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+                className="p-1 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Total Tagihan Banner */}
-            <div className="p-4 bg-brand-50/70 border border-brand-200 rounded-2xl mb-4 text-center">
-              <span className="text-xs text-brand-700 font-semibold uppercase tracking-wider">
-                Total yang Harus Dibayar
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold text-brand-700 mt-0.5">
-                {formatRupiah(finalTotal)}
+            {/* INFO PELANGGAN TERPILIH DI DALAM MODAL */}
+            <div className="mb-4 p-3 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col gap-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500 font-semibold">Pelanggan Transaksi:</span>
+                <span className="font-bold text-gray-900">
+                  {selectedCustomer ? selectedCustomer.name : 'Pelanggan Umum'}
+                </span>
               </div>
+
+              {selectedCustomer && selectedCustomer.currentDebt > 0 && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-rose-800 font-bold">
+                    <AlertTriangle className="w-4 h-4 text-rose-600" />
+                    <span>Utang Berjalan Saat Ini:</span>
+                  </div>
+                  <span className="font-black text-rose-600">{formatRupiah(selectedCustomer.currentDebt)}</span>
+                </div>
+              )}
             </div>
 
-            {/* Tabs Metode Pembayaran */}
+            {/* Total Tagihan Banner */}
+            <div className="bg-brand-50 border border-brand-200 p-4 rounded-2xl mb-4 text-center">
+              <span className="text-xs text-brand-800 font-semibold">Total Yang Harus Dibayar:</span>
+              <div className="text-2xl font-black text-brand-700 mt-0.5">{formatRupiah(finalTotal)}</div>
+            </div>
+
+            {/* Pilihan 4 Metode Pembayaran */}
             <div className="grid grid-cols-4 gap-2 mb-4">
-              {[
-                { id: 'CASH', label: 'Tunai', icon: Banknote },
-                { id: 'QRIS', label: 'QRIS', icon: QrCode },
-                { id: 'TRANSFER', label: 'Transfer', icon: CreditCard },
-                { id: 'CREDIT', label: 'Piutang', icon: Calendar },
-              ].map((m) => {
-                const Icon = m.icon;
-                const isSelected = paymentMethod === m.id;
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setPaymentMethod(m.id as PaymentMethod)}
-                    className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-xl text-xs font-bold border transition-all ${
-                      isSelected
-                        ? 'bg-brand-600 text-white border-brand-600 shadow-md'
-                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 mb-1" />
-                    {m.label}
-                  </button>
-                );
-              })}
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('CASH')}
+                className={`py-2 px-1 rounded-xl text-xs font-bold border flex flex-col items-center gap-1 transition-all ${
+                  paymentMethod === 'CASH'
+                    ? 'border-brand-600 bg-brand-50 text-brand-700 shadow-sm'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Banknote className="w-4 h-4" />
+                Tunai
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('QRIS')}
+                className={`py-2 px-1 rounded-xl text-xs font-bold border flex flex-col items-center gap-1 transition-all ${
+                  paymentMethod === 'QRIS'
+                    ? 'border-brand-600 bg-brand-50 text-brand-700 shadow-sm'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <QrCode className="w-4 h-4" />
+                QRIS
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('TRANSFER')}
+                className={`py-2 px-1 rounded-xl text-xs font-bold border flex flex-col items-center gap-1 transition-all ${
+                  paymentMethod === 'TRANSFER'
+                    ? 'border-brand-600 bg-brand-50 text-brand-700 shadow-sm'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                Transfer
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('CREDIT')}
+                className={`py-2 px-1 rounded-xl text-xs font-bold border flex flex-col items-center gap-1 transition-all ${
+                  paymentMethod === 'CREDIT'
+                    ? 'border-brand-600 bg-brand-50 text-brand-700 shadow-sm'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <User className="w-4 h-4" />
+                Tempo
+              </button>
             </div>
 
             {/* KONTEN METODE 1: TUNAI (CASH) */}
@@ -599,38 +810,58 @@ export const KasirPage: React.FC = () => {
               </div>
             )}
 
-            {/* KONTEN METODE 4: PIUTANG / KREDIT */}
+            {/* KONTEN METODE 4: PIUTANG / TEMPO KREDIT */}
             {paymentMethod === 'CREDIT' && (
               <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 mb-4 space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1">
-                    <User className="w-3.5 h-3.5 text-brand-600" />
-                    Pilih Pelanggan Terdaftar *
-                  </label>
-                  <select
-                    value={selectedCustomerId}
-                    onChange={(e) => setSelectedCustomerId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 bg-white"
-                  >
-                    {customers.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} (Limit: {formatRupiah(c.creditLimit)}, Sisa Utang: {formatRupiah(c.currentDebt)})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {!selectedCustomer ? (
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                    <span>
+                      Pilih pelanggan terdaftar terlebih dahulu di atas untuk transaksi tempo / kredit!
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="p-3 bg-white rounded-xl border border-gray-200 text-xs space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Pelanggan:</span>
+                        <span className="font-bold text-gray-900">{selectedCustomer.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Utang Saat Ini:</span>
+                        <span className="font-bold text-rose-600">{formatRupiah(selectedCustomer.currentDebt)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">+ Belanja Baru:</span>
+                        <span className="font-bold text-brand-700">+{formatRupiah(finalTotal)}</span>
+                      </div>
+                      <div className="flex justify-between border-t border-gray-100 pt-1.5 font-bold">
+                        <span className="text-gray-800">Total Utang Nanti:</span>
+                        <span className="text-rose-700">{formatRupiah(selectedCustomer.currentDebt + finalTotal)}</span>
+                      </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Tanggal Jatuh Tempo Pembayaran
-                  </label>
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500"
-                  />
-                </div>
+                      {/* Peringatan Limit Plafon Kredit */}
+                      {selectedCustomer.currentDebt + finalTotal > selectedCustomer.creditLimit && (
+                        <div className="p-2 bg-amber-50 border border-amber-300 rounded-lg text-amber-900 text-[11px] flex items-center gap-1.5 mt-1">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                          <span>Peringatan: Total utang melebihi Limit Kredit ({formatRupiah(selectedCustomer.creditLimit)})!</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        Tanggal Jatuh Tempo Pembayaran *
+                      </label>
+                      <input
+                        type="date"
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
+                        className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -646,24 +877,118 @@ export const KasirPage: React.FC = () => {
               />
             </div>
 
+            {/* Error Banner Kasir */}
+            {checkoutErrorMessage && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>{checkoutErrorMessage}</span>
+              </div>
+            )}
+
             {/* Tombol Konfirmasi Selesai */}
             <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
               <button
                 type="button"
                 onClick={() => setIsCheckoutModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl"
+                className="px-4 py-2 border border-gray-300 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100"
               >
                 Batal
               </button>
               <button
                 type="button"
-                disabled={processing}
+                disabled={processing || (paymentMethod === 'CREDIT' && !selectedCustomer)}
                 onClick={handleProcessCheckout}
-                className="px-6 py-2.5 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md disabled:opacity-50 transition-all cursor-pointer disabled:cursor-not-allowed"
               >
-                {processing ? 'Memproses...' : 'Selesaikan Transaksi & Cetak Struk'}
+                {processing && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                {processing ? 'Menyimpan...' : 'Konfirmasi Selesai'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL TAMBAH PELANGGAN CEPAT (QUICK ADD CUSTOMER) */}
+      {isQuickCustomerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-5 sm:p-6 animate-scale-in my-8">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+              <h3 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+                <UserPlus className="w-4 h-4 text-brand-600" />
+                Tambah Pelanggan Baru
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsQuickCustomerModalOpen(false)}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleQuickAddCustomer} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Nama Pelanggan *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Bpk. Ahmad / Bu Sri..."
+                  value={quickCustomerName}
+                  onChange={(e) => setQuickCustomerName(e.target.value)}
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-1 focus:ring-brand-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Nomor WhatsApp / HP</label>
+                <input
+                  type="text"
+                  placeholder="08123456789"
+                  value={quickCustomerPhone}
+                  onChange={(e) => setQuickCustomerPhone(e.target.value)}
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-1 focus:ring-brand-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Alamat</label>
+                <input
+                  type="text"
+                  placeholder="Alamat pelanggan..."
+                  value={quickCustomerAddress}
+                  onChange={(e) => setQuickCustomerAddress(e.target.value)}
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-1 focus:ring-brand-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Plafon Limit Kredit (Rp)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={quickCustomerLimit}
+                  onChange={(e) => setQuickCustomerLimit(Number(e.target.value))}
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-bold text-gray-900"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setIsQuickCustomerModalOpen(false)}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingCustomer}
+                  className="px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold shadow"
+                >
+                  {savingCustomer ? 'Menyimpan...' : 'Simpan Pelanggan'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -731,6 +1056,13 @@ export const KasirPage: React.FC = () => {
                       <span>{formatRupiah(completedSale.changeAmount)}</span>
                     </div>
                   </>
+                )}
+                {/* Catatan Sisa Utang di Struk jika ada */}
+                {completedSale.customerDebtSnapshot > 0 && (
+                  <div className="flex justify-between text-rose-600 font-bold pt-1 border-t border-dashed border-gray-300">
+                    <span>Sisa Utang Pelanggan:</span>
+                    <span>{formatRupiah(completedSale.customerDebtSnapshot)}</span>
+                  </div>
                 )}
               </div>
 

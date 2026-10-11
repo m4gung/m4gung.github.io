@@ -123,4 +123,4 @@ manajemen-barbershop/
 ```
 
 ## sheet demo
-- https://script.google.com/macros/s/AKfycbwHeP0_GlFNFSAeDdL0H_IUvoj1HE_Dh7uIkPsbX6eyAHG9YET9SmKPb15ZwF1QKubT/exec
+- https://script.google.com/macros/s/AKfycbxN-nxd2-9QULkxk3_zRge2Hfpav-VckNCmXvOEFivbojy6QCF_ehpybkg555oG3AvQ/exec

@@ -1,5 +1,6 @@
 import type { IDataProvider, CheckoutPayload, PayReceivablePayload, CreateManualJournalPayload } from './IDataProvider';
 import { IndexedDbAdapter } from './IndexedDbAdapter';
+import { db } from '../db/indexedDb';
 import type { 
   Product, 
   Category,
@@ -207,7 +208,14 @@ export class SpringBootAdapter implements IDataProvider {
       await this.localFallback.createPurchase(payload);
       return { purchaseNo: res.purchaseNo, success: true };
     } catch {
-      return this.localFallback.createPurchase(payload);
+      const localRes = await this.localFallback.createPurchase(payload);
+      await db.outboxQueue.add({
+        action: 'createPurchase',
+        payload: { ...payload, purchaseNo: localRes.purchaseNo },
+        createdAt: new Date().toISOString(),
+        retryCount: 0
+      });
+      return localRes;
     }
   }
 
@@ -220,7 +228,14 @@ export class SpringBootAdapter implements IDataProvider {
       await this.localFallback.checkoutSale(payload);
       return { invoiceNo: res.invoiceNo, success: true };
     } catch {
-      return this.localFallback.checkoutSale(payload);
+      const localRes = await this.localFallback.checkoutSale(payload);
+      await db.outboxQueue.add({
+        action: 'checkoutSale',
+        payload: { ...payload, invoiceNo: localRes.invoiceNo },
+        createdAt: new Date().toISOString(),
+        retryCount: 0
+      });
+      return localRes;
     }
   }
 
@@ -261,15 +276,24 @@ export class SpringBootAdapter implements IDataProvider {
   }
 
   async payReceivable(payload: PayReceivablePayload): Promise<boolean> {
+    const paymentId = payload.paymentId || `PAY-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+    const fullPayload = { ...payload, paymentId };
     try {
       await this.fetchApi(`/api/v1/receivables/${payload.receivableId}/pay`, {
         method: 'POST',
-        body: JSON.stringify(payload)
+        body: JSON.stringify(fullPayload)
       });
-      await this.localFallback.payReceivable(payload);
+      await this.localFallback.payReceivable(fullPayload);
       return true;
     } catch {
-      return this.localFallback.payReceivable(payload);
+      await this.localFallback.payReceivable(fullPayload);
+      await db.outboxQueue.add({
+        action: 'payReceivable',
+        payload: fullPayload,
+        createdAt: new Date().toISOString(),
+        retryCount: 0
+      });
+      return true;
     }
   }
 
@@ -290,7 +314,14 @@ export class SpringBootAdapter implements IDataProvider {
       await this.localFallback.createManualJournal(payload);
       return true;
     } catch {
-      return this.localFallback.createManualJournal(payload);
+      await this.localFallback.createManualJournal(payload);
+      await db.outboxQueue.add({
+        action: 'createManualJournal',
+        payload,
+        createdAt: new Date().toISOString(),
+        retryCount: 0
+      });
+      return true;
     }
   }
 

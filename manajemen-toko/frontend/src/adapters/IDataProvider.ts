@@ -37,6 +37,7 @@ export interface CheckoutPayload {
 }
 
 export interface PayReceivablePayload {
+  paymentId?: string;
   receivableId: string;
   amount: number;
   paymentMethod: 'CASH' | 'QRIS' | 'TRANSFER';

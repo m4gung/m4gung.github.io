@@ -12,7 +12,8 @@ import {
   Phone, 
   MapPin, 
   FileText,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import type { Supplier, CreatePurchasePayload, Purchase } from '../types';
@@ -142,6 +143,7 @@ export const PembelianPage: React.FC = () => {
 
   const handleSavePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loadingAction) return; // Mencegah double submit / double click
     if (!purchaseSupplierId) {
       setErrorMessage('Pilih mitra supplier terlebih dahulu.');
       return;
@@ -695,8 +697,9 @@ export const PembelianPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loadingAction}
-                  className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold shadow-md disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all"
                 >
+                  {loadingAction && <RefreshCw className="w-4 h-4 animate-spin" />}
                   {loadingAction ? 'Menyimpan...' : 'Simpan & Tambah Stok'}
                 </button>
               </div>

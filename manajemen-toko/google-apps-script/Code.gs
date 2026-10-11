@@ -322,6 +322,18 @@ function deleteRowById(sheetName, id) {
   return { error: 'Not found' };
 }
 
+// Helper untuk memeriksa apakah ID atau Nomor Faktur sudah ada di sheet (mencegah duplikasi sinkronisasi)
+function isRowExists(sheet, colIndex, value) {
+  if (!sheet || !value) return false;
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][colIndex]).trim() === String(value).trim()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Proses Transaksi Penjualan Lengkap (Kasir, Stok, Piutang, Jurnal Otomatis)
 function processSaleCheckout(saleData) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -335,6 +347,11 @@ function processSaleCheckout(saleData) {
   
   const now = new Date().toISOString();
   const invoiceNo = saleData.invoiceNo || 'INV-' + Utilities.formatDate(new Date(), "GMT+8", "yyyyMMddHHmmss");
+
+  // Idempotency check: jika nomor faktur sudah ada di salesSheet, lewati proses insert untuk mencegah dobel
+  if (isRowExists(salesSheet, 0, invoiceNo)) {
+    return { invoiceNo: invoiceNo, status: 'ALREADY_EXISTS', message: 'Faktur sudah tercatat sebelumnya', timestamp: now };
+  }
   
   let totalCost = 0;
   
@@ -464,6 +481,12 @@ function processReceivablePayment(payload) {
   const now = new Date().toISOString();
   const paymentAmount = Number(payload.amount);
   const recId = payload.receivableId;
+  const paymentId = payload.paymentId || ('PAY-' + Utilities.getUuid().substring(0, 8));
+
+  // Idempotency check: jika paymentId sudah ada di paySheet, abaikan untuk cegah dobel
+  if (isRowExists(paySheet, 0, paymentId)) {
+    return { success: true, status: 'ALREADY_EXISTS', message: 'Pembayaran piutang sudah tercatat sebelumnya' };
+  }
   
   const recData = recSheet.getDataRange().getValues();
   let remainingAfter = 0;
@@ -488,7 +511,7 @@ function processReceivablePayment(payload) {
   
   // Simpan Riwayat Cicilan
   paySheet.appendRow([
-    'PAY-' + Utilities.getUuid().substring(0, 8),
+    paymentId,
     recId,
     invoiceNo,
     now,
@@ -694,6 +717,12 @@ function processPurchaseCheckout(payload) {
   const now = new Date().toISOString();
 
   const purchaseNo = payload.purchaseNo || 'PO-' + Utilities.formatDate(new Date(), "GMT+8", "yyyyMMddHHmmss");
+
+  // Idempotency check: jika purchaseNo sudah tercatat di kolom ke-2 (index 1), lewati untuk mencegah duplikasi
+  if (isRowExists(purSheet, 1, purchaseNo)) {
+    return { purchaseNo: purchaseNo, status: 'ALREADY_EXISTS', message: 'Nomor PO sudah tercatat sebelumnya', timestamp: now };
+  }
+
   const purchaseId = 'PUR-' + Utilities.getUuid().substring(0, 8);
   let totalAmount = 0;
 

@@ -10,7 +10,8 @@ import {
   Phone, 
   MapPin, 
   DollarSign, 
-  ShieldAlert
+  ShieldAlert,
+  RefreshCw
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { formatRupiah, formatTanggal } from '../utils/format';
@@ -150,6 +151,7 @@ export const PiutangPage: React.FC = () => {
 
   const handleExecutePayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loadingAction) return; // Mencegah double submit / double click
     if (!selectedReceivable) return;
 
     if (payAmount <= 0) {
@@ -779,8 +781,9 @@ export const PiutangPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loadingAction}
-                  className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all"
                 >
+                  {loadingAction && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                   {loadingAction ? 'Memproses...' : 'Konfirmasi Bayar'}
                 </button>
               </div>

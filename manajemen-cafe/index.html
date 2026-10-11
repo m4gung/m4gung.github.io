@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#5c4033" />
+    <meta name="description" content="Aplikasi Manajemen Cafe Lengkap & POS Kasir Modern Offline-First" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./favicon.svg" />
+    <title>CafeFlow - Manajemen Cafe POS</title>
+    <script type="module" crossorigin src="./assets/index-D_M_P0Qy.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Dewv9xfj.css">
+  </head>
+  <body class="bg-stone-100 min-h-screen text-stone-900 select-none antialiased">
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('PWA ServiceWorker registered'))
+            .catch(err => console.log('PWA ServiceWorker failed', err));
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -178,6 +178,7 @@ export const AkuntansiPage: React.FC = () => {
 
   const handleSaveManualJournal = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loadingAction) return; // Mencegah double submit / double click
     if (!manualDescription.trim()) {
       setErrorMessage('Keterangan transaksi jurnal wajib diisi.');
       return;
@@ -948,8 +949,9 @@ export const AkuntansiPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loadingAction || !isManualBalanced}
-                  className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all"
                 >
+                  {loadingAction && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                   {loadingAction ? 'Menyimpan...' : 'Simpan Jurnal'}
                 </button>
               </div>

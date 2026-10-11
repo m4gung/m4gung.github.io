@@ -1,0 +1,17 @@
+{
+  "short_name": "CafeFlow",
+  "name": "CafeFlow - Manajemen Cafe POS",
+  "description": "Sistem Manajemen Cafe & POS Kasir Modern Offline-First",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#3d2b22",
+  "theme_color": "#5c4033",
+  "display": "standalone",
+  "orientation": "portrait"
+}

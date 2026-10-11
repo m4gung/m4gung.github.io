@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed-Length Parser - Spek API WBK & Core Banking</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <a href="../index.html" class="back-link" title="Kembali ke Tools Dashboard">← Tools</a>
+            <h1>📑 Parser Spek API WBK</h1>
+        </div>
+
+        <div class="header-right">
+            <div class="spec-selector-wrapper">
+                <label for="specSelect">Skema:</label>
+                <select id="specSelect" class="select-input">
+                    <!-- Loaded dynamically via JavaScript -->
+                </select>
+            </div>
+            <div id="statusBadge" class="status-badge info">Menunggu Input...</div>
+            <button id="themeToggle" class="btn icon-btn" title="Ubah Tema Gelap/Terang">☀️</button>
+        </div>
+    </header>
+
+    <!-- Workspace -->
+    <main class="workspace">
+        <!-- Left Pane: Input -->
+        <section class="pane">
+            <div class="pane-toolbar">
+                <div class="pane-title-group">
+                    <span class="pane-title">Input Raw Text</span>
+                    <span id="charCounter" class="len-counter">0 / 0 char</span>
+                </div>
+                <div class="btn-group">
+                    <button id="sampleBtn" class="btn warning" title="Gunakan contoh data bawaan">💡 Contoh Data</button>
+                    <button id="pasteBtn" class="btn" title="Tempel teks dari clipboard">📋 Paste</button>
+                    <button id="clearBtn" class="btn danger" title="Kosongkan teks input">🗑️ Clear</button>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <textarea id="rawInput" spellcheck="false"
+                    placeholder="Tempel string fixed-length di sini...&#10;&#10;Sistem akan otomatis memotong dan menampilkan setiap field sesuai spesifikasi yang dipilih."></textarea>
+                <div id="inputFeedback" class="input-feedback"></div>
+            </div>
+        </section>
+
+        <!-- Right Pane: Output -->
+        <section class="pane">
+            <div class="pane-toolbar">
+                <div class="pane-title-group">
+                    <span class="pane-title">Hasil Parsing</span>
+                    <div class="btn-group">
+                        <button id="tableViewBtn" class="btn active" title="Tampilan Tabel">Tabel</button>
+                        <button id="jsonViewBtn" class="btn" title="Tampilan JSON">JSON</button>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button id="trimToggleBtn" class="btn" title="Toggle Trim Spasi pada Nilai Field">✂️ Trim: OFF</button>
+                    <button id="copyTableBtn" class="btn success" title="Salin sebagai teks tabel / TSV untuk Excel">📋 Copy Tabel</button>
+                    <button id="copyJsonBtn" class="btn success" title="Salin sebagai JSON format">📋 Copy JSON</button>
+                </div>
+            </div>
+
+            <div class="output-container">
+                <!-- Table View -->
+                <div id="tableView" class="view-wrapper">
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-state-icon">📋</div>
+                        <div>
+                            <strong>Belum ada data untuk diparse</strong>
+                            <p style="font-size: 0.8rem; margin-top: 4px;">Tempel string atau klik tombol "💡 Contoh Data" untuk mencoba.</p>
+                        </div>
+                    </div>
+                    <table id="resultTable" class="table-responsive" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th class="col-no">#</th>
+                                <th class="col-name">Nama Field</th>
+                                <th class="col-len">Panjang</th>
+                                <th class="col-range">Index</th>
+                                <th class="col-val">Nilai Potongan (Value)</th>
+                                <th class="col-action">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- JSON View -->
+                <div id="jsonView" class="view-wrapper" style="display: none;">
+                    <pre id="jsonOutput">// Hasil JSON akan muncul di sini</pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Floating Toast Notification -->
+    <div id="toast" class="toast">✓ Berhasil disalin ke clipboard!</div>
+
+    <!-- Scripts -->
+    <script src="specs_data.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

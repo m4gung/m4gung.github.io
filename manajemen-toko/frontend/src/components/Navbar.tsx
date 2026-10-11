@@ -12,7 +12,10 @@ import {
   FileSpreadsheet,
   Server,
   Truck,
-  Database
+  Database,
+  RefreshCw,
+  Cloud,
+  Check
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
@@ -22,7 +25,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
-  const { settings, isOnline } = useStore();
+  const { settings, isOnline, syncStatus, outboxCount, syncOutboxQueue } = useStore();
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -101,20 +104,53 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             })}
           </nav>
 
-          {/* Status Badges */}
+          {/* Status Badges & Auto-Sync Controls */}
           <div className="flex items-center gap-2">
             {getStorageBadge()}
 
-            {isOnline ? (
+            {/* Sync Badge */}
+            {syncStatus === 'SYNCING' && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-300 animate-pulse">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600" />
+                <span className="hidden sm:inline">Sinkronisasi</span> ({outboxCount})
+              </span>
+            )}
+
+            {syncStatus === 'PENDING' && (
+              <button
+                type="button"
+                onClick={() => syncOutboxQueue()}
+                title="Klik untuk menyinkronkan data tertunda sekarang"
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300 hover:bg-yellow-200 transition-colors shadow-sm"
+              >
+                <Cloud className="w-3.5 h-3.5 text-yellow-700" />
+                <span className="hidden sm:inline">Sync Pending</span> ({outboxCount})
+              </button>
+            )}
+
+            {syncStatus === 'SYNCED' && (
               <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                <Check className="w-3.5 h-3.5" />
+                Tersinkron
+              </span>
+            )}
+
+            {/* Online / Offline Indicator */}
+            {isOnline ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <Wifi className="w-3.5 h-3.5" />
-                Online
+                <span className="hidden sm:inline">Online</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-300">
+              <button
+                type="button"
+                onClick={() => syncOutboxQueue()}
+                title="Mode offline - transaksi tersimpan aman di lokal browser"
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-300 hover:bg-red-200"
+              >
                 <WifiOff className="w-3.5 h-3.5" />
-                Offline
-              </span>
+                <span>Offline {outboxCount > 0 ? `(${outboxCount})` : ''}</span>
+              </button>
             )}
           </div>
         </div>
