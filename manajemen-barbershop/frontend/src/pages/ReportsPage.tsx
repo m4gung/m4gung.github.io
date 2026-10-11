@@ -4,6 +4,8 @@ import { useApp } from '../context/AppContext';
 import { Button } from '../components/ui/Button';
 import { formatRupiah } from '../services/utils';
 import { AuditAndSecurityService } from '../services/auditService';
+import { createWhatsAppReceiptMessage } from '../services/whatsappService';
+import { printThermalReceipt } from '../services/printService';
 import {
   BarChart3,
   TrendingUp,
@@ -13,12 +15,14 @@ import {
   Download,
   Receipt,
   XCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Printer,
+  Copy
 } from 'lucide-react';
 import type { Transaction, Expense, StaffAllowance } from '../types';
 
 export const ReportsPage: React.FC = () => {
-  const { showToast } = useApp();
+  const { showToast, settings } = useApp();
 
   // Active Sub-Tab: 'DASHBOARD' vs 'TRANSACTIONS_LOG'
   const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'TRANSACTIONS_LOG'>('DASHBOARD');
@@ -449,7 +453,47 @@ export const ReportsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-neutral-800">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex items-center justify-center gap-1.5 text-xs"
+                onClick={() => {
+                  if (settings) printThermalReceipt(selectedTx, settings);
+                }}
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Cetak Struk
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center gap-1.5 text-xs text-neutral-200"
+                onClick={async () => {
+                  if (!settings) return;
+                  const text = createWhatsAppReceiptMessage(selectedTx, settings);
+                  try {
+                    await navigator.clipboard.writeText(text);
+                    showToast('Teks struk berhasil disalin!', 'success');
+                  } catch {
+                    const t = document.createElement('textarea');
+                    t.value = text;
+                    document.body.appendChild(t);
+                    t.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(t);
+                    showToast('Teks struk berhasil disalin!', 'success');
+                  }
+                }}
+              >
+                <Copy className="w-3.5 h-3.5 text-amber-400" />
+                Salin Teks
+              </Button>
+            </div>
+
+            <div className="flex gap-2 pt-1">
               {selectedTx.status === 'COMPLETED' && (
                 <Button
                   variant="danger"
@@ -469,7 +513,7 @@ export const ReportsPage: React.FC = () => {
                     }
                   }}
                 >
-                  Batalkan Transaksi (Void)
+                  Void (Batalkan)
                 </Button>
               )}
               <Button variant="outline" size="sm" onClick={() => setSelectedTx(null)} className="flex-1">

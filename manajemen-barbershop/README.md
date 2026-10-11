@@ -121,3 +121,6 @@ manajemen-barbershop/
 ├── docker-compose.yml            # PostgreSQL Container
 └── README.md
 ```
+
+## sheet demo
+- https://script.google.com/macros/s/AKfycbwHeP0_GlFNFSAeDdL0H_IUvoj1HE_Dh7uIkPsbX6eyAHG9YET9SmKPb15ZwF1QKubT/exec

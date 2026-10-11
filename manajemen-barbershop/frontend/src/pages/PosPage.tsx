@@ -7,7 +7,8 @@ import {
   generateInvoiceNumber,
   generateIdempotencyKey
 } from '../services/utils';
-import { openWhatsAppReceipt } from '../services/whatsappService';
+import { openWhatsAppReceipt, createWhatsAppReceiptMessage } from '../services/whatsappService';
+import { printThermalReceipt } from '../services/printService';
 import { SyncEngine } from '../services/syncEngine';
 import {
   ShoppingBag,
@@ -17,6 +18,7 @@ import {
   Trash2,
   Printer,
   MessageSquare,
+  Copy,
   CheckCircle2,
   X,
   CreditCard,
@@ -300,7 +302,27 @@ export const PosPage: React.FC = () => {
   };
 
   const handlePrintReceipt = () => {
-    window.print();
+    if (completedTransaction && settings) {
+      printThermalReceipt(completedTransaction, settings);
+    }
+  };
+
+  const handleCopyReceiptText = async () => {
+    if (!completedTransaction || !settings) return;
+    const text = createWhatsAppReceiptMessage(completedTransaction, settings);
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Teks struk berhasil disalin ke clipboard!', 'success');
+    } catch {
+      // Fallback manual copy
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      showToast('Teks struk berhasil disalin!', 'success');
+    }
   };
 
   return (
@@ -701,26 +723,36 @@ export const PosPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-3 gap-2 pt-2">
               <Button
                 variant="secondary"
-                size="md"
+                size="sm"
                 onClick={handlePrintReceipt}
-                className="w-full flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-1.5 text-xs"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-3.5 h-3.5" />
                 Cetak Struk
               </Button>
 
               <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyReceiptText}
+                className="flex items-center justify-center gap-1.5 text-xs text-neutral-200"
+              >
+                <Copy className="w-3.5 h-3.5 text-amber-400" />
+                Salin Teks
+              </Button>
+
+              <Button
                 variant="gold"
-                size="md"
+                size="sm"
                 onClick={() => {
                   if (settings) openWhatsAppReceipt(completedTransaction, settings);
                 }}
-                className="w-full flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-1.5 text-xs"
               >
-                <MessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-3.5 h-3.5" />
                 Kirim WA
               </Button>
             </div>
