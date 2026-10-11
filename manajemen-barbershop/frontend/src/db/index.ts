@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import type {
+  Branch,
   ServiceItem,
   ProductItem,
   Barber,
@@ -13,6 +14,7 @@ import type {
 } from '../types';
 
 export class BarbershopDatabase extends Dexie {
+  branches!: Table<Branch, string>;
   services!: Table<ServiceItem, string>;
   products!: Table<ProductItem, string>;
   barbers!: Table<Barber, string>;
@@ -26,15 +28,16 @@ export class BarbershopDatabase extends Dexie {
 
   constructor() {
     super('BarbershopDatabase');
-    this.version(1).stores({
+    this.version(2).stores({
+      branches: 'id, code, name, isActive',
       services: 'id, name, category, isActive',
-      products: 'id, sku, name, category, stock, isActive',
-      barbers: 'id, name, phone, isActive',
+      products: 'id, branchId, sku, name, category, stock, isActive',
+      barbers: 'id, branchId, name, phone, isActive',
       customers: 'id, name, phone, totalVisits',
-      attendances: 'id, barberId, date, status, isSynced',
+      attendances: 'id, branchId, barberId, date, status, isSynced',
       staffAllowances: 'id, barberId, date, type',
-      transactions: 'id, invoiceNumber, customerPhone, status, isSynced, createdAt',
-      expenses: 'id, date, category',
+      transactions: 'id, branchId, invoiceNumber, customerPhone, status, isSynced, createdAt',
+      expenses: 'id, branchId, date, category',
       settings: 'id',
       syncOutbox: 'id, entityType, action, status, createdAt'
     });
@@ -44,6 +47,32 @@ export class BarbershopDatabase extends Dexie {
 export const db = new BarbershopDatabase();
 
 export async function seedInitialDataIfEmpty() {
+  const branchCount = await db.branches.count();
+  if (branchCount === 0) {
+    await db.branches.bulkPut([
+      {
+        id: 'brn-1',
+        code: 'CB-01',
+        name: 'Cabang Utama (Pettarani)',
+        address: 'Jl. A. P. Pettarani No. 88, Makassar',
+        phone: '0812-3456-7890',
+        managerName: 'Mas Budi',
+        isActive: true,
+        createdAt: '2024-01-01'
+      },
+      {
+        id: 'brn-2',
+        code: 'CB-02',
+        name: 'Cabang Panakkukang',
+        address: 'Jl. Pengayoman Ruko No. 12, Panakkukang, Makassar',
+        phone: '0812-9876-5432',
+        managerName: 'Andi Fadli',
+        isActive: true,
+        createdAt: '2024-06-01'
+      }
+    ]);
+  }
+
   const serviceCount = await db.services.count();
   if (serviceCount > 0) return;
 
@@ -61,6 +90,7 @@ export async function seedInitialDataIfEmpty() {
     defaultCommissionValue: 35, // 35%
     defaultDailyMealAllowance: 20000, // Rp 20.000 / hari hadir
     autoMealAllowanceOnAttendance: true,
+    activeBranchId: 'brn-1',
     currency: 'IDR',
     timezone: 'Asia/Makassar'
   });

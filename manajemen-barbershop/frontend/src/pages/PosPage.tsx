@@ -36,7 +36,7 @@ import type {
 } from '../types';
 
 export const PosPage: React.FC = () => {
-  const { showToast, settings } = useApp();
+  const { showToast, settings, activeBranch } = useApp();
 
   // Master Data
   const [services, setServices] = useState<ServiceItem[]>([]);
@@ -239,6 +239,8 @@ export const PosPage: React.FC = () => {
 
       const transaction: Transaction = {
         id: 'tx_' + Date.now(),
+        branchId: activeBranch?.id,
+        branchName: activeBranch?.name,
         idempotencyKey,
         invoiceNumber,
         customerId: selectedCustomer?.id,

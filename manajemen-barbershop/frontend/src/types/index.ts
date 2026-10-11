@@ -1,5 +1,17 @@
 export type StorageMode = 'GOOGLE_SHEETS' | 'SPRING_BOOT' | 'HYBRID';
 
+export interface Branch {
+  id: string;
+  code: string;
+  name: string;
+  address: string;
+  phone: string;
+  managerName?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface ShopSettings {
   id?: string;
   shopName: string;
@@ -13,6 +25,7 @@ export interface ShopSettings {
   defaultCommissionValue: number; // Misal 35 (%) atau 15000 (Rp)
   defaultDailyMealAllowance: number; // Misal 20000 (Rp)
   autoMealAllowanceOnAttendance: boolean;
+  activeBranchId?: string; // ID cabang yang sedang aktif digunakan
   currency: string;
   timezone: string;
   updatedAt?: string;
@@ -30,6 +43,7 @@ export interface ServiceItem {
 
 export interface ProductItem {
   id: string;
+  branchId?: string; // Cabang toko
   sku: string;
   name: string;
   category: string;
@@ -43,6 +57,7 @@ export interface ProductItem {
 
 export interface Barber {
   id: string;
+  branchId?: string; // Penempatan Cabang
   name: string;
   phone: string;
   commissionType: 'DEFAULT' | 'PERCENTAGE' | 'FIXED';
@@ -68,6 +83,7 @@ export type AttendanceStatus = 'PRESENT' | 'PERMIT' | 'SICK' | 'ABSENT';
 
 export interface Attendance {
   id: string;
+  branchId?: string;
   barberId: string;
   barberName: string;
   date: string; // YYYY-MM-DD
@@ -111,6 +127,8 @@ export type PaymentMethod = 'CASH' | 'QRIS' | 'TRANSFER';
 
 export interface Transaction {
   id: string;
+  branchId?: string;
+  branchName?: string;
   idempotencyKey: string;
   invoiceNumber: string;
   customerId?: string;
@@ -132,6 +150,7 @@ export interface Transaction {
 
 export interface Expense {
   id: string;
+  branchId?: string;
   date: string;
   category: string;
   amount: number;

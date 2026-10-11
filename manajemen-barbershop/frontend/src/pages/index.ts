@@ -1,4 +1,5 @@
 export { PosPage } from './PosPage';
+export { BranchesPage } from './BranchesPage';
 export { AttendancePage } from './AttendancePage';
 export { SettingsPage } from './SettingsPage';
 export { ServicesPage } from './ServicesPage';

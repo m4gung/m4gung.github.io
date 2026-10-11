@@ -12,11 +12,12 @@ import {
   Settings,
   Wifi,
   WifiOff,
-  RefreshCw
+  RefreshCw,
+  Store
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
-  const { isOnline, pendingSyncCount, settings, triggerManualSync } = useApp();
+  const { isOnline, pendingSyncCount, settings, triggerManualSync, branches, activeBranch, setActiveBranchId } = useApp();
 
   return (
     <header className="h-16 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md px-4 flex items-center justify-between sticky top-0 z-30">
@@ -35,6 +36,24 @@ export const Header: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-2.5">
+        {/* Branch Selector Dropdown */}
+        {branches.length > 0 && (
+          <div className="flex items-center gap-1.5 bg-neutral-900 border border-neutral-800 rounded-xl px-2.5 py-1">
+            <Store className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <select
+              value={activeBranch?.id || ''}
+              onChange={e => setActiveBranchId(e.target.value)}
+              className="bg-transparent text-xs text-neutral-200 font-bold focus:outline-none cursor-pointer max-w-[130px] sm:max-w-none truncate"
+            >
+              {branches.map(b => (
+                <option key={b.id} value={b.id} className="bg-neutral-900 text-neutral-100">
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Network & Sync Badge */}
         <div className="flex items-center bg-neutral-900 border border-neutral-800 rounded-full py-1 px-3 gap-2">
           {isOnline ? (
@@ -76,6 +95,7 @@ export const Navigation: React.FC = () => {
 
   const navItems = [
     { id: 'pos', label: 'Kasir POS', icon: ShoppingBag },
+    { id: 'branches', label: 'Cabang Toko', icon: Store },
     { id: 'services', label: 'Layanan', icon: Scissors },
     { id: 'products', label: 'Produk Retail', icon: Package },
     { id: 'attendance', label: 'Absensi', icon: CalendarCheck },

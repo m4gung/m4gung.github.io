@@ -22,7 +22,7 @@ import {
 import type { Transaction, Expense, StaffAllowance } from '../types';
 
 export const ReportsPage: React.FC = () => {
-  const { showToast, settings } = useApp();
+  const { showToast, settings, branches } = useApp();
 
   // Active Sub-Tab: 'DASHBOARD' vs 'TRANSACTIONS_LOG'
   const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'TRANSACTIONS_LOG'>('DASHBOARD');
@@ -31,6 +31,7 @@ export const ReportsPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [allowances, setAllowances] = useState<StaffAllowance[]>([]);
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState<string>('ALL');
 
   // Filter Date Range (Default: Bulan Ini)
   const today = new Date();
@@ -61,10 +62,12 @@ export const ReportsPage: React.FC = () => {
     loadData();
   }, []);
 
-  // Filter Data berdasarkan Range Tanggal
+  // Filter Data berdasarkan Range Tanggal & Cabang
   const filteredTxs = transactions.filter(t => {
     const d = t.createdAt.split('T')[0];
-    return d >= startDate && d <= endDate;
+    const matchDate = d >= startDate && d <= endDate;
+    const matchBranch = selectedBranchFilter === 'ALL' || t.branchId === selectedBranchFilter;
+    return matchDate && matchBranch;
   });
 
   const completedTxs = filteredTxs.filter(t => t.status === 'COMPLETED');
@@ -206,6 +209,19 @@ export const ReportsPage: React.FC = () => {
             onChange={e => setEndDate(e.target.value)}
             className="bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1 text-neutral-100 focus:border-amber-500 focus:outline-none"
           />
+
+          {branches.length > 0 && (
+            <select
+              value={selectedBranchFilter}
+              onChange={e => setSelectedBranchFilter(e.target.value)}
+              className="bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1 text-neutral-100 font-semibold focus:border-amber-500 focus:outline-none ml-1 cursor-pointer"
+            >
+              <option value="ALL">Semua Cabang (All Outlets)</option>
+              {branches.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          )}
         </div>
 
         <Button variant="outline" size="sm" onClick={handleExportCSV}>

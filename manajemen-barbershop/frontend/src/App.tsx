@@ -7,6 +7,7 @@ import { Header, Navigation, MobileBottomNav } from './components/layout/Navigat
 import {
   PosPage,
   AttendancePage,
+  BranchesPage,
   ServicesPage,
   ProductsPage,
   BarbersPage,
@@ -28,6 +29,7 @@ function AppContent() {
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 lg:pb-6">
           {activeTab === 'pos' && <PosPage />}
+          {activeTab === 'branches' && <BranchesPage />}
           {activeTab === 'attendance' && <AttendancePage />}
           {activeTab === 'services' && <ServicesPage />}
           {activeTab === 'products' && <ProductsPage />}
