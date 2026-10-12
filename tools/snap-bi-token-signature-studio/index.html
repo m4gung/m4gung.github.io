@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏛️ SNAP BI B2B Access Token Signature Studio (RSA-SHA256)</title>
+    <meta name="description"
+        content="Generator & Verifier Asymmetric API Signature (SHA256withRSA) khusus B2B Access Token SNAP BI (Bank Danamon SC-73 & Standar ASPI BI). 100% Client-Side Web Crypto API.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-left">
+            <a href="../" class="btn-back" title="Kembali ke Daftar Tools">⬅️ Tools</a>
+            <div class="logo">
+                <h1>🏛️ SNAP BI Access Token Signature Studio</h1>
+                <span class="badge-tag">Bank Danamon SC-73 & ASPI</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div id="statusBadge" class="status-badge">Web Crypto Native</div>
+            <button id="themeToggle" class="icon-btn" title="Ubah Tema" aria-label="Ubah Tema">🌙</button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="nav-tabs" aria-label="Mode Navigasi">
+        <button class="nav-tab active" data-tab="tab-studio">
+            <span>⚡ Signature Studio (Sign & Verify)</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-docs">
+            <span>📖 Spek Danamon SC-73 v1.2</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-snippets">
+            <span>💻 Backend Code Snippets</span>
+        </button>
+    </nav>
+
+    <main class="main-content">
+        <!-- ================= TAB 1: STUDIO ================= -->
+        <section id="tab-studio" class="tab-pane active">
+            <!-- SPEC PRESET BAR -->
+            <div class="spec-bar">
+                <div class="spec-bar-left">
+                    <span class="spec-title">⚙️ Preset Spek SNAP BI:</span>
+                    <div class="preset-group">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnPresetDanamon">
+                            🏦 Danamon SC-73 v1.2 (Hex 4096)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" id="btnPresetStandardAspi">
+                            🌐 Standard ASPI SNAP BI (Base64)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" id="btnResetSpec">
+                            🔄 Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="preset-group">
+                    <button type="button" class="btn btn-sm btn-secondary" id="btnGenRsaPair" title="Generate pasangan kunci RSA baru">
+                        🎲 Generate RSA Key Pair
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2-COLUMN STUDIO LAYOUT -->
+            <div class="grid-2col">
+                <!-- PANEL KIRI: PARAMETER, KEY & DYNAMIC ENGINE -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📝 Parameter & Konfigurasi Spek</h2>
+                        <span class="badge-pill info" id="activeSpecBadge">Danamon SC-73</span>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Konfigurasi Format Spek Dinamis -->
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="outEncoding" class="form-label">
+                                    Format Output Signature:
+                                    <span class="label-hint">Encoding</span>
+                                </label>
+                                <select id="outEncoding" class="select-input">
+                                    <option value="hex-lower">Hexadecimal (Lowercase - Danamon)</option>
+                                    <option value="hex-upper">Hexadecimal (Uppercase)</option>
+                                    <option value="base64">Base64 (Standard ASPI SNAP BI)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="algoChoice" class="form-label">
+                                    Algoritma Digital Signature:
+                                    <span class="label-hint">PKCS#1 v1.5</span>
+                                </label>
+                                <select id="algoChoice" class="select-input" disabled>
+                                    <option value="SHA256withRSA" selected>SHA256withRSA (RSASSA-PKCS1-v1_5)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Template String to Sign Dinamis -->
+                        <div class="form-group">
+                            <label for="patternTemplate" class="form-label">
+                                Template String-to-Sign:
+                                <span class="label-hint">Dapat dikustomisasi jika spek berubah</span>
+                            </label>
+                            <input type="text" id="patternTemplate" class="text-input code-font"
+                                value="{clientId}|{timestamp}"
+                                placeholder="{clientId}|{timestamp}">
+                            <span class="label-hint">Variabel tersedia: <code>{clientId}</code>, <code>{timestamp}</code>, <code>{httpMethod}</code>, <code>{endpointPath}</code></span>
+                        </div>
+
+                        <!-- Client ID (X-CLIENT-KEY) -->
+                        <div class="form-group">
+                            <label for="clientIdInput" class="form-label">
+                                X-CLIENT-KEY (Client ID Partner):
+                                <span class="label-hint">Mandatory Header</span>
+                            </label>
+                            <div class="input-with-btn">
+                                <input type="text" id="clientIdInput" class="text-input code-font"
+                                    value="bc72c83b-91bb-43f1-9e35-dd5eed08484f"
+                                    placeholder="UUID atau Client ID partner...">
+                                <button type="button" class="btn btn-secondary btn-sm" id="btnGenUuid" title="Generate UUID v4">🎲 UUID</button>
+                            </div>
+                        </div>
+
+                        <!-- Timestamp (X-TIMESTAMP) -->
+                        <div class="form-group">
+                            <label for="timestampInput" class="form-label">
+                                X-TIMESTAMP (Format ISO 8601 GMT+7):
+                                <span class="label-hint">yyyy-MM-dd'T'HH:mm:ssXXX</span>
+                            </label>
+                            <div class="input-with-btn">
+                                <input type="text" id="timestampInput" class="text-input code-font"
+                                    value="2025-08-04T14:57:08+07:00"
+                                    placeholder="2025-08-04T14:57:08+07:00">
+                                <button type="button" class="btn btn-secondary btn-sm" id="btnNowWib" title="Gunakan Timestamp saat ini (WIB / GMT+7)">⏱️ Sekarang</button>
+                            </div>
+                        </div>
+
+                        <!-- RSA Private Key (Untuk Signing) -->
+                        <div class="form-group">
+                            <div class="form-label">
+                                <span>RSA Private Key (PKCS#8 PEM):</span>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn btn-xs btn-secondary" id="btnLoadSamplePriv">Sample Danamon</button>
+                                    <button type="button" class="btn btn-xs btn-secondary" id="btnClearPriv">Bersihkan</button>
+                                </div>
+                            </div>
+                            <textarea id="privateKeyInput" class="code-textarea" rows="7" spellcheck="false"
+                                placeholder="Paste RSA Private Key (-----BEGIN PRIVATE KEY-----)..."></textarea>
+                            <span class="label-hint">Kunci 100% diproses di browser klien menggunakan Web Crypto API.</span>
+                        </div>
+
+                        <!-- RSA Public Key (Untuk Matching / Verification) -->
+                        <div class="form-group">
+                            <div class="form-label">
+                                <span>RSA Public Key (SPKI PEM):</span>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn btn-xs btn-secondary" id="btnLoadSamplePub">Sample Danamon</button>
+                                    <button type="button" class="btn btn-xs btn-secondary" id="btnClearPub">Bersihkan</button>
+                                </div>
+                            </div>
+                            <textarea id="publicKeyInput" class="code-textarea" rows="4" spellcheck="false"
+                                placeholder="Paste RSA Public Key (-----BEGIN PUBLIC KEY-----)..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL KANAN: HASIL LIVE & EXPORT -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🎯 Hasil Signature & Live Validator</h2>
+                        <span class="badge-pill success" id="statusPill">Realtime Sign</span>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Canonical String to Sign -->
+                        <div class="form-group">
+                            <div class="form-label">
+                                <span>String-to-Sign yang Dihasilkan:</span>
+                                <button type="button" class="btn btn-xs btn-secondary" id="btnCopyCanonical">📋 Salin</button>
+                            </div>
+                            <div class="canonical-box" id="canonicalPreview">bc72c83b-91bb-43f1-9e35-dd5eed08484f|2025-08-04T14:57:08+07:00</div>
+                        </div>
+
+                        <!-- Output X-SIGNATURE -->
+                        <div class="form-group">
+                            <div class="sig-output-box">
+                                <div class="sig-output-header">
+                                    <span class="form-label" style="margin:0;">
+                                        <strong>X-SIGNATURE (Hasil Digital Signature):</strong>
+                                    </span>
+                                    <div style="display:flex; gap:6px; align-items:center;">
+                                        <span class="badge-pill info" id="sigStatsBadge">1024 chars (512 bytes)</span>
+                                        <button type="button" class="btn btn-xs btn-success" id="btnCopySignature">📋 Salin Signature</button>
+                                    </div>
+                                </div>
+                                <textarea id="signatureOutput" class="sig-textarea" readonly spellcheck="false"
+                                    placeholder="Signature akan muncul secara otomatis di sini..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Validasi Asymmetric Matcher Banner -->
+                        <div id="validationCard" class="validation-card pending">
+                            <div class="validation-icon" id="validationIcon">⏳</div>
+                            <div class="validation-details">
+                                <div class="validation-title" id="validationTitle">Menunggu Kalkulasi Signature</div>
+                                <div class="validation-desc" id="validationDesc">Memeriksa kesesuaian Private Key dan Public Key.</div>
+                            </div>
+                        </div>
+
+                        <!-- HTTP Headers Preview -->
+                        <div class="form-group">
+                            <div class="form-label">
+                                <span>HTTP Request Headers (Siap Digunakan):</span>
+                                <button type="button" class="btn btn-xs btn-secondary" id="btnCopyHeaders">📋 Salin Headers</button>
+                            </div>
+                            <pre class="snippet-code-box" id="headersPreview">X-TIMESTAMP: ...
+Content-Type: application/json
+X-CLIENT-KEY: ...
+X-SIGNATURE: ...</pre>
+                        </div>
+
+                        <!-- cURL Command Preview -->
+                        <div class="form-group">
+                            <div class="form-label">
+                                <span>cURL Request (Siap Dijalankan di Terminal / Postman):</span>
+                                <button type="button" class="btn btn-xs btn-secondary" id="btnCopyCurl">📋 Salin cURL</button>
+                            </div>
+                            <pre class="snippet-code-box" id="curlPreview">curl -X POST "https://&lt;ip&gt;/api/v2.0/access-token/b2b" ...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: SPEK DANAMON SC-73 ================= -->
+        <section id="tab-docs" class="tab-pane">
+            <div class="card">
+                <div class="card-header">
+                    <h2>📖 Rangkuman Spesifikasi SC-73 Bank Danamon v1.2</h2>
+                    <span class="badge-pill info">SNAP BI B2B Access Token</span>
+                </div>
+                <div class="card-body" style="font-size:0.9rem; line-height:1.7;">
+                    <div style="background:var(--bg-panel); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border);">
+                        <h3 style="color:var(--accent); margin-bottom:8px;">📌 General Specification</h3>
+                        <ul style="padding-left:20px;">
+                            <li><strong>Endpoint URL:</strong> <code>https://&lt;ip&gt;/api/v2.0/access-token/b2b</code> (SIT, UAT, Production)</li>
+                            <li><strong>HTTP Method:</strong> <code>POST</code></li>
+                            <li><strong>Content-Type:</strong> <code>application/json</code></li>
+                            <li><strong>Security:</strong> Digital Signature Asymmetric (<code>SHA256withRSA</code> / RSASSA-PKCS1-v1_5)</li>
+                            <li><strong>Panjang Kunci:</strong> RSA 4096-bit (OpenSSL: <code>openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:4096</code>)</li>
+                        </ul>
+                    </div>
+
+                    <div style="background:var(--bg-panel); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border); margin-top:14px;">
+                        <h3 style="color:var(--success); margin-bottom:8px;">🔑 Format String-to-Sign</h3>
+                        <p>Signature dibentuk dari komponen:</p>
+                        <pre class="snippet-code-box" style="margin:8px 0;">stringToSign = X-CLIENT-KEY + "|" + X-TIMESTAMP</pre>
+                        <p><strong>Contoh:</strong> <code>bc72c83b-91bb-43f1-9e35-dd5eed08484f|2025-08-04T14:57:08+07:00</code></p>
+                        <p><strong>Encoding Hasil:</strong> Hexadecimal (1024 karakter hex pada RSA 4096-bit).</p>
+                    </div>
+
+                    <div style="background:var(--bg-panel); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border); margin-top:14px;">
+                        <h3 style="color:var(--warning); margin-bottom:8px;">📦 Request & Response Payload</h3>
+                        <p><strong>Request Body:</strong></p>
+                        <pre class="snippet-code-box">{
+  "grantType": "client_credentials"
+}</pre>
+                        <p style="margin-top:10px;"><strong>Response Success (2007300):</strong></p>
+                        <pre class="snippet-code-box">{
+  "responseCode": "2007300",
+  "responseMessage": "Successful",
+  "accessToken": "Sk6dqRRvsnJd8a8hy48rC0wMPYoP30nYMyA2dmp39HqVbs3xJ6nWyLx5",
+  "tokenType": "Bearer",
+  "expiresIn": "300"
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: BACKEND CODE SNIPPETS ================= -->
+        <section id="tab-snippets" class="tab-pane">
+            <div class="card">
+                <div class="card-header">
+                    <h2>💻 Kode Implementasi Backend SNAP BI Access Token</h2>
+                    <span class="badge-pill info">Multi-Language</span>
+                </div>
+                <div class="card-body">
+                    <div class="snippet-tabs-bar">
+                        <button type="button" class="snippet-tab active" data-lang="java">Java (Spring Boot)</button>
+                        <button type="button" class="snippet-tab" data-lang="node">Node.js</button>
+                        <button type="button" class="snippet-tab" data-lang="python">Python</button>
+                        <button type="button" class="snippet-tab" data-lang="go">Go (Golang)</button>
+                        <button type="button" class="snippet-tab" data-lang="php">PHP</button>
+                    </div>
+
+                    <!-- SNIPPET JAVA -->
+                    <div class="snippet-block" id="block-java">
+                        <div class="form-label" style="margin-bottom:8px;">
+                            <span>Java 11+ / Spring Boot (Standard JDK java.security.Signature):</span>
+                            <button type="button" class="btn btn-xs btn-secondary copy-code-btn">📋 Salin Kode</button>
+                        </div>
+                        <pre class="snippet-code-box"><code>import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.HexFormat; // Java 17+
+
+public class SnapBiSignatureUtil {
+
+    public static String generateSignatureHex(String clientId, String timestamp, String privateKeyPem) throws Exception {
+        String stringToSign = clientId + "|" + timestamp;
+        
+        // Bersihkan header PEM
+        String cleanKey = privateKeyPem
+            .replace("-----BEGIN PRIVATE KEY-----", "")
+            .replace("-----END PRIVATE KEY-----", "")
+            .replaceAll("\\s+", "");
+        
+        byte[] keyBytes = Base64.getDecoder().decode(cleanKey);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PrivateKey privateKey = kf.generatePrivate(spec);
+
+        Signature signer = Signature.getInstance("SHA256withRSA");
+        signer.initSign(privateKey);
+        signer.update(stringToSign.getBytes(StandardCharsets.UTF_8));
+        byte[] signatureBytes = signer.sign();
+
+        // Format ke Hex (Java 17+)
+        return HexFormat.of().formatHex(signatureBytes);
+    }
+
+    public static boolean verifySignatureHex(String clientId, String timestamp, String signatureHex, String publicKeyPem) throws Exception {
+        String stringToSign = clientId + "|" + timestamp;
+        
+        String cleanKey = publicKeyPem
+            .replace("-----BEGIN PUBLIC KEY-----", "")
+            .replace("-----END PUBLIC KEY-----", "")
+            .replaceAll("\\s+", "");
+            
+        byte[] keyBytes = Base64.getDecoder().decode(cleanKey);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PublicKey publicKey = kf.generatePublic(spec);
+
+        Signature verifier = Signature.getInstance("SHA256withRSA");
+        verifier.initVerify(publicKey);
+        verifier.update(stringToSign.getBytes(StandardCharsets.UTF_8));
+        
+        byte[] sigBytes = HexFormat.of().parseHex(signatureHex);
+        return verifier.verify(sigBytes);
+    }
+}</code></pre>
+                    </div>
+
+                    <!-- SNIPPET NODE.JS -->
+                    <div class="snippet-block" id="block-node" style="display:none;">
+                        <div class="form-label" style="margin-bottom:8px;">
+                            <span>Node.js (Native crypto module):</span>
+                            <button type="button" class="btn btn-xs btn-secondary copy-code-btn">📋 Salin Kode</button>
+                        </div>
+                        <pre class="snippet-code-box"><code>const crypto = require('crypto');
+
+function generateSignature(clientId, timestamp, privateKeyPem) {
+    const stringToSign = `${clientId}|${timestamp}`;
+    const signer = crypto.createSign('RSA-SHA256');
+    signer.update(stringToSign);
+    return signer.sign(privateKeyPem, 'hex'); // Output hex sesuai spek Danamon
+}
+
+function verifySignature(clientId, timestamp, signatureHex, publicKeyPem) {
+    const stringToSign = `${clientId}|${timestamp}`;
+    const verifier = crypto.createVerify('RSA-SHA256');
+    verifier.update(stringToSign);
+    return verifier.verify(publicKeyPem, Buffer.from(signatureHex, 'hex'));
+}</code></pre>
+                    </div>
+
+                    <!-- SNIPPET PYTHON -->
+                    <div class="snippet-block" id="block-python" style="display:none;">
+                        <div class="form-label" style="margin-bottom:8px;">
+                            <span>Python (cryptography package):</span>
+                            <button type="button" class="btn btn-xs btn-secondary copy-code-btn">📋 Salin Kode</button>
+                        </div>
+                        <pre class="snippet-code-box"><code>from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key
+
+def generate_signature(client_id: str, timestamp: str, private_key_pem: str) -> str:
+    string_to_sign = f"{client_id}|{timestamp}".encode('utf-8')
+    private_key = load_pem_private_key(private_key_pem.encode('utf-8'), password=None)
+    
+    signature = private_key.sign(
+        string_to_sign,
+        padding.PKCS1v15(),
+        hashes.SHA256()
+    )
+    return signature.hex()
+
+def verify_signature(client_id: str, timestamp: str, signature_hex: str, public_key_pem: str) -> bool:
+    string_to_sign = f"{client_id}|{timestamp}".encode('utf-8')
+    public_key = load_pem_public_key(public_key_pem.encode('utf-8'))
+    try:
+        public_key.verify(
+            bytes.fromhex(signature_hex),
+            string_to_sign,
+            padding.PKCS1v15(),
+            hashes.SHA256()
+        )
+        return True
+    except Exception:
+        return False</code></pre>
+                    </div>
+
+                    <!-- SNIPPET GO -->
+                    <div class="snippet-block" id="block-go" style="display:none;">
+                        <div class="form-label" style="margin-bottom:8px;">
+                            <span>Go (crypto/rsa & crypto/sha256):</span>
+                            <button type="button" class="btn btn-xs btn-secondary copy-code-btn">📋 Salin Kode</button>
+                        </div>
+                        <pre class="snippet-code-box"><code>package main
+
+import (
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/hex"
+	"encoding/pem"
+	"fmt"
+)
+
+func GenerateSignature(clientID, timestamp, privKeyPEM string) (string, error) {
+	stringToSign := fmt.Sprintf("%s|%s", clientID, timestamp)
+	block, _ := pem.Decode([]byte(privKeyPEM))
+	privKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return "", err
+	}
+
+	rsaPriv, ok := privKey.(*rsa.PrivateKey)
+	if !ok {
+		return "", fmt.Errorf("not an RSA private key")
+	}
+
+	hash := sha256.Sum256([]byte(stringToSign))
+	sigBytes, err := rsa.SignPKCS1v15(rand.Reader, rsaPriv, crypto.SHA256, hash[:])
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(sigBytes), nil
+}</code></pre>
+                    </div>
+
+                    <!-- SNIPPET PHP -->
+                    <div class="snippet-block" id="block-php" style="display:none;">
+                        <div class="form-label" style="margin-bottom:8px;">
+                            <span>PHP (OpenSSL extension):</span>
+                            <button type="button" class="btn btn-xs btn-secondary copy-code-btn">📋 Salin Kode</button>
+                        </div>
+                        <pre class="snippet-code-box"><code>function generateSignature($clientId, $timestamp, $privateKeyPem) {
+    $stringToSign = "{$clientId}|{$timestamp}";
+    $privateKey = openssl_pkey_get_private($privateKeyPem);
+    
+    $binarySignature = "";
+    openssl_sign($stringToSign, $binarySignature, $privateKey, OPENSSL_ALGO_SHA256);
+    
+    return bin2hex($binarySignature);
+}
+
+function verifySignature($clientId, $timestamp, $signatureHex, $publicKeyPem) {
+    $stringToSign = "{$clientId}|{$timestamp}";
+    $publicKey = openssl_pkey_get_public($publicKeyPem);
+    $binarySignature = hex2bin($signatureHex);
+    
+    $ok = openssl_verify($stringToSign, $binarySignature, $publicKey, OPENSSL_ALGO_SHA256);
+    return $ok === 1;
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        SNAP BI B2B Access Token Signature Studio &copy; 2026. Standar Asymmetric Digital Signature Perbankan Nasional.
+    </footer>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
