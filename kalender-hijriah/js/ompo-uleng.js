@@ -228,9 +228,26 @@ const OmpoUlengEngine = (() => {
     return slot ? slot.status : null;
   }
 
+  /**
+   * Daftar tanggal Hijriah yang berwarna kuning/oranye pada tabel referensi kalender-hijriah.jpg:
+   * Baris 1: 26, 6
+   * Baris 2: 22, 2
+   * Baris 3: 18
+   * Baris 4: 14
+   * Baris 5: 30, 10
+   */
+  const HIGHLIGHTED_DAYS = [26, 6, 22, 2, 18, 14, 30, 10];
+
+  function isHighlightedDate(hijriDay) {
+    const day = parseInt(hijriDay, 10);
+    return HIGHLIGHTED_DAYS.includes(day);
+  }
+
   return {
     STATUS,
     TIME_SLOTS,
+    HIGHLIGHTED_DAYS,
+    isHighlightedDate,
     getRowIndex,
     getDailySchedule,
     getCurrentStatus,

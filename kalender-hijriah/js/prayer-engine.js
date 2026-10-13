@@ -201,24 +201,117 @@ const PrayerEngine = (() => {
     return offlineRes;
   }
 
+  let allCitiesCache = null;
+
+  /**
+   * Mengambil seluruh daftar kota/kabupaten resmi Kemenag
+   */
+  async function getAllCities() {
+    if (allCitiesCache && allCitiesCache.length > 0) return allCitiesCache;
+    try {
+      const res = await fetch('https://api.myquran.com/v2/sholat/kota/semua');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.status && Array.isArray(json.data)) {
+          allCitiesCache = json.data;
+          return allCitiesCache;
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal memuat seluruh kota:', e);
+    }
+    return POPULAR_CITIES;
+  }
+
   /**
    * Cari kota via API myQuran
    */
   async function searchCity(keyword) {
-    if (!keyword || keyword.length < 3) return [];
+    if (!keyword || keyword.trim().length === 0) return POPULAR_CITIES;
+    const cleanKw = keyword.trim().toLowerCase();
     try {
-      const res = await fetch(`https://api.myquran.com/v2/sholat/kota/cari/${encodeURIComponent(keyword)}`);
+      const res = await fetch(`https://api.myquran.com/v2/sholat/kota/cari/${encodeURIComponent(cleanKw)}`);
       if (res.ok) {
         const json = await res.json();
-        if (json.status && Array.isArray(json.data)) {
+        if (json.status && Array.isArray(json.data) && json.data.length > 0) {
           return json.data;
         }
       }
     } catch (e) {
       console.warn('Error cari kota:', e);
     }
-    // Filter dari daftar populer jika offline
-    return POPULAR_CITIES.filter(c => c.nama.toLowerCase().includes(keyword.toLowerCase()));
+
+    // Fallback: pencarian lokal dari allCitiesCache atau POPULAR_CITIES
+    const citiesToSearch = allCitiesCache || POPULAR_CITIES;
+    return citiesToSearch.filter(c => (c.lokasi || c.nama || '').toLowerCase().includes(cleanKw));
+  }
+
+  /**
+   * Deteksi Lokasi Otomatis via HTML5 Geolocation & Reverse Geocoding
+   */
+  function detectCurrentLocation() {
+    return new Promise((resolve, reject) => {
+      if (!('geolocation' in navigator)) {
+        reject(new Error('Browser tidak mendukung Geolocation'));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          // Estimasi timezone Indonesia berdasarkan bujur (lng)
+          let timezone = 7; // WIB
+          if (lng > 115 && lng <= 125) timezone = 8; // WITA
+          else if (lng > 125) timezone = 9; // WIT
+
+          let detectedName = 'Lokasi GPS Otomatis';
+          let matchedCity = null;
+
+          try {
+            // Reverse Geocoding via BigDataCloud client API (gratis, tanpa token)
+            const geoRes = await fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=id`
+            );
+            if (geoRes.ok) {
+              const geoData = await geoRes.json();
+              const kecamatan = geoData.locality || '';
+              const kotaKab = geoData.city || geoData.principalSubdivision || '';
+              detectedName = [kecamatan, kotaKab].filter(Boolean).join(', ') || 'Lokasi Terdeteksi';
+
+              // Cari kode kota Kemenag terdekat berdasarkan nama kota / kecamatan
+              const searchKeyword = kotaKab.replace(/^(kota|kabupaten|kab\.)\s+/i, '').trim();
+              if (searchKeyword) {
+                const candidates = await searchCity(searchKeyword);
+                if (candidates && candidates.length > 0) {
+                  matchedCity = candidates[0];
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('Gagal reverse geocoding, menggunakan koordinat GPS:', err);
+          }
+
+          const resolvedCity = {
+            id: matchedCity ? matchedCity.id : 'custom_gps',
+            nama: detectedName,
+            daerah: matchedCity ? (matchedCity.daerah || matchedCity.lokasi) : 'Koordinat GPS',
+            lat: lat,
+            lng: lng,
+            timezone: timezone,
+            isGPS: true
+          };
+
+          setCity(resolvedCity);
+          resolve(resolvedCity);
+        },
+        (error) => {
+          reject(error);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    });
   }
 
   return {
@@ -227,7 +320,9 @@ const PrayerEngine = (() => {
     setCity,
     getPrayerSchedule,
     calculateOfflinePrayerTimes,
-    searchCity
+    searchCity,
+    getAllCities,
+    detectCurrentLocation
   };
 })();
 

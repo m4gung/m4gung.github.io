@@ -340,6 +340,12 @@ document.addEventListener('DOMContentLoaded', () => {
     );
     if (isSelected) cell.classList.add('is-selected');
 
+    // Tandai hari yang berwarna kuning muda sesuai gambar tabel referensi Ompo Uleng
+    const isOmpoHighlighted = OmpoUlengEngine.isHighlightedDate(hInfo.hijriDay);
+    if (isOmpoHighlighted && !isOtherMonth) {
+      cell.classList.add('is-ompo-highlight');
+    }
+
     if (dayOfWeek === 5) cell.classList.add('is-friday'); // Jumat
     if (dayOfWeek === 0) cell.classList.add('is-sunday'); // Ahad
 
@@ -496,6 +502,122 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     prayerCityLabel.textContent = `Lokasi: ${currentCity.nama}`;
+  }
+
+  const btnAutoDetectLocation = document.getElementById('btnAutoDetectLocation');
+  const inputSearchCity = document.getElementById('inputSearchCity');
+  const citySearchResults = document.getElementById('citySearchResults');
+
+  // Handle Deteksi Lokasi Otomatis (GPS Geolocation)
+  if (btnAutoDetectLocation) {
+    btnAutoDetectLocation.addEventListener('click', async () => {
+      btnAutoDetectLocation.disabled = true;
+      const originalHTML = btnAutoDetectLocation.innerHTML;
+      btnAutoDetectLocation.innerHTML = `
+        <i data-lucide="loader-2" class="w-3.5 h-3.5 text-emerald-600 animate-spin"></i>
+        <span>Mencari...</span>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+
+      try {
+        const detected = await PrayerEngine.detectCurrentLocation();
+        prayerCityLabel.textContent = `Lokasi: ${detected.nama}`;
+
+        // Tambahkan ke dropdown jika belum ada
+        let exists = Array.from(selectPrayerCity.options).some(o => o.value === detected.id);
+        if (!exists) {
+          const opt = document.createElement('option');
+          opt.value = detected.id;
+          opt.textContent = `📍 ${detected.nama}`;
+          opt.selected = true;
+          selectPrayerCity.insertBefore(opt, selectPrayerCity.firstChild);
+        } else {
+          selectPrayerCity.value = detected.id;
+        }
+
+        updatePrayerScheduleForDate(selectedDate);
+      } catch (err) {
+        console.warn('Gagal deteksi lokasi:', err);
+        alert('Tidak dapat mendeteksi lokasi otomatis. Pastikan izin lokasi (permission) telah di-allow pada browser Anda.');
+      } finally {
+        btnAutoDetectLocation.disabled = false;
+        btnAutoDetectLocation.innerHTML = originalHTML;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    });
+  }
+
+  // Handle Pencarian Kota / Kabupaten / Kecamatan
+  if (inputSearchCity && citySearchResults) {
+    let debounceTimer = null;
+
+    inputSearchCity.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      const query = inputSearchCity.value.trim();
+
+      if (query.length < 2) {
+        citySearchResults.innerHTML = '';
+        citySearchResults.classList.add('hidden');
+        return;
+      }
+
+      debounceTimer = setTimeout(async () => {
+        citySearchResults.innerHTML = '<div class="p-2.5 text-slate-400">Mencari kota...</div>';
+        citySearchResults.classList.remove('hidden');
+
+        const results = await PrayerEngine.searchCity(query);
+        citySearchResults.innerHTML = '';
+
+        if (!results || results.length === 0) {
+          citySearchResults.innerHTML = '<div class="p-2.5 text-slate-400">Kota tidak ditemukan.</div>';
+          return;
+        }
+
+        results.slice(0, 15).forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'px-3 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-100 dark:border-slate-700/60 last:border-0 flex items-center justify-between';
+          const name = item.lokasi || item.nama;
+          row.innerHTML = `
+            <span class="font-medium text-slate-800 dark:text-slate-100">${name}</span>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400">Pilih</span>
+          `;
+
+          row.addEventListener('click', () => {
+            PrayerEngine.setCity({
+              id: item.id,
+              nama: name,
+              daerah: name
+            });
+
+            // Update dropdown
+            let exists = Array.from(selectPrayerCity.options).some(o => o.value === item.id);
+            if (!exists) {
+              const opt = document.createElement('option');
+              opt.value = item.id;
+              opt.textContent = name;
+              opt.selected = true;
+              selectPrayerCity.appendChild(opt);
+            } else {
+              selectPrayerCity.value = item.id;
+            }
+
+            prayerCityLabel.textContent = `Lokasi: ${name}`;
+            inputSearchCity.value = '';
+            citySearchResults.classList.add('hidden');
+            updatePrayerScheduleForDate(selectedDate);
+          });
+
+          citySearchResults.appendChild(row);
+        });
+      }, 300);
+    });
+
+    // Sembunyikan hasil search saat klik di luar
+    document.addEventListener('click', (e) => {
+      if (!inputSearchCity.contains(e.target) && !citySearchResults.contains(e.target)) {
+        citySearchResults.classList.add('hidden');
+      }
+    });
   }
 
   selectPrayerCity.addEventListener('change', () => {

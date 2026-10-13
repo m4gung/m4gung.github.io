@@ -77,6 +77,26 @@ body {
   box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.2);
 }
 
+/* Penanda Khusus Tanggal Kuning/Oranye Sesuai Gambar Ompo Uleng */
+.calendar-cell.is-ompo-highlight {
+  background: #fef9c3 !important; /* Kuning muda cerah (Tailwind yellow-100) */
+  border-color: #fde047;
+}
+
+.calendar-cell.is-ompo-highlight:hover {
+  background: #fef08a !important; /* yellow-200 */
+  border-color: #eab308;
+}
+
+.dark .calendar-cell.is-ompo-highlight {
+  background: rgba(234, 179, 8, 0.22) !important;
+  border-color: rgba(234, 179, 8, 0.45);
+}
+
+.dark .calendar-cell.is-ompo-highlight:hover {
+  background: rgba(234, 179, 8, 0.32) !important;
+}
+
 .calendar-cell.is-other-month {
   opacity: 0.35;
   background: transparent;
