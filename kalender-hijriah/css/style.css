@@ -1,0 +1,179 @@
+/* ==========================================================================
+   Style Custom - Kalender Hijriah Terpadu & Ompo Uleng
+   ========================================================================== */
+
+:root {
+  --primary: #059669;        /* Emerald */
+  --primary-dark: #047857;
+  --primary-light: #d1fae5;
+  --accent: #d97706;         /* Amber Gold */
+  
+  /* Status Warna Ompo Uleng */
+  --status-hidup: #22c55e;
+  --status-mati: #111827;
+  --status-berisi: #eab308;
+  --status-berdarah: #ef4444;
+  --status-kosong: #06b6d4;
+
+  --bg-main: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+}
+
+.dark {
+  --bg-main: #0f172a;
+  --card-bg: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --primary-light: rgba(5, 150, 105, 0.2);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Kalender Grid Style */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.calendar-cell {
+  aspect-ratio: 1 / 1.05;
+  min-height: 72px;
+  border-radius: 10px;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.calendar-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary);
+  z-index: 10;
+}
+
+.calendar-cell.is-today {
+  border: 2px solid var(--primary);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(6, 182, 212, 0.05));
+}
+
+.calendar-cell.is-selected {
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.2);
+}
+
+.calendar-cell.is-other-month {
+  opacity: 0.35;
+  background: transparent;
+}
+
+.calendar-cell.is-friday {
+  border-left: 3px solid #10b981;
+}
+
+.calendar-cell.is-sunday {
+  color: #dc2626;
+}
+
+/* Badges Status Ompo Uleng */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.badge-hidup {
+  background-color: var(--status-hidup);
+  color: #ffffff;
+}
+
+.badge-mati {
+  background-color: var(--status-mati);
+  color: #ffffff;
+  border: 1px solid #475569;
+}
+
+.badge-berisi {
+  background-color: var(--status-berisi);
+  color: #1f2937;
+}
+
+.badge-berdarah {
+  background-color: var(--status-berdarah);
+  color: #ffffff;
+}
+
+.badge-kosong {
+  background-color: var(--status-kosong);
+  color: #ffffff;
+}
+
+/* Pulsing Live Dot */
+.pulse-dot {
+  position: relative;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: inherit;
+  animation: pulse-ring 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  opacity: 0.7;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Scrollbar Minimalis */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+/* Responsive adjustment */
+@media (max-width: 640px) {
+  .calendar-cell {
+    min-height: 60px;
+    padding: 3px 4px;
+    aspect-ratio: auto;
+  }
+}

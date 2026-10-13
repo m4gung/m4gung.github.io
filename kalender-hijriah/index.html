@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kalender Hijriah & Primbon Ompo Uleng</title>
+  
+  <!-- Meta PWA -->
+  <meta name="theme-color" content="#059669">
+  <meta name="description" content="Kalender Hijriah & Masehi Interaktif, Primbon Ompo Uleng Tradisi Bugis, Weton Pasaran Jawa, dan Manajemen Rencana Berulang.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            islamic: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- Header & Navigasi Atas -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/20">
+          <i data-lucide="moon" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight leading-tight flex items-center gap-1.5">
+            Kalender Hijriah
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">Ompo Uleng</span>
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Terpadu Masehi, Weton Jawa & Rencana Berulang</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2">
+        <button id="btnToday" class="px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+          <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+          <span>Hari Ini</span>
+        </button>
+
+        <button id="btnOpenAddEvent" class="px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors shadow-sm flex items-center gap-1">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Tambah Rencana</span>
+        </button>
+
+        <button id="btnOpenSettings" title="Pengaturan & Koreksi Rumus" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+        </button>
+
+        <button id="btnThemeToggle" title="Ganti Tema" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <i data-lucide="sun" id="themeIconSun" class="w-5 h-5 hidden"></i>
+          <i data-lucide="moon" id="themeIconMoon" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner Status Realtime Ompo Uleng Hari Ini -->
+  <section class="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white border-b border-emerald-800/50 py-3 px-4 shadow-inner">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      <!-- Info Waktu & Tanggal Realtime -->
+      <div class="flex items-center gap-3">
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <span class="text-xs uppercase tracking-wider text-emerald-300 font-semibold" id="realtimeLiveClock">00:00:00</span>
+            <span class="text-slate-400 text-xs">•</span>
+            <span class="text-xs text-slate-200" id="todayGregorianFull">Selasa, 13 Oktober 2026</span>
+          </div>
+          <div class="text-sm font-bold text-white flex items-center gap-2">
+            <span id="todayHijriFull">2 Rabiul Akhir 1448 H</span>
+            <span class="text-xs font-normal px-2 py-0.5 rounded bg-white/10 text-emerald-200" id="todayWeton">Selasa Wage (Neptu 7)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Realtime Slot Ompo Uleng -->
+      <div class="flex items-center gap-3 bg-black/30 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10 w-full md:w-auto">
+        <div class="flex items-center gap-2">
+          <span class="pulse-dot bg-emerald-400" id="liveDotIndicator"></span>
+          <span class="text-xs text-slate-300">Waktu Ompo Uleng Sekarang:</span>
+        </div>
+        <div class="flex items-center gap-2" id="liveStatusContainer">
+          <!-- Dynamically inserted live badge -->
+          <span class="px-2.5 py-1 rounded text-xs font-bold badge-status badge-hidup flex items-center gap-1.5" id="liveStatusBadge">
+            <span class="text-sm font-arabic font-bold">ا</span>
+            <span>Hidup</span>
+          </span>
+          <span class="text-xs text-slate-300 hidden sm:inline" id="liveStatusTimeRange">(Pagi 06:00 - 09:00)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Layout -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Kolom Kiri: Kalender Utama (8 Kolom di Layar Besar) -->
+    <div class="lg:col-span-8 space-y-4">
+      
+      <!-- Kalender Header: Navigasi Bulan & Tahun Bebas -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3">
+        <!-- Bulan & Tahun Kontrol -->
+        <div class="flex items-center space-x-2">
+          <button id="btnPrevMonth" title="Bulan Sebelumnya" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+          </button>
+          
+          <div class="flex items-center space-x-2">
+            <!-- Dropdown Bulan Masehi -->
+            <select id="selectMonth" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500">
+              <!-- Diisi via JavaScript -->
+            </select>
+            <!-- Input / Dropdown Tahun Bebas -->
+            <select id="selectYear" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500">
+              <!-- Diisi via JavaScript (1950 - 2100) -->
+            </select>
+          </div>
+
+          <button id="btnNextMonth" title="Bulan Selanjutnya" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Info Bulan Hijriah Dominan -->
+        <div class="text-right flex flex-col justify-center">
+          <div class="text-xs uppercase tracking-wide font-semibold text-emerald-600 dark:text-emerald-400" id="currentHijriMonthHeader">
+            Rabiul Akhir 1448 H
+          </div>
+          <div class="text-xs text-slate-400" id="headerOffsetNote">Offset: 0 Hari</div>
+        </div>
+      </div>
+
+      <!-- Grid Kalender Bulanan -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
+        <!-- Nama Hari (Ahad - Sabtu) -->
+        <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-500 dark:text-slate-400 mb-2 py-1 border-b border-slate-100 dark:border-slate-700/60">
+          <div class="text-red-500">Ahad</div>
+          <div>Senin</div>
+          <div>Selasa</div>
+          <div>Rabu</div>
+          <div>Kamis</div>
+          <div class="text-emerald-600 dark:text-emerald-400">Jumat</div>
+          <div>Sabtu</div>
+        </div>
+
+        <!-- Wadah Sel Kalender -->
+        <div id="calendarGrid" class="calendar-grid">
+          <!-- Di-generate otomatis oleh app.js -->
+        </div>
+      </div>
+
+      <!-- Keterangan Legenda Singkat -->
+      <div class="bg-slate-100/70 dark:bg-slate-800/50 rounded-xl p-3 text-xs text-slate-600 dark:text-slate-300 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="font-semibold text-slate-700 dark:text-slate-200">Legenda Angka:</span>
+          <span class="flex items-center gap-1.5"><strong class="text-slate-900 dark:text-white">13</strong> Tanggal Masehi</span>
+          <span class="flex items-center gap-1.5"><span class="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">2</span> Tanggal Hijriah</span>
+          <span class="flex items-center gap-1 text-slate-500"><span>(Wage)</span> Pasaran Jawa</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> <span>Ada Rencana</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block ml-2"></span> <span>Hari Besar</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Kolom Kanan: Detail Hari Terpilih, Ompo Uleng, Primbon & Agenda (4 Kolom) -->
+    <div class="lg:col-span-4 space-y-4">
+      
+      <!-- Panel Kartu Detail Tanggal Terpilih -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+        <div class="flex items-start justify-between border-b border-slate-100 dark:border-slate-700/60 pb-3">
+          <div>
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-600 dark:text-emerald-400">Tanggal Terpilih</span>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white" id="selectedDateTitle">Selasa, 13 Oktober 2026</h2>
+            <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300" id="selectedHijriTitle">2 Rabiul Akhir 1448 H</p>
+          </div>
+          <button id="btnQuickAddPlan" title="Tambah Rencana pada Hari Ini" class="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition">
+            <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Info Weton & Primbon Jawa -->
+        <div class="bg-amber-50 dark:bg-amber-950/40 rounded-xl p-3 border border-amber-200/70 dark:border-amber-900/50 text-xs">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1">
+              <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-600"></i>
+              Weton & Neptu Jawa
+            </span>
+            <span class="px-2 py-0.5 rounded bg-amber-200/70 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-bold" id="selectedWetonBadge">Selasa Wage (Neptu 7)</span>
+          </div>
+          <p class="text-amber-800/90 dark:text-amber-300/80 leading-relaxed" id="selectedWetonWatak">
+            Pendito Kang Lelaku: Senang bepergian jauh, suka merantau, cenderung pemalu namun tekun.
+          </p>
+        </div>
+
+        <!-- Matriks Tabel Tradisi Ompo Uleng -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                Ompo Uleng Hari Ini
+              </h3>
+            </div>
+            <span class="text-xs text-slate-400 font-mono" id="selectedBarisInfo">Baris 2 (Tgl 2)</span>
+          </div>
+
+          <!-- Matriks 5 Jam Harian (Sesuai kalender-hijriah.jpg) -->
+          <div class="grid grid-cols-5 gap-1.5 text-center" id="ompoDailyTable">
+            <!-- Diisi secara dinamis -->
+          </div>
+
+          <!-- Penjelasan Makna Status Terpilih / Aktif -->
+          <div class="mt-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs" id="ompoStatusExplanation">
+            <div class="font-bold text-slate-800 dark:text-slate-200 mb-0.5 flex items-center gap-1" id="ompoExpTitle">
+              <span>Makna Status:</span>
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 leading-relaxed" id="ompoExpDesc">
+              Klik salah satu kotak jam di atas untuk melihat rincian ramalan, keutamaan, atau anjuran ikhtiarnya.
+            </p>
+          </div>
+        </div>
+
+        <!-- Tabel Referensi Lengkap Ompo Uleng (Bisa dibuka modal) -->
+        <button id="btnOpenReferenceTable" class="w-full py-2 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition flex items-center justify-center gap-1.5">
+          <i data-lucide="table" class="w-3.5 h-3.5"></i>
+          <span>Buka Tabel Referensi Lengkap (Gambar Rumus)</span>
+        </button>
+
+      </div>
+
+      <!-- Panel Jadwal Sholat Kemenag / MUI -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/60 pb-2">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
+              <i data-lucide="clock" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                Jadwal Sholat
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-semibold" id="prayerSourceBadge">Kemenag</span>
+              </h3>
+            </div>
+          </div>
+          <!-- Selector Kota Populer -->
+          <select id="selectPrayerCity" class="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-emerald-500">
+            <!-- Diisi via JavaScript -->
+          </select>
+        </div>
+
+        <!-- Grid Waktu Sholat -->
+        <div class="grid grid-cols-4 gap-2 text-center text-xs" id="prayerTimesGrid">
+          <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+            <span class="text-[10px] text-slate-400 block font-medium">Imsak</span>
+            <span class="font-bold text-slate-800 dark:text-slate-100" id="timeImsak">--:--</span>
+          </div>
+          <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 block font-bold">Subuh</span>
+            <span class="font-bold text-emerald-700 dark:text-emerald-300" id="timeSubuh">--:--</span>
+          </div>
+          <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+            <span class="text-[10px] text-slate-400 block font-medium">Terbit</span>
+            <span class="font-bold text-slate-800 dark:text-slate-100" id="timeTerbit">--:--</span>
+          </div>
+          <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+            <span class="text-[10px] text-slate-400 block font-medium">Dhuha</span>
+            <span class="font-bold text-slate-800 dark:text-slate-100" id="timeDhuha">--:--</span>
+          </div>
+          <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 block font-bold">Dzuhur</span>
+            <span class="font-bold text-emerald-700 dark:text-emerald-300" id="timeDzuhur">--:--</span>
+          </div>
+          <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 block font-bold">Ashar</span>
+            <span class="font-bold text-emerald-700 dark:text-emerald-300" id="timeAshar">--:--</span>
+          </div>
+          <div class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/60">
+            <span class="text-[10px] text-amber-600 dark:text-amber-400 block font-bold">Maghrib</span>
+            <span class="font-bold text-amber-700 dark:text-amber-300" id="timeMaghrib">--:--</span>
+          </div>
+          <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 block font-bold">Isya</span>
+            <span class="font-bold text-emerald-700 dark:text-emerald-300" id="timeIsya">--:--</span>
+          </div>
+        </div>
+
+        <div class="text-[11px] text-slate-400 flex items-center justify-between">
+          <span id="prayerCityLabel">Lokasi: DKI Jakarta</span>
+          <span class="text-[10px] italic">Waktu setempat</span>
+        </div>
+      </div>
+
+      <!-- Panel Rencana & Agenda Hari Terpilih -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+            <span>Agenda & Rencana Hari Ini</span>
+          </h3>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold" id="countDayEvents">0</span>
+        </div>
+
+        <!-- List Agenda -->
+        <div id="dayEventsList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+          <!-- Diisi via JavaScript -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL: Tambah / Edit Rencana -->
+  <div id="modalEvent" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i data-lucide="calendar-plus" class="w-5 h-5 text-emerald-600"></i>
+          <span id="modalEventTitle">Tambah Rencana Baru</span>
+        </h3>
+        <button id="btnCloseModalEvent" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="formEvent" class="space-y-3.5">
+        <input type="hidden" id="eventId">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Judul Agenda / Rencana *</label>
+          <input type="text" id="eventTitleInput" required placeholder="Contoh: Puasa Ayyamul Bidh / Yasinan / Rapat Rutin" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kategori</label>
+            <select id="eventCategory" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none">
+              <option value="ibadah">Ibadah & Doa</option>
+              <option value="pekerjaan">Bisnis & Pekerjaan</option>
+              <option value="keluarga">Keluarga & Pribadi</option>
+              <option value="tradisi">Adat & Tradisi</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Warna Label</label>
+            <div class="flex items-center space-x-2 pt-1">
+              <input type="color" id="eventColor" value="#10b981" class="w-8 h-8 rounded border-0 cursor-pointer">
+              <span class="text-xs text-slate-500">Pilih warna badge</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Aturan Perulangan (Recurring) *</label>
+          <select id="eventRepeatType" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none">
+            <option value="none">Sekali Saja (Pada tanggal terpilih)</option>
+            <option value="daily">Harian (Setiap Hari)</option>
+            <option value="weekly">Mingguan (Hari tertentu dalam sepekan)</option>
+            <option value="weekly_senin_kamis">Preset: Setiap Senin & Kamis (Puasa Sunnah)</option>
+            <option value="monthly_hijri">Bulanan Hijriah (Tiap tanggal Hijriah tertentu)</option>
+            <option value="hijri_ayyamul_bidh">Preset: Setiap 13, 14, 15 Hijriah (Ayyamul Bidh)</option>
+            <option value="monthly_gregorian">Bulanan Masehi (Tiap tanggal Masehi tertentu)</option>
+            <option value="yearly_hijri">Tahunan Hijriah (Milad / Haul pada tgl & bulan Hijriah)</option>
+            <option value="yearly_gregorian">Tahunan Masehi (Ulang Tahun / Peringatan tgl Masehi)</option>
+            <option value="pasaran">Berdasarkan Pasaran Weton (Misal: Tiap Kliwon / Jumat Kliwon)</option>
+          </select>
+        </div>
+
+        <!-- Opsi Dinamis Berdasarkan Tipe Perulangan -->
+        <div id="repeatExtraOptions" class="space-y-3 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 hidden text-xs">
+          <!-- Dynamic inputs rendered via JS -->
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan / Keterangan</label>
+          <textarea id="eventNotes" rows="2" placeholder="Catatan niat, amalan, atau pengingat..." class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+          <button type="button" id="btnCancelModalEvent" class="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Batal</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>Simpan Rencana</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Tabel Referensi Lengkap Gambar Ompo Uleng -->
+  <div id="modalReferenceTable" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
+            <i data-lucide="layout-grid" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Matriks Rumus Kalender Hijriah [Ompo Uleng]</h3>
+            <p class="text-xs text-slate-400">Klasifikasi 5 Waktu & 5 Huruf Simbol (Sesuai gambar referensi)</p>
+          </div>
+        </div>
+        <button id="btnCloseModalRef" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Tabel Visual Persis Gambar -->
+      <div class="overflow-x-auto rounded-xl border border-slate-300 dark:border-slate-700 text-center font-sans text-xs">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-emerald-600 text-white font-bold">
+              <th class="p-2 border border-emerald-700" colspan="6">Waktu (Jam) &rarr;</th>
+              <th class="p-2 border border-emerald-700 bg-emerald-500">Sore (3-6)</th>
+              <th class="p-2 border border-emerald-700 bg-emerald-500">Siang (1-3)</th>
+              <th class="p-2 border border-emerald-700 bg-emerald-500">Siang (11-1)</th>
+              <th class="p-2 border border-emerald-700 bg-emerald-500">Siang (9-11)</th>
+              <th class="p-2 border border-emerald-700 bg-emerald-500">Pagi (6-9)</th>
+            </tr>
+            <tr class="bg-amber-600 text-white font-bold">
+              <th class="p-2 border border-amber-700" colspan="6">Kalender Hijriah [Ompo Uleng] &darr;</th>
+              <th class="p-2 border border-amber-700">3 - 6</th>
+              <th class="p-2 border border-amber-700">1 - 3</th>
+              <th class="p-2 border border-amber-700">11 - 1</th>
+              <th class="p-2 border border-amber-700">9 - 11</th>
+              <th class="p-2 border border-amber-700">6 - 9</th>
+            </tr>
+          </thead>
+          <tbody class="font-bold">
+            <!-- Baris 1: 26, 21, 16, 11, 6, 1 -->
+            <tr>
+              <td class="p-2 border bg-amber-300 text-slate-900">26</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">21</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">16</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">11</td>
+              <td class="p-2 border bg-amber-300 text-slate-900">6</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">1</td>
+              <td class="p-2 border bg-cyan-400 text-white text-base">د</td>
+              <td class="p-2 border bg-red-500 text-white text-base">م</td>
+              <td class="p-2 border bg-amber-400 text-slate-900 text-base">ج</td>
+              <td class="p-2 border bg-slate-900 text-white text-base">ل</td>
+              <td class="p-2 border bg-emerald-500 text-white text-base">ا</td>
+            </tr>
+            <!-- Baris 2: 27, 22, 17, 12, 7, 2 -->
+            <tr>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">27</td>
+              <td class="p-2 border bg-amber-300 text-slate-900">22</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">17</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">12</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">7</td>
+              <td class="p-2 border bg-amber-300 text-slate-900">2</td>
+              <td class="p-2 border bg-red-500 text-white text-base">م</td>
+              <td class="p-2 border bg-amber-400 text-slate-900 text-base">ج</td>
+              <td class="p-2 border bg-slate-900 text-white text-base">ل</td>
+              <td class="p-2 border bg-emerald-500 text-white text-base">ا</td>
+              <td class="p-2 border bg-cyan-400 text-white text-base">د</td>
+            </tr>
+            <!-- Baris 3: 28, 23, 18, 13, 8, 3 -->
+            <tr>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">28</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">23</td>
+              <td class="p-2 border bg-amber-300 text-slate-900">18</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">13</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">8</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">3</td>
+              <td class="p-2 border bg-amber-400 text-slate-900 text-base">ج</td>
+              <td class="p-2 border bg-slate-900 text-white text-base">ل</td>
+              <td class="p-2 border bg-emerald-500 text-white text-base">ا</td>
+              <td class="p-2 border bg-cyan-400 text-white text-base">د</td>
+              <td class="p-2 border bg-red-500 text-white text-base">م</td>
+            </tr>
+            <!-- Baris 4: 29, 24, 19, 14, 9, 4 -->
+            <tr>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">29</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">24</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">19</td>
+              <td class="p-2 border bg-amber-300 text-slate-900">14</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">9</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">4</td>
+              <td class="p-2 border bg-slate-900 text-white text-base">ل</td>
+              <td class="p-2 border bg-emerald-500 text-white text-base">ا</td>
+              <td class="p-2 border bg-cyan-400 text-white text-base">د</td>
+              <td class="p-2 border bg-red-500 text-white text-base">م</td>
+              <td class="p-2 border bg-amber-400 text-slate-900 text-base">ج</td>
+            </tr>
+            <!-- Baris 5: 30, 25, 20, 15, 10, 5 -->
+            <tr>
+              <td class="p-2 border bg-amber-300 text-slate-900">30</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">25</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">20</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">15</td>
+              <td class="p-2 border bg-amber-300 text-slate-900">10</td>
+              <td class="p-2 border text-slate-900 dark:text-slate-100">5</td>
+              <td class="p-2 border bg-emerald-500 text-white text-base">ا</td>
+              <td class="p-2 border bg-cyan-400 text-white text-base">د</td>
+              <td class="p-2 border bg-red-500 text-white text-base">م</td>
+              <td class="p-2 border bg-amber-400 text-slate-900 text-base">ج</td>
+              <td class="p-2 border bg-slate-900 text-white text-base">ل</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Keterangan Makna Bawah -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-bold text-center">
+        <div class="p-2 rounded-lg bg-emerald-500 text-white">Hidup : ا</div>
+        <div class="p-2 rounded-lg bg-slate-900 text-white border border-slate-700">Mati : ل</div>
+        <div class="p-2 rounded-lg bg-amber-400 text-slate-900">Berisi : ج</div>
+        <div class="p-2 rounded-lg bg-red-500 text-white">Berdarah : م</div>
+        <div class="p-2 rounded-lg bg-cyan-400 text-white">Kosong : د</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Pengaturan & Kalibrasi Rumus -->
+  <div id="modalSettings" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-emerald-600"></i>
+          <span>Pengaturan & Koreksi Rumus</span>
+        </h3>
+        <button id="btnCloseModalSettings" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="formSettings" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Koreksi Tanggal Hijriah (+/- Hari)
+          </label>
+          <p class="text-slate-500 mb-2">Gunakan jika hasil hisab astronomis berbeda 1 hari dengan pengumuman rukyatul hilal Kemenag setempat.</p>
+          <div class="flex items-center space-x-3">
+            <button type="button" id="btnOffsetMinus" class="w-9 h-9 rounded-lg border border-slate-300 dark:border-slate-600 text-base font-bold hover:bg-slate-100 dark:hover:bg-slate-700">-</button>
+            <input type="number" id="inputOffset" value="0" min="-3" max="3" class="w-20 text-center py-1.5 text-base font-bold rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+            <button type="button" id="btnOffsetPlus" class="w-9 h-9 rounded-lg border border-slate-300 dark:border-slate-600 text-base font-bold hover:bg-slate-100 dark:hover:bg-slate-700">+</button>
+            <span class="text-slate-500" id="offsetLabelText">Hari (Normal)</span>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
+          <label class="flex items-start gap-2.5 cursor-pointer">
+            <input type="checkbox" id="checkSwitchMaghrib" class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+            <div>
+              <span class="font-semibold text-slate-700 dark:text-slate-300">Ganti Tanggal Hijriah saat Maghrib</span>
+              <p class="text-slate-500 mt-0.5">Sesuai syariat Islam, hari baru Hijriah dimulai saat matahari terbenam (Maghrib), bukan jam 00:00 tengah malam.</p>
+            </div>
+          </label>
+        </div>
+
+        <div id="maghribHourGroup" class="border-t border-slate-100 dark:border-slate-700 pt-3">
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Jam Patokan Maghrib
+          </label>
+          <select id="selectMaghribHour" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+            <option value="17">Pukul 17:30 - 18:00 (Sore)</option>
+            <option value="18" selected>Pukul 18:00 (Standar Indonesia Barat/Tengah)</option>
+            <option value="19">Pukul 18:30 - 19:00</option>
+          </select>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+          <button type="submit" class="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition">
+            Terapkan & Simpan Pengaturan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 text-center text-xs text-slate-500 dark:text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>Aplikasi Kalender Hijriah Terpadu & Rumus Ompo Uleng Nusantara</p>
+      <p class="text-emerald-600 dark:text-emerald-400 font-semibold">Tersedia Mode Offline & Installable PWA</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/hijri-engine.js"></script>
+  <script src="js/ompo-uleng.js"></script>
+  <script src="js/primbon-engine.js"></script>
+  <script src="js/prayer-engine.js"></script>
+  <script src="js/holidays.js"></script>
+  <script src="js/events-engine.js"></script>
+  <script src="js/app.js"></script>
+  
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('ServiceWorker registered:', reg.scope))
+          .catch(err => console.log('ServiceWorker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>

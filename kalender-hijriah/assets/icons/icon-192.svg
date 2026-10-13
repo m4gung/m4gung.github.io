@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 512 512">
+    <rect width="512" height="512" rx="100" fill="#059669"/>
+    <path d="M350 256c0 68.5-44.5 126.5-106 146.5 73.5-9.5 130-72 130-146.5s-56.5-137-130-146.5c61.5 20 106 78 106 146.5z" fill="#fef08a"/>
+    <circle cx="210" cy="180" r="16" fill="#ffffff"/>
+    <circle cx="160" cy="240" r="12" fill="#ffffff"/>
+    <text x="256" y="450" font-family="sans-serif" font-size="52" font-weight="bold" fill="#ffffff" text-anchor="middle">HIJRIAH</text>
+  </svg>
