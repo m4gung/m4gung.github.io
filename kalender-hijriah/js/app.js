@@ -187,20 +187,23 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
   }
 
+  const checkUseKemenagApi = document.getElementById('checkUseKemenagApi');
+
   // Update Header Offset Note
   function refreshSettingsUI() {
     const s = HijriEngine.getSettings();
     inputOffset.value = s.offset;
     checkSwitchMaghrib.checked = s.switchAtMaghrib;
     selectMaghribHour.value = s.maghribHour;
+    if (checkUseKemenagApi) checkUseKemenagApi.checked = s.useKemenagApi;
     
     if (s.offset === 0) {
       offsetLabelText.textContent = 'Hari (Standar)';
-      headerOffsetNote.textContent = 'Offset: 0 Hari';
+      headerOffsetNote.textContent = s.useKemenagApi ? 'Mode: Kemenag RI (Neo MABIMS)' : 'Offset: 0 Hari';
     } else {
       const sign = s.offset > 0 ? `+${s.offset}` : `${s.offset}`;
       offsetLabelText.textContent = `${sign} Hari`;
-      headerOffsetNote.textContent = `Offset Hisab: ${sign} Hari`;
+      headerOffsetNote.textContent = `Offset Koreksi: ${sign} Hari`;
     }
   }
 
@@ -431,6 +434,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     selectedDateTitle.textContent = `${hInfo.dayName}, ${gDay} ${HijriEngine.GREGORIAN_MONTHS[dateObj.getMonth()]} ${gYear}`;
     selectedHijriTitle.textContent = `${hInfo.hijriDay} ${hInfo.hijriMonthName} ${hInfo.hijriYear} H (${hInfo.hijriMonthArabic})`;
+
+    // Jika sinkronisasi Kemenag aktif, ambil penyesuaian resmi Neo MABIMS
+    if (HijriEngine.getSettings().useKemenagApi) {
+      HijriEngine.fetchKemenagDate(dateObj).then(kemenagRes => {
+        if (kemenagRes && kemenagRes.source === 'kemenag_api') {
+          selectedHijriTitle.textContent = `${kemenagRes.hijriDay} ${kemenagRes.hijriMonthName} ${kemenagRes.hijriYear} H (Kemenag RI)`;
+        }
+      });
+    }
 
     if (holiday) {
       selectedDateTitle.innerHTML += `<span class="block text-xs font-semibold text-red-500 mt-0.5">${holiday.name}</span>`;
@@ -949,11 +961,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const off = parseInt(inputOffset.value, 10) || 0;
     const maghrib = checkSwitchMaghrib.checked;
     const maghribH = parseInt(selectMaghribHour.value, 10) || 18;
+    const kemenagApi = checkUseKemenagApi ? checkUseKemenagApi.checked : true;
 
     HijriEngine.saveSettings({
       offset: off,
       switchAtMaghrib: maghrib,
-      maghribHour: maghribH
+      maghribHour: maghribH,
+      useKemenagApi: kemenagApi
     });
 
     modalSettings.classList.add('hidden');

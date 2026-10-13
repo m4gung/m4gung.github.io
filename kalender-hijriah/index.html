@@ -50,16 +50,22 @@
           <i data-lucide="moon" class="w-6 h-6"></i>
         </div>
         <div>
-          <h1 class="text-lg font-bold tracking-tight leading-tight flex items-center gap-1.5">
+          <h2 class="text-lg font-bold tracking-tight leading-tight flex items-center gap-1.5">
             Kalender Hijriah
             <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">Ompo Uleng</span>
-          </h1>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Terpadu Masehi, Weton Jawa & Rencana Berulang</p>
+          </h2>
+          <!-- <p class="text-xs text-slate-500 dark:text-slate-400">Terpadu Masehi, Weton Jawa & Rencana Berulang</p> -->
         </div>
       </div>
 
       <!-- Action Buttons -->
       <div class="flex items-center space-x-2">
+        <!-- Tombol Install PWA -->
+        <button id="btnInstallPWA" class="hidden px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm items-center gap-1.5">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          <span>Install App</span>
+        </button>
+
         <button id="btnToday" class="px-3 py-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
           <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
           <span>Hari Ini</span>
@@ -94,8 +100,8 @@
             <span class="text-xs text-slate-200" id="todayGregorianFull">Selasa, 13 Oktober 2026</span>
           </div>
           <div class="text-sm font-bold text-white flex items-center gap-2">
-            <span id="todayHijriFull">2 Rabiul Akhir 1448 H</span>
-            <span class="text-xs font-normal px-2 py-0.5 rounded bg-white/10 text-emerald-200" id="todayWeton">Selasa Wage (Neptu 7)</span>
+            <span id="todayHijriFull">2 Jumadil Ula 1448 H</span>
+            <span class="text-xs font-normal px-2 py-0.5 rounded bg-white/10 text-emerald-200" id="todayWeton">Selasa Pon (Neptu 10)</span>
           </div>
         </div>
       </div>
@@ -151,9 +157,9 @@
         <!-- Info Bulan Hijriah Dominan -->
         <div class="text-right flex flex-col justify-center">
           <div class="text-xs uppercase tracking-wide font-semibold text-emerald-600 dark:text-emerald-400" id="currentHijriMonthHeader">
-            Rabiul Akhir 1448 H
+            Jumadil Ula 1448 H
           </div>
-          <div class="text-xs text-slate-400" id="headerOffsetNote">Offset: 0 Hari</div>
+          <div class="text-xs text-slate-400" id="headerOffsetNote">Mode: Kemenag RI (Neo MABIMS)</div>
         </div>
       </div>
 
@@ -204,7 +210,7 @@
           <div>
             <span class="text-xs uppercase tracking-wider font-semibold text-emerald-600 dark:text-emerald-400">Tanggal Terpilih</span>
             <h2 class="text-lg font-bold text-slate-900 dark:text-white" id="selectedDateTitle">Selasa, 13 Oktober 2026</h2>
-            <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300" id="selectedHijriTitle">2 Rabiul Akhir 1448 H</p>
+            <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300" id="selectedHijriTitle">2 Jumadil Ula 1448 H</p>
           </div>
           <button id="btnQuickAddPlan" title="Tambah Rencana pada Hari Ini" class="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition">
             <i data-lucide="calendar-plus" class="w-5 h-5"></i>
@@ -218,10 +224,10 @@
               <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-600"></i>
               Weton & Neptu Jawa
             </span>
-            <span class="px-2 py-0.5 rounded bg-amber-200/70 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-bold" id="selectedWetonBadge">Selasa Wage (Neptu 7)</span>
+            <span class="px-2 py-0.5 rounded bg-amber-200/70 dark:bg-amber-900 text-amber-900 dark:text-amber-100 font-bold" id="selectedWetonBadge">Selasa Pon (Neptu 10)</span>
           </div>
           <p class="text-amber-800/90 dark:text-amber-300/80 leading-relaxed" id="selectedWetonWatak">
-            Pendito Kang Lelaku: Senang bepergian jauh, suka merantau, cenderung pemalu namun tekun.
+            Pendito Mbangun Teki: Suka menolong, cerdas, tidak mudah putus asa, gemar menuntut ilmu.
           </p>
         </div>
 
@@ -591,6 +597,16 @@
 
         <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
           <label class="flex items-start gap-2.5 cursor-pointer">
+            <input type="checkbox" id="checkUseKemenagApi" checked class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+            <div>
+              <span class="font-semibold text-slate-700 dark:text-slate-300">Sinkronisasi Taqwim Kemenag RI (Neo MABIMS)</span>
+              <p class="text-slate-500 mt-0.5">Otomatis mencocokkan data kalender Hijriah resmi Ditjen Bimas Islam Kemenag RI (kriteria Neo MABIMS & Sidang Isbat) saat online, dan otomatis beralih ke rumus hisab offline jika tidak ada internet.</p>
+            </div>
+          </label>
+        </div>
+
+        <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
+          <label class="flex items-start gap-2.5 cursor-pointer">
             <input type="checkbox" id="checkSwitchMaghrib" class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
             <div>
               <span class="font-semibold text-slate-700 dark:text-slate-300">Ganti Tanggal Hijriah saat Maghrib</span>
@@ -636,8 +652,40 @@
   <script src="js/events-engine.js"></script>
   <script src="js/app.js"></script>
   
-  <!-- PWA Service Worker Registration -->
+  <!-- PWA Service Worker Registration & Install Prompt -->
   <script>
+    let deferredPrompt = null;
+    const btnInstallPWA = document.getElementById('btnInstallPWA');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Cegah default mini-infobar di Chrome
+      e.preventDefault();
+      deferredPrompt = e;
+      if (btnInstallPWA) {
+        btnInstallPWA.classList.remove('hidden');
+        btnInstallPWA.classList.add('flex');
+      }
+    });
+
+    if (btnInstallPWA) {
+      btnInstallPWA.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+        btnInstallPWA.classList.add('hidden');
+        btnInstallPWA.classList.remove('flex');
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA Kalender Hijriah telah berhasil diinstall!');
+      if (btnInstallPWA) {
+        btnInstallPWA.classList.add('hidden');
+      }
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')

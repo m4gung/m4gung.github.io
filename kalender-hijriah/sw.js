@@ -14,7 +14,9 @@ const ASSETS_TO_CACHE = [
   './js/prayer-engine.js',
   './js/holidays.js',
   './js/events-engine.js',
-  './js/app.js'
+  './js/app.js',
+  './assets/icons/icon-192.png',
+  './assets/icons/icon-512.png'
 ];
 
 self.addEventListener('install', (e) => {

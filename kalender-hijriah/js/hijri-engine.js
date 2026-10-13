@@ -32,6 +32,10 @@ const HijriEngine = (() => {
   let userOffset = 0; // +/- hari
   let switchAtMaghrib = true;
   let maghribHour = 18; // default jam 18:00
+  let useKemenagApi = true; // Sinkronisasi otomatis dengan API Kemenag / Bimas Islam saat online
+
+  // In-memory cache untuk hasil API Kemenag
+  const kemenagDateCache = new Map();
 
   function initSettings() {
     try {
@@ -42,6 +46,7 @@ const HijriEngine = (() => {
           if (typeof parsed.offset === 'number') userOffset = parsed.offset;
           if (typeof parsed.switchAtMaghrib === 'boolean') switchAtMaghrib = parsed.switchAtMaghrib;
           if (typeof parsed.maghribHour === 'number') maghribHour = parsed.maghribHour;
+          if (typeof parsed.useKemenagApi === 'boolean') useKemenagApi = parsed.useKemenagApi;
         }
       }
     } catch (e) {
@@ -55,18 +60,23 @@ const HijriEngine = (() => {
     if (typeof newSettings.offset === 'number') userOffset = newSettings.offset;
     if (typeof newSettings.switchAtMaghrib === 'boolean') switchAtMaghrib = newSettings.switchAtMaghrib;
     if (typeof newSettings.maghribHour === 'number') maghribHour = newSettings.maghribHour;
-    localStorage.setItem('kalender_hijriah_settings', JSON.stringify({
-      offset: userOffset,
-      switchAtMaghrib: switchAtMaghrib,
-      maghribHour: maghribHour
-    }));
+    if (typeof newSettings.useKemenagApi === 'boolean') useKemenagApi = newSettings.useKemenagApi;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('kalender_hijriah_settings', JSON.stringify({
+        offset: userOffset,
+        switchAtMaghrib: switchAtMaghrib,
+        maghribHour: maghribHour,
+        useKemenagApi: useKemenagApi
+      }));
+    }
   }
 
   function getSettings() {
     return {
       offset: userOffset,
       switchAtMaghrib,
-      maghribHour
+      maghribHour,
+      useKemenagApi
     };
   }
 
@@ -163,7 +173,9 @@ const HijriEngine = (() => {
     const m = date.getMonth() + 1; // 1-12
     const d = date.getDate();
 
-    let jdn = gregorianToJDN(y, m, d) + dayShift;
+    // Kalibrasi dasar Taqwim Standar Indonesia (Kemenag Neo MABIMS) = +1 hari dibanding JDN Tabular Global
+    const baseMabimsShift = 1;
+    let jdn = gregorianToJDN(y, m, d) + baseMabimsShift + dayShift;
     const hijri = jdnToHijri(jdn);
 
     // Amankan range hari Hijriah (1 - 30)
@@ -207,6 +219,66 @@ const HijriEngine = (() => {
     return new Date(g.year, g.month - 1, g.day);
   }
 
+  /**
+   * Mengambil data penanggalan Hijriah resmi Kemenag RI (Bimas Islam) via API myQuran
+   * yang telah disesuaikan dengan Kriteria Neo MABIMS dan Sidang Isbat.
+   */
+  async function fetchKemenagDate(dateInput, customOffset = null) {
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${y}-${m}-${d}`;
+
+    const offsetToApply = customOffset !== null ? customOffset : userOffset;
+    const cacheKey = `${dateStr}_adj_${offsetToApply}`;
+
+    if (kemenagDateCache.has(cacheKey)) {
+      return kemenagDateCache.get(cacheKey);
+    }
+
+    try {
+      const url = `https://api.myquran.com/v2/cal/hijr/${dateStr}?adj=${offsetToApply}`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.status && json.data && json.data.num) {
+          // [dayOfWeek(1-7), gDay, gMonth, gYear, hDay, hMonth, hYear]
+          const num = json.data.num;
+          const hDay = num[4];
+          const hMonth = num[5];
+          const hYear = num[6];
+          const monthObj = HIJRI_MONTHS[hMonth - 1] || HIJRI_MONTHS[0];
+
+          const result = {
+            hijriDay: hDay,
+            hijriMonth: hMonth,
+            hijriYear: hYear,
+            hijriMonthName: monthObj.name,
+            hijriMonthArabic: monthObj.ar,
+            source: 'kemenag_api',
+            formattedDate: json.data.date ? json.data.date[1] : `${hDay} ${monthObj.name} ${hYear} H`
+          };
+
+          kemenagDateCache.set(cacheKey, result);
+          return result;
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal sinkronisasi API Kemenag, menggunakan rumus offline MABIMS/Tabular:', e);
+    }
+
+    // Fallback offline jika tidak ada internet
+    const offlineResult = fromGregorian(date, customOffset, false);
+    offlineResult.source = 'offline_formula';
+    return offlineResult;
+  }
+
   return {
     HIJRI_MONTHS,
     GREGORIAN_MONTHS,
@@ -214,6 +286,7 @@ const HijriEngine = (() => {
     fromGregorian,
     toGregorian,
     getDaysInGregorianMonth,
+    fetchKemenagDate,
     saveSettings,
     getSettings
   };
