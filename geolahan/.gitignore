@@ -1,0 +1,23 @@
+# Dependencies
+node_modules
+
+# Catatan: dist/ sengaja TIDAK diabaikan agar hasil build dapat disajikan
+# oleh GitHub Pages di m4gung.github.io/geolahan/dist/
+
+# Environment lokal (jangan commit)
+.env
+.env.local
+.env.*.local
+
+# Logs & editor
+*.log
+npm-debug.log*
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Test artefacts
+coverage
+playwright-report
+test-results

@@ -1,2 +1,4 @@
 .DS_Store
 *.lock
+node_modules/
+*-lock.json

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#047857" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="GeoLahan" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>GeoLahan Pro — Ukur Luas Tanah di Peta Satelit Online Gratis</title>
+    <meta
+      name="description"
+      content="GeoLahan Pro: aplikasi WebGIS gratis untuk mengukur luas dan keliling bidang tanah di peta satelit, menyimpan data lahan di perangkat, ekspor GeoJSON, dan cetak laporan PDF A4. Bisa dipasang dan dipakai offline."
+    />
+    <meta
+      name="keywords"
+      content="ukur luas tanah, hitung luas lahan, peta satelit, webgis, gps ukur lahan, laporan pengukuran tanah pdf, geojson, aplikasi ukur lahan gratis, m4gung"
+    />
+    <meta name="author" content="Agung Maulana (Magung)" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <link rel="canonical" href="https://m4gung.github.io/geolahan/dist/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="M4gung" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:title" content="GeoLahan Pro — Ukur Luas Tanah di Peta Satelit" />
+    <meta
+      property="og:description"
+      content="Ukur luas dan keliling bidang tanah di peta satelit, simpan data lahan, dan cetak laporan PDF. Gratis, data tersimpan di perangkat Anda."
+    />
+    <meta property="og:url" content="https://m4gung.github.io/geolahan/dist/" />
+    <meta property="og:image" content="https://m4gung.github.io/geolahan/dist/icons/icon-512.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="GeoLahan Pro — Ukur Luas Tanah di Peta Satelit" />
+    <meta name="twitter:description" content="Ukur luas tanah di peta satelit, kelola data lahan, cetak laporan PDF." />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "GeoLahan Pro",
+        "url": "https://m4gung.github.io/geolahan/dist/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any (browser modern)",
+        "inLanguage": "id",
+        "description": "Aplikasi WebGIS untuk mengukur luas dan keliling bidang tanah di peta satelit, mengelola data lahan, dan mencetak laporan PDF.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "IDR" },
+        "author": { "@type": "Person", "name": "Agung Maulana" }
+      }
+    </script>
+    <script>
+      // Terapkan tema sebelum render agar tidak terjadi kedipan tema yang salah.
+      (function () {
+        try {
+          var stored = localStorage.getItem('geolahan:theme');
+          var mode = stored ? JSON.parse(stored) : 'system';
+          var dark =
+            mode === 'dark' ||
+            (mode !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {
+          /* abaikan: localStorage tidak tersedia */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <main style="font-family:system-ui,sans-serif;max-width:40rem;margin:2rem auto;padding:0 1rem">
+        <h1>GeoLahan Pro</h1>
+        <p>
+          Aplikasi WebGIS untuk mengukur luas dan keliling bidang tanah di peta satelit, menyimpan data lahan, mengekspor
+          GeoJSON, dan mencetak laporan PDF. Aktifkan JavaScript untuk menggunakan aplikasi ini.
+        </p>
+      </main>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

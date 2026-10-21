@@ -1,0 +1,161 @@
+@import 'tailwindcss';
+
+/* Dark mode berbasis class `.dark` pada <html> (diatur ThemeProvider). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  }
+}
+
+@layer components {
+  .icon-btn {
+    @apply inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:outline-none dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white;
+  }
+  .btn-primary {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:outline-none;
+  }
+  .btn-secondary {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700;
+  }
+  .map-fab {
+    @apply inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white/95 px-3 text-sm font-medium text-slate-700 shadow-lg backdrop-blur transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-emerald-500/60 focus-visible:outline-none dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-200 dark:hover:bg-slate-800;
+  }
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[2000] focus:rounded-lg focus:bg-emerald-600 focus:px-4 focus:py-2 focus:text-white;
+  }
+}
+
+/* ---------- Leaflet ---------- */
+.geolahan-map {
+  background: #0f172a; /* tampak saat tile belum dimuat */
+  font-family: inherit;
+}
+
+.geolahan-map .leaflet-control-zoom a {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  font-size: 20px;
+}
+
+.geolahan-map .leaflet-control-attribution {
+  font-size: 10px;
+  max-width: 70vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.geolahan-map .leaflet-control-attribution:hover {
+  white-space: normal;
+}
+
+.geolahan-popup strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.geolahan-popup p {
+  margin: 0 !important;
+  font-size: 12px;
+  color: #475569;
+}
+
+/* Marker hasil pencarian (divIcon, tanpa aset gambar Leaflet default). */
+.geolahan-search-marker {
+  background: transparent;
+  border: none;
+}
+.geolahan-search-marker__pin {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: 50% 50% 50% 0;
+  background: #dc2626;
+  border: 3px solid #fff;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.45);
+}
+
+/* Kontrol & popup Leaflet dalam mode gelap */
+.dark .geolahan-map .leaflet-bar a {
+  background-color: #0f172a;
+  color: #e2e8f0;
+  border-bottom-color: #334155;
+}
+.dark .geolahan-map .leaflet-bar a:hover {
+  background-color: #1e293b;
+}
+.dark .geolahan-map .leaflet-bar a.leaflet-disabled {
+  background-color: #1e293b;
+  color: #64748b;
+}
+.dark .geolahan-map .leaflet-control-attribution {
+  background: rgb(15 23 42 / 0.8);
+  color: #cbd5e1;
+}
+.dark .geolahan-map .leaflet-control-attribution a {
+  color: #6ee7b7;
+}
+.dark .geolahan-map .leaflet-control-scale-line {
+  background: rgb(15 23 42 / 0.75);
+  color: #e2e8f0;
+  border-color: #e2e8f0;
+}
+.dark .geolahan-map .leaflet-popup-content-wrapper,
+.dark .geolahan-map .leaflet-popup-tip {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+.dark .geolahan-popup p {
+  color: #94a3b8;
+}
+
+/* Dekorasi Patok P1..Pn */
+.geolahan-patok-marker {
+  background: transparent;
+  border: none;
+}
+.patok-bubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #047857;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+/* Dekorasi Jarak Garis Sisi */
+.geolahan-segment-label {
+  background: transparent;
+  border: none;
+}
+.segment-bubble {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 1px 6px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
