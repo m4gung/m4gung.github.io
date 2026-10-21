@@ -144,47 +144,42 @@ fallbackFolderInput.addEventListener('change', (e) => {
   const total = fileListRaw.length;
   folderPathLabel.textContent = `Memproses ${total} file...`;
 
-  const pdfItems = [];
-  const len = fileListRaw.length;
-  
-  // Folder blacklist yang membuat macet (folder source code, build, cache, dll)
-  const ignoredPatterns = ['/node_modules/', '/.git/', '/.svn/', '/build/', '/dist/', '/.gradle/', '/.cache/', '/vendor/'];
+  // Berikan jeda via setTimeout agar UI browser tidak membeku saat file banyak
+  setTimeout(() => {
+    const pdfItems = [];
+    const len = fileListRaw.length;
+    
+    // Folder blacklist yang membuat macet
+    const ignoredRegex = /(node_modules|\.git|\.svn|build|dist|\.gradle|\.cache|vendor|\.idea|\.vscode)/i;
 
-  for (let i = 0; i < len; i++) {
-    const f = fileListRaw[i];
-    const path = f.webkitRelativePath || f.name;
+    for (let i = 0; i < len; i++) {
+      const f = fileListRaw[i];
+      const path = f.webkitRelativePath || f.name;
 
-    // Lewati file yang berada di node_modules / .git agar tidak lambat
-    let isIgnored = false;
-    for (let j = 0; j < ignoredPatterns.length; j++) {
-      if (path.includes(ignoredPatterns[j])) {
-        isIgnored = true;
-        break;
+      if (ignoredRegex.test(path)) continue;
+
+      const lowerName = f.name.toLowerCase();
+      if (lowerName.endsWith('.pdf')) {
+        pdfItems.push({
+          name: f.name,
+          relativePath: path,
+          size: f.size,
+          lastModified: f.lastModified,
+          fileObj: f,
+          url: null
+        });
       }
     }
-    if (isIgnored) continue;
 
-    // Fast check PDF extension
-    if (f.name.endsWith('.pdf') || f.name.endsWith('.PDF')) {
-      pdfItems.push({
-        name: f.name,
-        relativePath: path,
-        size: f.size,
-        lastModified: f.lastModified,
-        fileObj: f,
-        url: null
-      });
-    }
-  }
+    const rootName = pdfItems.length > 0 
+      ? (pdfItems[0].relativePath.split('/')[0] || 'Selected Folder')
+      : (fileListRaw[0].webkitRelativePath.split('/')[0] || 'Selected Folder');
+    
+    folderPathLabel.textContent = `${rootName} (${pdfItems.length} PDF)`;
+    state.files = pdfItems;
 
-  const rootName = pdfItems.length > 0 
-    ? (pdfItems[0].relativePath.split('/')[0] || 'Selected Folder')
-    : (fileListRaw[0].webkitRelativePath.split('/')[0] || 'Selected Folder');
-  
-  folderPathLabel.textContent = `${rootName} (${pdfItems.length} PDF)`;
-  state.files = pdfItems;
-
-  applyFilterAndRender();
+    applyFilterAndRender();
+  }, 20);
 });
 
 // Recursive folder scanning with File System Access API
@@ -315,8 +310,12 @@ function createCardElement(item, highlightQuery) {
   return li;
 }
 
+let searchFilterTimer = null;
 searchInput.addEventListener('input', () => {
-  applyFilterAndRender();
+  clearTimeout(searchFilterTimer);
+  searchFilterTimer = setTimeout(() => {
+    applyFilterAndRender();
+  }, 120);
 });
 
 clearSearchBtn.addEventListener('click', () => {
@@ -495,40 +494,76 @@ continuousScrollViewBtn.addEventListener('click', () => {
   }
 });
 
-// Render all pages in vertical scroll view
+// Render pages in vertical scroll view with Lazy On-Demand Rendering
+let scrollIntersectionObserver = null;
+
 async function renderContinuousScrollView() {
   if (!state.pdfDoc) return;
   pdfScrollWrapper.innerHTML = '';
   pdfScrollWrapper.style.display = 'flex';
   pdfCanvasWrapper.style.display = 'none';
 
+  if (scrollIntersectionObserver) {
+    scrollIntersectionObserver.disconnect();
+  }
+
   const totalPages = state.pdfDoc.numPages;
   const outputScale = window.devicePixelRatio || 1;
+
+  // Dapatkan dimensi halaman pertama sebagai template ukuran
+  const firstPage = await state.pdfDoc.getPage(1);
+  const sampleViewport = firstPage.getViewport({ scale: state.scale || 1.25, rotation: state.rotation });
+  const estimatedWidth = Math.floor(sampleViewport.width);
+  const estimatedHeight = Math.floor(sampleViewport.height);
+
+  // Buat IntersectionObserver agar halaman hanya di-render saat terlihat di layar (Lazy Render)
+  scrollIntersectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const pageContainer = entry.target;
+        const pageNum = parseInt(pageContainer.getAttribute('data-page-num'));
+        if (!pageContainer.hasAttribute('data-rendered')) {
+          pageContainer.setAttribute('data-rendered', 'true');
+          renderSingleScrollPage(pageContainer, pageNum, outputScale);
+        }
+      }
+    });
+  }, {
+    root: viewerContainer,
+    rootMargin: '300px 0px 300px 0px' // Preload halaman sebelum masuk viewport
+  });
 
   for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
     const pageContainer = document.createElement('div');
     pageContainer.className = 'pdf-scroll-page-container';
     pageContainer.id = `scroll-page-${pageNum}`;
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    pageContainer.setAttribute('data-page-num', pageNum);
+    pageContainer.style.width = `${estimatedWidth}px`;
+    pageContainer.style.minHeight = `${estimatedHeight}px`;
 
     const pageTag = document.createElement('div');
     pageTag.className = 'pdf-page-number-tag';
     pageTag.textContent = `Hal ${pageNum}`;
-
-    pageContainer.appendChild(canvas);
     pageContainer.appendChild(pageTag);
-    pdfScrollWrapper.appendChild(pageContainer);
 
-    // Render page
+    pdfScrollWrapper.appendChild(pageContainer);
+    scrollIntersectionObserver.observe(pageContainer);
+  }
+}
+
+async function renderSingleScrollPage(pageContainer, pageNum, outputScale) {
+  try {
     const page = await state.pdfDoc.getPage(pageNum);
     const viewport = page.getViewport({ scale: state.scale || 1.25, rotation: state.rotation });
 
+    const canvas = document.createElement('canvas');
     canvas.width = Math.floor(viewport.width * outputScale);
     canvas.height = Math.floor(viewport.height * outputScale);
     canvas.style.width = Math.floor(viewport.width) + 'px';
     canvas.style.height = Math.floor(viewport.height) + 'px';
+
+    const ctx = canvas.getContext('2d');
+    pageContainer.insertBefore(canvas, pageContainer.firstChild);
 
     const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
     await page.render({
@@ -536,6 +571,8 @@ async function renderContinuousScrollView() {
       transform: transform,
       viewport: viewport
     }).promise;
+  } catch (err) {
+    console.error(`Gagal render scroll halaman ${pageNum}:`, err);
   }
 }
 
