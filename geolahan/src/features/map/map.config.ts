@@ -38,8 +38,8 @@ export const TILE_SOURCES = {
   esriWorldImagery: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: ESRI_ATTRIBUTION,
-    maxNativeZoom: 19,
-    maxZoom: 21,
+    maxNativeZoom: 18,
+    maxZoom: 24,
     crossOrigin: 'anonymous',
     isOverlay: false,
     imageExport: 'unknown',
@@ -48,8 +48,8 @@ export const TILE_SOURCES = {
   esriTransportation: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Jalan &copy; Esri',
-    maxNativeZoom: 19,
-    maxZoom: 21,
+    maxNativeZoom: 18,
+    maxZoom: 24,
     crossOrigin: 'anonymous',
     isOverlay: true,
     imageExport: 'unknown',
@@ -58,8 +58,8 @@ export const TILE_SOURCES = {
   esriBoundariesPlaces: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Label &copy; Esri',
-    maxNativeZoom: 19,
-    maxZoom: 21,
+    maxNativeZoom: 18,
+    maxZoom: 24,
     crossOrigin: 'anonymous',
     isOverlay: true,
     imageExport: 'unknown',
@@ -70,7 +70,7 @@ export const TILE_SOURCES = {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
     maxNativeZoom: 19,
-    maxZoom: 21,
+    maxZoom: 24,
     crossOrigin: 'anonymous',
     isOverlay: false,
     imageExport: 'unknown',
@@ -127,7 +127,7 @@ export const MAP_DEFAULTS = {
   center: [-2.5, 118] as [number, number],
   zoom: 5,
   minZoom: 3,
-  maxZoom: 21,
+  maxZoom: 24,
   /** Zoom saat memusatkan ke hasil pencarian yang tidak memiliki bounding box. */
   searchResultZoom: 16,
   /** Padding (px) saat fitBounds. */

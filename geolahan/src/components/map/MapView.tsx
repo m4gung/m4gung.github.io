@@ -193,7 +193,7 @@ export function MapView() {
           [south, west],
           [north, east],
         ],
-        { padding: [MAP_DEFAULTS.fitBoundsPadding, MAP_DEFAULTS.fitBoundsPadding], maxZoom: 18, duration: 1.2 },
+        { padding: [MAP_DEFAULTS.fitBoundsPadding, MAP_DEFAULTS.fitBoundsPadding], maxZoom: 20, duration: 1.2 },
       );
     } else {
       map.flyTo([result.lat, result.lon], MAP_DEFAULTS.searchResultZoom, { duration: 1.2 });
@@ -287,8 +287,8 @@ export function MapView() {
 
       syncPolygonToState(polygon);
 
-      // Fokuskan peta ke poligon yang dimuat dengan padding
-      map.fitBounds(polygon.getBounds(), { padding: [40, 40], maxZoom: 18 });
+      // Fokuskan peta ke poligon yang dimuat dengan padding (mendukung zoom detail hingga level 22 untuk petak kecil)
+      map.fitBounds(polygon.getBounds(), { padding: [40, 40], maxZoom: 22 });
     });
 
     return () => {
@@ -360,7 +360,7 @@ export function MapView() {
       polygon.on('pm:dragend', () => syncPolygonToState(polygon));
       syncPolygonToState(polygon);
       setMode('idle');
-      map.fitBounds(polygon.getBounds(), { padding: [40, 40], maxZoom: 19 });
+      map.fitBounds(polygon.getBounds(), { padding: [40, 40], maxZoom: 22 });
     },
     [selectedColor, syncPolygonToState, setMode],
   );
@@ -369,7 +369,7 @@ export function MapView() {
   const handleLocate = useCallback(async () => {
     const f = await locate();
     if (f && mapRef.current) {
-      mapRef.current.flyTo([f.latitude, f.longitude], Math.max(mapRef.current.getZoom(), 18), { duration: 1 });
+      mapRef.current.flyTo([f.latitude, f.longitude], Math.max(mapRef.current.getZoom(), 20), { duration: 1 });
     }
   }, [locate]);
 
@@ -385,7 +385,7 @@ export function MapView() {
       applyCoordinates(next);
     } else {
       setGpsDraft(next);
-      mapRef.current?.flyTo([f.latitude, f.longitude], Math.max(mapRef.current.getZoom(), 18), { duration: 0.8 });
+      mapRef.current?.flyTo([f.latitude, f.longitude], Math.max(mapRef.current.getZoom(), 20), { duration: 0.8 });
     }
   }, [locate, activeCoordinates, gpsDraft, applyCoordinates]);
 
