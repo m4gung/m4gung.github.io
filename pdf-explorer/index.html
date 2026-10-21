@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fast PDF Explorer & Modern Viewer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- PDF.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
+</head>
+<body class="theme-light">
+  <div class="app-container">
+    <!-- Sidebar Explorer -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <i class="fa-solid fa-file-pdf brand-icon"></i>
+          <span class="brand-title">PDF Explorer</span>
+        </div>
+        <div class="header-actions">
+          <button id="themeToggleBtn" class="icon-btn" title="Ganti Tema (Dark/Light)">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="folder-control-section">
+        <div class="button-group">
+          <button id="btnPickFolder" class="primary-btn" title="Pilih folder secara cepat">
+            <i class="fa-solid fa-folder-open"></i> Buka Folder
+          </button>
+          <button id="btnPickFiles" class="secondary-btn" title="Pilih beberapa file PDF sekaligus">
+            <i class="fa-solid fa-file-circle-plus"></i> Pilih File
+          </button>
+        </div>
+        <input type="file" id="fallbackFolderInput" webkitdirectory directory multiple style="display:none;" />
+        <input type="file" id="fallbackFilesInput" accept=".pdf" multiple style="display:none;" />
+        <div class="folder-info" id="currentFolderInfo">
+          <i class="fa-regular fa-folder"></i> <span id="folderPathLabel">Belum ada folder dipilih</span>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Cari PDF cepat (ketik nama/path)..." autocomplete="off" />
+        <button id="clearSearchBtn" class="clear-btn" style="display: none;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="filter-bar">
+        <span class="file-count-badge" id="fileCountBadge">0 File</span>
+        <div class="sort-wrapper">
+          <label for="sortSelect"><i class="fa-solid fa-arrow-down-short-wide"></i></label>
+          <select id="sortSelect">
+            <option value="name_asc">Nama (A - Z)</option>
+            <option value="name_desc">Nama (Z - A)</option>
+            <option value="size_desc">Ukuran (Terbesar)</option>
+            <option value="size_asc">Ukuran (Terkecil)</option>
+            <option value="date_desc">Terbaru Diubah</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- List of Files -->
+      <div class="file-list-container" id="fileListContainer">
+        <div class="empty-state" id="emptyState">
+          <i class="fa-regular fa-folder-open"></i>
+          <p>Klik tombol <strong>"Buka Folder Lokal"</strong> di atas untuk memuat semua file PDF dalam satu folder atau subfolder secara instan.</p>
+        </div>
+        <ul class="file-list" id="fileList"></ul>
+      </div>
+
+      <!-- Recents / Quick bar -->
+      <div class="recent-bar" id="recentBar" style="display:none;">
+        <span class="recent-title"><i class="fa-solid fa-clock-rotate-left"></i> Terakhir Dibuka:</span>
+        <div class="recent-items" id="recentItems"></div>
+      </div>
+    </aside>
+
+    <!-- Main PDF Viewer Container -->
+    <main class="main-content">
+      <!-- Viewer Top Bar -->
+      <div class="viewer-toolbar" id="viewerToolbar">
+        <div class="toolbar-left">
+          <button id="sidebarToggleBtn" class="tool-btn" title="Toggle Sidebar">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <span class="active-filename" id="activeFileName" title="Pilih file PDF untuk membaca">Belum ada dokumen terbuka</span>
+        </div>
+
+        <div class="toolbar-center">
+          <button id="prevPageBtn" class="tool-btn" title="Halaman Sebelumnya">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div class="page-indicator">
+            <input type="number" id="pageNumberInput" value="1" min="1" />
+            <span class="page-divider">/</span>
+            <span id="pageCount">0</span>
+          </div>
+          <button id="nextPageBtn" class="tool-btn" title="Halaman Selanjutnya">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+
+          <span class="separator"></span>
+
+          <button id="zoomOutBtn" class="tool-btn" title="Perkecil">
+            <i class="fa-solid fa-magnifying-glass-minus"></i>
+          </button>
+          <select id="scaleSelect" class="scale-select">
+            <option value="auto">Auto Fit</option>
+            <option value="page-fit">Fit Halaman</option>
+            <option value="page-width">Fit Lebar</option>
+            <option value="0.5">50%</option>
+            <option value="0.75">75%</option>
+            <option value="1">100%</option>
+            <option value="1.25">125%</option>
+            <option value="1.5">150%</option>
+            <option value="2">200%</option>
+          </select>
+          <button id="zoomInBtn" class="tool-btn" title="Perbesar">
+            <i class="fa-solid fa-magnifying-glass-plus"></i>
+          </button>
+        </div>
+
+        <div class="toolbar-right">
+          <!-- Text Search in PDF -->
+          <div class="pdf-search-wrapper" id="pdfSearchWrapper">
+            <button id="togglePdfSearchBtn" class="tool-btn" title="Cari Kata di PDF (Ctrl+F / ⌘F)">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <div class="pdf-search-bar" id="pdfSearchBar" style="display: none;">
+              <input type="text" id="pdfSearchInput" placeholder="Cari teks di PDF..." />
+              <span id="pdfSearchMatchesCount" class="pdf-search-count">0/0</span>
+              <button id="pdfSearchPrevBtn" class="tool-btn-sm" title="Cocokan Sebelumnya">
+                <i class="fa-solid fa-chevron-up"></i>
+              </button>
+              <button id="pdfSearchNextBtn" class="tool-btn-sm" title="Cocokan Berikutnya">
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+              <button id="closePdfSearchBtn" class="tool-btn-sm" title="Tutup Pencarian">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <span class="separator"></span>
+
+          <!-- View Mode: Single Page vs Continuous Scroll -->
+          <div class="view-mode-toggle" title="Mode Tampilan">
+            <button id="singlePageViewBtn" class="mode-btn active" title="Tampilan Per Halaman">
+              <i class="fa-regular fa-file"></i> Halaman
+            </button>
+            <button id="continuousScrollViewBtn" class="mode-btn" title="Tampilan Scroll ke Bawah (Semua Halaman)">
+              <i class="fa-solid fa-scroll"></i> Scroll
+            </button>
+          </div>
+
+          <span class="separator"></span>
+
+          <button id="rotateBtn" class="tool-btn" title="Putar PDF 90°">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+          <button id="fullscreenBtn" class="tool-btn" title="Layar Penuh">
+            <i class="fa-solid fa-expand"></i>
+          </button>
+          <a id="downloadPdfBtn" class="tool-btn" title="Unduh / Simpan PDF" style="display:none;" download>
+            <i class="fa-solid fa-download"></i>
+          </a>
+          <button id="openNativeBtn" class="tool-btn" title="Buka di Tab Baru / Viewer Bawaan Browser">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Viewer Body View -->
+      <div class="viewer-body" id="viewerContainer">
+        <div class="no-doc-placeholder" id="noDocPlaceholder">
+          <div class="placeholder-content">
+            <i class="fa-regular fa-file-pdf placeholder-icon"></i>
+            <h2>Pilih File PDF untuk Ditampilkan</h2>
+            <p>Pilih salah satu dokumen dari daftar di sebelah kiri untuk melihat isi halaman secara langsung.</p>
+          </div>
+        </div>
+        
+        <div class="pdf-canvas-wrapper" id="pdfCanvasWrapper" style="display: none;">
+          <canvas id="pdfCanvas"></canvas>
+          <div id="pdfHighlightLayer" class="pdf-search-highlight-layer"></div>
+        </div>
+
+        <!-- Container untuk Continuous Scroll View -->
+        <div class="pdf-scroll-wrapper" id="pdfScrollWrapper" style="display: none;"></div>
+
+        <!-- Password Modal / Dialog -->
+        <div class="password-overlay" id="passwordModal" style="display: none;">
+          <div class="password-dialog">
+            <div class="password-icon">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <h3>File PDF Terkunci</h3>
+            <p id="passwordPromptText">Dokumen ini dilindungi dengan kata sandi. Silakan masukkan password untuk membukanya.</p>
+            <div class="password-input-group">
+              <input type="password" id="pdfPasswordInput" placeholder="Masukkan password PDF..." autocomplete="current-password" />
+              <button id="toggleShowPasswordBtn" type="button" class="icon-btn-inline" title="Lihat password">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <div id="passwordErrorMsg" class="password-error" style="display:none;">Password salah. Silakan coba lagi.</div>
+            <div class="password-actions">
+              <button id="cancelPasswordBtn" class="cancel-btn">Batal</button>
+              <button id="submitPasswordBtn" class="primary-btn">Buka Dokumen</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fallback iframe jika PDF diload via URL lokal/server -->
+        <iframe id="pdfIframe" class="pdf-iframe" style="display:none;"></iframe>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
