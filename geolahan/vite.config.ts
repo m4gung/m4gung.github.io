@@ -40,13 +40,13 @@ function geolahanServiceWorker(): Plugin {
 }
 
 // base './' agar hasil build dapat disajikan dari subfolder statis
-// (mis. GitHub Pages: m4gung.github.io/geolahan/dist/). Routing memakai HashRouter.
+// (mis. GitHub Pages: m4gung.github.io/geolahan/). Routing memakai HashRouter.
 export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss(), geolahanServiceWorker()],
   build: {
     // Nonaktifkan CSS minifier (lightningcss tidak bisa handle % dalam SVG data URL
-    // yang dipakai oleh @geoman-io/leaflet-geoman-free). CSS Tailwind sudah cukup efisien.
+    // yang dipakai oleh @geoman-io/leaflet-geoman-free).
     cssMinify: false,
     rolldownOptions: {
       output: {
@@ -61,19 +61,6 @@ export default defineConfig({
           ],
         },
       },
-    },
-  },
-  server: {
-    // Batasi Vite dev server hanya baca dari source + node_modules,
-    // agar tidak menganalisis file build hasil deploy di folder assets/ dan dist/.
-    // Menggunakan import.meta.dirname (ESM-native, direkomendasikan Vite 6+)
-    fs: {
-      allow: [
-        join(import.meta.dirname, 'src'),
-        join(import.meta.dirname, 'public'),
-        join(import.meta.dirname, 'pwa'),
-        join(import.meta.dirname, 'node_modules'),
-      ],
     },
   },
   test: {

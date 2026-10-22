@@ -1,21 +1,24 @@
 /* GeoLahan Pro — service worker (dibangkitkan saat build; jangan edit sw.js di dist/). */
-const VERSION = '5fb80b534fd5';
+const VERSION = 'a926477ef017';
 const SHELL_CACHE = 'geolahan-shell-' + VERSION;
 const TILE_CACHE = 'geolahan-tiles-v1';
 const MAX_TILES = 400;
 const PRECACHE = [
   "./",
+  "./assets/apple-touch-icon-B-jzFXFo.png",
+  "./assets/favicon-BoLAv8qf.svg",
   "./assets/html2canvas-iod3n_YB.js",
   "./assets/html2canvas-pro.esm-BznAOs5V.js",
-  "./assets/index-BihiHoVk.css",
-  "./assets/index-CembIjkt.js",
-  "./assets/index.es-f7Spc0DN.js",
-  "./assets/map-capture.service-BhiSq51y.js",
-  "./assets/pdf.service-BuE8sqGC.js",
+  "./assets/index-DZd7LCI3.css",
+  "./assets/index-DhCZJeBh.js",
+  "./assets/index.es-DeKZ064O.js",
+  "./assets/manifest-CYeYtMFs.webmanifest",
+  "./assets/map-capture.service-WKPdhX05.js",
+  "./assets/pdf.service-Bjg7O85Y.js",
   "./assets/purify.es-BZxk_wWO.js",
   "./assets/rolldown-runtime-XKyaHtl9.js",
-  "./assets/vendor-leaflet-CJQ2ARdL.js",
-  "./assets/vendor-leaflet-vh-t_kPv.css",
+  "./assets/vendor-leaflet-DqVsvxWd.js",
+  "./assets/vendor-leaflet-DvTUgzRd.css",
   "./assets/vendor-react-ByJxbK5k.js",
   "./favicon.svg",
   "./icon-maskable.svg",
