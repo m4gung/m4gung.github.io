@@ -16,6 +16,9 @@ import { SaveParcelModal } from '../parcels/SaveParcelModal';
 import { useParcels } from '../../features/parcels/useParcels';
 import { formatNumberId } from '../../features/measurement/geometry.service';
 
+// Ref untuk menyimpan patok marker yang draggable saat mode edit
+type EditPatokMarkerRef = { markers: L.Marker[]; group: L.LayerGroup } | null;
+
 const searchMarkerIcon = L.divIcon({
   className: 'geolahan-search-marker',
   html: '<span class="geolahan-search-marker__pin" aria-hidden="true"></span>',
@@ -60,6 +63,7 @@ export function MapView() {
   const searchMarkerRef = useRef<L.Marker | null>(null);
   const activePolygonLayerRef = useRef<L.Polygon | null>(null);
   const decorLayerGroupRef = useRef<L.LayerGroup | null>(null);
+  const editPatokGroupRef = useRef<EditPatokMarkerRef>(null);
   const gpsLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const gpsLocationRef = useRef<L.LayerGroup | null>(null);
 
@@ -133,6 +137,9 @@ export function MapView() {
     // Inisialisasi LayerGroup untuk dekorasi patok P1..Pn & label jarak
     const decorGroup = L.layerGroup().addTo(map);
     decorLayerGroupRef.current = decorGroup;
+    // LayerGroup untuk patok draggable saat mode edit
+    const editPatokGroup = L.layerGroup().addTo(map);
+    editPatokGroupRef.current = { markers: [], group: editPatokGroup };
     gpsLayerGroupRef.current = L.layerGroup().addTo(map);
     gpsLocationRef.current = L.layerGroup().addTo(map);
 
@@ -167,6 +174,7 @@ export function MapView() {
       searchMarkerRef.current = null;
       activePolygonLayerRef.current = null;
       decorLayerGroupRef.current = null;
+      editPatokGroupRef.current = null;
       gpsLayerGroupRef.current = null;
       gpsLocationRef.current = null;
     };
@@ -236,21 +244,22 @@ export function MapView() {
     }
   }, [selectedColor]);
 
-  // 5) Update dekorasi label Patok P1..Pn dan Jarak Garis di peta
+  // 5) Update dekorasi label Patok P1..Pn dan Jarak Garis di peta (mode non-edit)
   useEffect(() => {
     const decorGroup = decorLayerGroupRef.current;
     if (!decorGroup) return;
 
     decorGroup.clearLayers();
 
-    // Sembunyikan dekorasi statis saat mode edit agar vertex handle Geoman terlihat jelas dan interaktif
+    // Hanya tampilkan dekorasi statis saat bukan mode edit
     if (!measurement || !measurement.isValid || mode === 'edit') return;
 
-    // Tambahkan marker patok P1, P2...
+    // Tambahkan marker patok P1, P2... (statis, tidak draggable)
     measurement.controlPoints.forEach((cp) => {
       const marker = L.marker([cp.latitude, cp.longitude], {
         icon: createPatokIcon(cp.label, selectedColor),
         interactive: false,
+        zIndexOffset: 100,
       });
       decorGroup.addLayer(marker);
     });
@@ -265,10 +274,61 @@ export function MapView() {
     });
   }, [measurement, selectedColor, mode]);
 
+  // 5b) Patok draggable saat mode edit — tampilkan P1..Pn yang bisa digeser
+  useEffect(() => {
+    const map = mapRef.current;
+    const editRef = editPatokGroupRef.current;
+    if (!editRef) return;
+
+    // Bersihkan patok edit lama
+    editRef.group.clearLayers();
+    editRef.markers = [];
+
+    if (mode !== 'edit' || !measurement || !measurement.isValid) return;
+
+    const polygon = activePolygonLayerRef.current;
+    if (!polygon || !map) return;
+
+    // Buat marker draggable untuk setiap patok
+    measurement.controlPoints.forEach((cp, idx) => {
+      const marker = L.marker([cp.latitude, cp.longitude], {
+        icon: createPatokIcon(cp.label, selectedColor),
+        draggable: true,
+        autoPan: true,
+        zIndexOffset: 200,
+        interactive: true,
+      });
+
+      marker.on('drag', () => {
+        // Saat drag berlangsung, perbarui titik polygon secara realtime
+        const latlngs = polygon.getLatLngs();
+        const ring = Array.isArray(latlngs[0]) ? (latlngs[0] as L.LatLng[]) : (latlngs as L.LatLng[]);
+        if (ring[idx] !== undefined) {
+          ring[idx] = marker.getLatLng();
+          polygon.setLatLngs([ring]);
+          polygon.redraw();
+        }
+      });
+
+      marker.on('dragend', () => {
+        // Sinkron ke state setelah drag selesai
+        syncPolygonToState(polygon);
+      });
+
+      editRef.group.addLayer(marker);
+      editRef.markers.push(marker);
+    });
+  }, [mode, measurement, selectedColor, syncPolygonToState]);
+
   // 6) Efek pemuatan lahan spesifik (jika loadedParcelId diset atau dari URL)
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loadedParcelId) return;
+
+    // Pastikan peta tahu ukuran containernya (setelah navigasi)
+    setTimeout(() => {
+      mapRef.current?.invalidateSize({ debounceMoveend: false });
+    }, 100);
 
     let isCancelled = false;
     getParcelById(loadedParcelId).then((parcel) => {
@@ -299,14 +359,17 @@ export function MapView() {
 
       syncPolygonToState(polygon);
 
-      // Fokuskan peta ke poligon yang dimuat dengan padding (mendukung zoom detail hingga level 22 untuk petak kecil)
+      // Fokuskan peta ke poligon yang dimuat, lalu invalidateSize agar zoom berfungsi
       map.fitBounds(polygon.getBounds(), { padding: [40, 40], maxZoom: 22 });
+      setTimeout(() => {
+        mapRef.current?.invalidateSize({ debounceMoveend: false });
+      }, 300);
     });
 
     return () => {
       isCancelled = true;
     };
-  }, [loadedParcelId, getParcelById, syncPolygonToState, setSelectedColor]);
+  }, [loadedParcelId, getParcelById, syncPolygonToState, setSelectedColor, attachPolygonEditEvents]);
 
   // 7) Marker posisi GPS + lingkaran akurasi
   useEffect(() => {
@@ -463,14 +526,22 @@ export function MapView() {
     if (!polygon) return;
 
     if (mode === 'edit') {
+      // Keluar dari mode edit: bersihkan patok draggable & nonaktifkan Geoman
+      if (editPatokGroupRef.current) {
+        editPatokGroupRef.current.group.clearLayers();
+        editPatokGroupRef.current.markers = [];
+      }
       polygon.pm.disable();
       setMode('idle');
     } else {
-      setMode('edit');
+      // Masuk ke mode edit: aktifkan Geoman (vertex tersembunyi) & tampilkan patok draggable
+      // Geoman pm.enable() dengan pinnedFlags false agar vertex Geoman tidak bentrok dengan patok custom
       polygon.pm.enable({
         allowSelfIntersection: false,
         snappable: true,
+        hideMiddleMarkers: true,
       });
+      setMode('edit');
     }
   }, [mode, setMode]);
 
@@ -487,6 +558,10 @@ export function MapView() {
     }
     if (decorLayerGroupRef.current) {
       decorLayerGroupRef.current.clearLayers();
+    }
+    if (editPatokGroupRef.current) {
+      editPatokGroupRef.current.group.clearLayers();
+      editPatokGroupRef.current.markers = [];
     }
     setGpsDraft([]);
     setPendingTrack(null);

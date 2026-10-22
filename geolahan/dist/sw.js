@@ -1,5 +1,5 @@
 /* GeoLahan Pro — service worker (dibangkitkan saat build; jangan edit sw.js di dist/). */
-const VERSION = 'e35d57f44c85';
+const VERSION = '5fb80b534fd5';
 const SHELL_CACHE = 'geolahan-shell-' + VERSION;
 const TILE_CACHE = 'geolahan-tiles-v1';
 const MAX_TILES = 400;
@@ -7,11 +7,11 @@ const PRECACHE = [
   "./",
   "./assets/html2canvas-iod3n_YB.js",
   "./assets/html2canvas-pro.esm-BznAOs5V.js",
-  "./assets/index-B6Zh7yFr.js",
-  "./assets/index-DlglE7Rg.css",
-  "./assets/index.es-VSqiIEEm.js",
-  "./assets/map-capture.service-424wzLYM.js",
-  "./assets/pdf.service-DcWugtka.js",
+  "./assets/index-BihiHoVk.css",
+  "./assets/index-CembIjkt.js",
+  "./assets/index.es-f7Spc0DN.js",
+  "./assets/map-capture.service-BhiSq51y.js",
+  "./assets/pdf.service-BuE8sqGC.js",
   "./assets/purify.es-BZxk_wWO.js",
   "./assets/rolldown-runtime-XKyaHtl9.js",
   "./assets/vendor-leaflet-CJQ2ARdL.js",
