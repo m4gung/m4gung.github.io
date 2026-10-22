@@ -1,22 +1,24 @@
 /* GeoLahan Pro — service worker (dibangkitkan saat build; jangan edit sw.js di dist/). */
-const VERSION = '5fb80b534fd5';
+const VERSION = 'a8c1cfd4056d';
 const SHELL_CACHE = 'geolahan-shell-' + VERSION;
 const TILE_CACHE = 'geolahan-tiles-v1';
 const MAX_TILES = 400;
 const PRECACHE = [
   "./",
-  "./assets/html2canvas-iod3n_YB.js",
-  "./assets/html2canvas-pro.esm-BznAOs5V.js",
-  "./assets/index-BihiHoVk.css",
-  "./assets/index-CembIjkt.js",
-  "./assets/index.es-f7Spc0DN.js",
-  "./assets/map-capture.service-BhiSq51y.js",
-  "./assets/pdf.service-BuE8sqGC.js",
-  "./assets/purify.es-BZxk_wWO.js",
-  "./assets/rolldown-runtime-XKyaHtl9.js",
-  "./assets/vendor-leaflet-CJQ2ARdL.js",
-  "./assets/vendor-leaflet-vh-t_kPv.css",
-  "./assets/vendor-react-ByJxbK5k.js",
+  "./assets/apple-touch-icon-B-jzFXFo.png",
+  "./assets/favicon-BoLAv8qf.svg",
+  "./assets/html2canvas-iod3n_YB-VNl87ARt.js",
+  "./assets/html2canvas-pro.esm-BznAOs5V-BznAOs5V.js",
+  "./assets/index-BR2dKxfX.js",
+  "./assets/index-DvT6qnHV.css",
+  "./assets/index.es-f7Spc0DN-BeYLGCzv.js",
+  "./assets/manifest-CYeYtMFs.webmanifest",
+  "./assets/map-capture.service-BhiSq51y-BSsLEuD-.js",
+  "./assets/pdf.service-BuE8sqGC-B_hwyXy7.js",
+  "./assets/purify.es-BZxk_wWO-BZxk_wWO.js",
+  "./assets/rolldown-runtime-XKyaHtl9-B71M2wj3.js",
+  "./assets/vendor-leaflet-CJQ2ARdL-oSysuB9i.js",
+  "./assets/vendor-react-ByJxbK5k-Drici2ZX.js",
   "./favicon.svg",
   "./icon-maskable.svg",
   "./icons/apple-touch-icon.png",

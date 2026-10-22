@@ -45,16 +45,35 @@ export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss(), geolahanServiceWorker()],
   build: {
+    // Nonaktifkan CSS minifier (lightningcss tidak bisa handle % dalam SVG data URL
+    // yang dipakai oleh @geoman-io/leaflet-geoman-free). CSS Tailwind sudah cukup efisien.
+    cssMinify: false,
     rolldownOptions: {
       output: {
         // Pisahkan vendor agar cache browser tetap valid saat kode aplikasi berubah.
         codeSplitting: {
           groups: [
             { name: 'vendor-leaflet', test: /node_modules[\\/]leaflet/ },
-            { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|react-router|scheduler|dexie|dexie-react-hooks)[\\/]/ },
+            {
+              name: 'vendor-react',
+              test: /node_modules[\\/](react|react-dom|react-router|scheduler|dexie|dexie-react-hooks)[\\/]/,
+            },
           ],
         },
       },
+    },
+  },
+  server: {
+    // Batasi Vite dev server hanya baca dari source + node_modules,
+    // agar tidak menganalisis file build hasil deploy di folder assets/ dan dist/.
+    // Menggunakan import.meta.dirname (ESM-native, direkomendasikan Vite 6+)
+    fs: {
+      allow: [
+        join(import.meta.dirname, 'src'),
+        join(import.meta.dirname, 'public'),
+        join(import.meta.dirname, 'pwa'),
+        join(import.meta.dirname, 'node_modules'),
+      ],
     },
   },
   test: {
