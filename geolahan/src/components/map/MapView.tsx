@@ -24,10 +24,11 @@ const searchMarkerIcon = L.divIcon({
   popupAnchor: [0, -26],
 });
 
-function createPatokIcon(label: string): L.DivIcon {
+function createPatokIcon(label: string, color?: string): L.DivIcon {
+  const style = color ? `style="--patok-color: ${color};"` : '';
   return L.divIcon({
     className: 'geolahan-patok-marker',
-    html: `<div class="patok-bubble">${label}</div>`,
+    html: `<div class="patok-bubble" ${style}>${label}</div>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12],
   });
@@ -97,6 +98,18 @@ export function MapView() {
     [updateCoordinates],
   );
 
+  const attachPolygonEditEvents = useCallback(
+    (polygon: L.Polygon) => {
+      const onSync = () => syncPolygonToState(polygon);
+      polygon.on('pm:edit', onSync);
+      polygon.on('pm:dragend', onSync);
+      polygon.on('pm:vertexadded', onSync);
+      polygon.on('pm:vertexremoved', onSync);
+      polygon.on('pm:markerdragend', onSync);
+    },
+    [syncPolygonToState],
+  );
+
   // 1) Inisialisasi peta Leaflet & Geoman
   useEffect(() => {
     const container = containerRef.current;
@@ -137,8 +150,7 @@ export function MapView() {
         activePolygonLayerRef.current = polygon;
 
         // Pasang event edit/drag pada poligon baru
-        polygon.on('pm:edit', () => syncPolygonToState(polygon));
-        polygon.on('pm:dragend', () => syncPolygonToState(polygon));
+        attachPolygonEditEvents(polygon);
 
         syncPolygonToState(polygon);
         setMode('idle');
@@ -231,12 +243,13 @@ export function MapView() {
 
     decorGroup.clearLayers();
 
-    if (!measurement || !measurement.isValid) return;
+    // Sembunyikan dekorasi statis saat mode edit agar vertex handle Geoman terlihat jelas dan interaktif
+    if (!measurement || !measurement.isValid || mode === 'edit') return;
 
     // Tambahkan marker patok P1, P2...
     measurement.controlPoints.forEach((cp) => {
       const marker = L.marker([cp.latitude, cp.longitude], {
-        icon: createPatokIcon(cp.label),
+        icon: createPatokIcon(cp.label, selectedColor),
         interactive: false,
       });
       decorGroup.addLayer(marker);
@@ -250,7 +263,7 @@ export function MapView() {
       });
       decorGroup.addLayer(labelMarker);
     });
-  }, [measurement]);
+  }, [measurement, selectedColor, mode]);
 
   // 6) Efek pemuatan lahan spesifik (jika loadedParcelId diset atau dari URL)
   useEffect(() => {
@@ -282,8 +295,7 @@ export function MapView() {
       activePolygonLayerRef.current = polygon;
       setSelectedColor(parcel.color);
 
-      polygon.on('pm:edit', () => syncPolygonToState(polygon));
-      polygon.on('pm:dragend', () => syncPolygonToState(polygon));
+      attachPolygonEditEvents(polygon);
 
       syncPolygonToState(polygon);
 
@@ -356,8 +368,7 @@ export function MapView() {
         weight: 3,
       }).addTo(map);
       activePolygonLayerRef.current = polygon;
-      polygon.on('pm:edit', () => syncPolygonToState(polygon));
-      polygon.on('pm:dragend', () => syncPolygonToState(polygon));
+      attachPolygonEditEvents(polygon);
       syncPolygonToState(polygon);
       setMode('idle');
       map.fitBounds(polygon.getBounds(), { padding: [40, 40], maxZoom: 22 });
@@ -553,6 +564,7 @@ export function MapView() {
         onToggleTrack={handleToggleTrack}
         onConfirmTrack={handleConfirmTrack}
         onDiscardTrack={handleDiscardTrack}
+        onCloseFix={gps.clearFix}
       />
 
       {/* Panel Hasil Pengukuran & Tabel Koordinat */}

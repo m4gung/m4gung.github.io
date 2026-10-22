@@ -1,4 +1,4 @@
-import { Crosshair, LocateFixed, MapPinPlus, Check, Circle, Square, Trash2, TriangleAlert } from 'lucide-react';
+import { Crosshair, LocateFixed, MapPinPlus, Check, Circle, Square, Trash2, TriangleAlert, X } from 'lucide-react';
 import {
   GPS_DISCLAIMER,
   formatCoord,
@@ -21,6 +21,7 @@ interface GpsControlsProps {
   onToggleTrack: () => void;
   onConfirmTrack: () => void;
   onDiscardTrack: () => void;
+  onCloseFix?: () => void;
 }
 
 const STATUS_LABEL: Record<GpsStatus, string> = {
@@ -37,7 +38,7 @@ const btn =
   'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium shadow-lg border border-slate-200/80 bg-white/95 text-slate-800 hover:bg-emerald-50 dark:border-slate-800/80 dark:bg-slate-900/95 dark:text-slate-100 dark:hover:bg-slate-800 disabled:opacity-50';
 
 export function GpsControls(props: GpsControlsProps) {
-  const { status, fix, error, isTracking, trackCount, trackNotice, pendingTrackCount } = props;
+  const { status, fix, error, isTracking, trackCount, trackNotice, pendingTrackCount, onCloseFix } = props;
   const busy = status === 'requesting';
   const unsupported = status === 'unsupported';
 
@@ -47,9 +48,20 @@ export function GpsControls(props: GpsControlsProps) {
         <div
           role="status"
           aria-label="Status GPS"
-          className="w-full rounded-2xl border border-slate-200/80 bg-white/95 p-3 text-xs shadow-xl backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/95 dark:text-slate-200"
+          className="relative w-full rounded-2xl border border-slate-200/80 bg-white/95 p-3 text-xs shadow-xl backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/95 dark:text-slate-200"
         >
-          <div className="mb-1 flex items-center justify-between font-semibold">
+          {onCloseFix && (
+            <button
+              type="button"
+              onClick={onCloseFix}
+              className="absolute top-2.5 right-2.5 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              aria-label="Tutup info GPS"
+              title="Tutup info GPS"
+            >
+              <X className="size-3.5" aria-hidden="true" />
+            </button>
+          )}
+          <div className="mb-1 flex items-center justify-between font-semibold pr-6">
             <span className="flex items-center gap-1">
               <Crosshair className="size-3.5" aria-hidden="true" /> GPS
             </span>

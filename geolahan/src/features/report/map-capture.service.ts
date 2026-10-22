@@ -19,8 +19,8 @@ export interface MapCapture {
 }
 
 export const MAP_CAPTURE_TIMEOUT_MS = 12_000;
-/** Esri menampilkan tile placeholder "Map data not yet available" di zoom tinggi pada banyak area. */
-export const PRINT_MAX_ZOOM = 17;
+/** Zoom maksimal saat capture peta PDF (dinaikkan ke 22 agar lahan kecil dapat ter-zoom besar & detail). */
+export const PRINT_MAX_ZOOM = 22;
 
 /** Periksa piksel sampel: citra nyata memiliki variasi warna, kanvas kosong tidak. */
 export function canvasHasImagery(canvas: HTMLCanvasElement): boolean {

@@ -133,12 +133,41 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #047857;
+  background: var(--patok-color, #047857);
   color: #ffffff;
   font-size: 11px;
   font-weight: 700;
   border: 2px solid #ffffff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.15s ease;
+}
+
+/* Penyesuaian Geoman vertex drag marker agar mudah di klik & diubah saat mode edit */
+.geolahan-map .marker-icon {
+  background-color: #ffffff !important;
+  border: 2.5px solid #d97706 !important;
+  border-radius: 50% !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin: -9px 0 0 -9px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45) !important;
+  cursor: grab !important;
+  z-index: 1000 !important;
+}
+
+.geolahan-map .marker-icon:active {
+  cursor: grabbing !important;
+  transform: scale(1.2);
+}
+
+.geolahan-map .marker-icon-middle {
+  opacity: 0.8 !important;
+  background-color: #fef3c7 !important;
+  border: 2px dashed #d97706 !important;
+  width: 12px !important;
+  height: 12px !important;
+  margin: -7px 0 0 -7px !important;
+  cursor: copy !important;
 }
 
 /* Dekorasi Jarak Garis Sisi */

@@ -119,6 +119,14 @@ export function useGps() {
     setTrack([]);
   }, []);
 
+  /** Menutup / menghapus hasil GPS aktif dan error dari layar */
+  const clearFix = useCallback(() => {
+    stopWatch();
+    setFix(null);
+    setError(null);
+    setStatus(isGpsSupported() ? 'idle' : 'unsupported');
+  }, [stopWatch]);
+
   useEffect(() => stopWatch, [stopWatch]);
 
   return {
@@ -132,5 +140,6 @@ export function useGps() {
     startTracking,
     stopTracking,
     clearTrack,
+    clearFix,
   };
 }
