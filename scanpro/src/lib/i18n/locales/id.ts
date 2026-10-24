@@ -1,5 +1,5 @@
 // Indonesian translations (default locale)
-import type { TranslationMessages } from './types';
+import type { TranslationMessages } from '../types';
 
 export const idMessages: TranslationMessages = {
   app: {

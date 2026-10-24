@@ -9,9 +9,9 @@ import {
   SplitPDFUseCase,
   ExtractPDFPagesUseCase,
   PrintPDFUseCase,
-} from '../../application/use-cases/PDFUseCases'
-import type { ScanProDocument, SourceAsset } from '../../infrastructure/database/database'
-import { pdfRenderingAdapter } from '../../infrastructure/pdf-rendering/pdfRenderingAdapter'
+} from '../application/use-cases/PDFUseCases'
+import type { ScanProDocument, SourceAsset } from '../infrastructure/database/database'
+import { pdfRenderingAdapter } from '../infrastructure/pdf-rendering/pdfRenderingAdapter'
 
 const importPDF = new ImportPDFUseCase()
 const rotatePage = new RotatePDFPageUseCase()
@@ -143,7 +143,7 @@ export const usePDFStore = create<PDFStoreState>((set, get) => ({
       if (result.success) {
         // Reorder pdfPages to match
         const pageMap = new Map(get().pdfPages.map((p) => [String(p.pageNumber), p]))
-        const reordered = newOrder.map((id) => pageMap.get(id)).filter((p): p is typeof get().pdfPages[0] => p !== undefined)
+        const reordered = newOrder.map((id) => pageMap.get(id)).filter((p): p is NonNullable<typeof p> => p !== undefined)
         set({ pdfPages: reordered.map((p, i) => ({ ...p, pageNumber: i + 1 })) })
       } else {
         set({ error: result.error })

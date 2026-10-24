@@ -215,6 +215,7 @@ export function waitFor(condition: () => boolean, timeout = 1000): Promise<void>
     }
     check()
   })
+}
 
 export function actAsync(fn: () => Promise<void>): Promise<void> {
   return fn()
@@ -267,8 +268,9 @@ export function getByLabelText(container: HTMLElement, text: string): HTMLElemen
       const input = label.querySelector('input, select, textarea')
       if (input) return input as HTMLElement
     }
-    return null
   }
+  return null
+}
 
 export function getByText(container: HTMLElement, text: string): HTMLElement | null {
   const walker = document.createTreeWalker(

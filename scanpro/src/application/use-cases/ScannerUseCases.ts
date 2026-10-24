@@ -1,8 +1,8 @@
-import { imageProcessingAdapter } from '../../../infrastructure/image-processing/imageProcessingAdapter'
-import { storageAdapter } from '../../../infrastructure/storage/storageAdapter'
-import { documentRepository } from '../../../infrastructure/database/documentRepository'
-import type { SourceAsset, DocumentPage } from '../../../domain/documents'
-import type { ScanProDocument } from '../../../infrastructure/database/database'
+import { imageProcessingAdapter } from '../../infrastructure/image-processing/imageProcessingAdapter'
+import { storageAdapter } from '../../infrastructure/storage/storageAdapter'
+import { documentRepository } from '../../infrastructure/database/documentRepository'
+import type { SourceAsset, DocumentPage } from '../../domain/documents'
+import type { ScanProDocument } from '../../infrastructure/database/database'
 
 export interface ScanSession {
   id: string
@@ -148,27 +148,28 @@ export class SaveScanSessionUseCase {
   ): Promise<SaveScanSessionResult> {
     try {
       const now = new Date()
-      const pages: DocumentPage[] = session.pages.map((p, i) => ({
-        id: p.id,
-        documentId: '',
-        sourceType: 'scanned' as const,
-        sourceAssetId: p.id,
-        index: i,
-        width: p.processedBlob
-          ? (await this.getImageDimensions(p.processedBlob)).width
-          : 0,
-        height: p.processedBlob
-          ? (await this.getImageDimensions(p.processedBlob)).height
-          : 0,
-        rotation: p.rotation,
-        crop: p.crop,
-        perspective: p.perspective as any,
-        metadata: {
-          createdAt: p.status === 'processed' ? now : session.createdAt,
-          updatedAt: now,
-          enhanced: p.status === 'processed',
-        },
-      }))
+      const pages: DocumentPage[] = await Promise.all(
+        session.pages.map(async (p, i) => {
+          const dims = p.processedBlob ? await this.getImageDimensions(p.processedBlob) : { width: 0, height: 0 }
+          return {
+            id: p.id,
+            documentId: '',
+            sourceType: 'scanned' as const,
+            sourceAssetId: p.id,
+            index: i,
+            width: dims.width,
+            height: dims.height,
+            rotation: p.rotation,
+            crop: p.crop,
+            perspective: p.perspective as any,
+            metadata: {
+              createdAt: p.status === 'processed' ? now : session.createdAt,
+              updatedAt: now,
+              enhanced: p.status === 'processed',
+            },
+          }
+        })
+      )
 
       const asset: SourceAsset = {
         id: `asset_${session.id}`,

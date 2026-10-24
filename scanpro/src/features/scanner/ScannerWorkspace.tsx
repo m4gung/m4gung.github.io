@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useScannerStore } from '../../../stores/scannerStore'
-import { useTranslation } from '../../../lib/i18n'
-import { CameraPreview } from './CameraPreview'
-import { ScanPreview } from './ScanPreview'
-import { Button } from '../../../components/ui/Button'
+import { useScannerStore } from '../../stores/scannerStore'
+import { useTranslation } from '../../lib/i18n'
+import { CameraPreview } from './components/CameraPreview'
+import { ScanPreview } from './components/ScanPreview'
+import { Button } from '../../components/ui/Button'
 import { RotateCw, RotateCcw, Crop, Save, X, ChevronLeft, ChevronRight, Trash2, ImageIcon, Camera, Settings } from 'lucide-react'
 
 export const ScannerWorkspace = () => {

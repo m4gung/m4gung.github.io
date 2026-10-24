@@ -10,7 +10,7 @@ import type {
   Transform,
   Point,
   CanvasElementType,
-} from '../../../domain/canvas'
+} from '../../domain/canvas'
 
 export interface ElementFactoryOptions {
   type: CanvasElementType

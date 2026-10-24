@@ -1,5 +1,5 @@
-import { useCanvasStore } from '../../../../stores/canvasStore'
-import { Button } from '../../../../components/ui/Button'
+import { useCanvasStore } from '../../../stores/canvasStore'
+import { Button } from '../../../components/ui/Button'
 import { Eye, EyeOff, Lock, Unlock, Trash2, Copy, GripVertical, ChevronUp, ChevronDown, Layers } from 'lucide-react'
 
 export const LayersPanel = () => {

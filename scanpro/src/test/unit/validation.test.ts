@@ -9,7 +9,7 @@ import {
   MAX_IMAGE_SIZE,
   MAX_PDF_PAGES,
   validateFileSize,
-} from '../domain/validation'
+} from '../../domain/validation'
 
 describe('Document Validation', () => {
   describe('validateDocument', () => {

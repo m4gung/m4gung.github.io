@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Button } from '../../components/ui/Button'
-import { ImportImageService } from '../../../application/services/ImportImageService'
+import { ImportImageService } from '../../application/services/ImportImageService'
 import { useDocumentStore } from '../../stores/documentStore'
 
 export const ImageImport = () => {

@@ -1,5 +1,5 @@
-import { documentRepository } from '../../../infrastructure/database/documentRepository'
-import type { Document } from '../../../domain/documents'
+import { documentRepository } from '../../infrastructure/database/documentRepository'
+import type { Document } from '../../domain/documents'
 
 export class RenameDocumentUseCase {
   async execute(

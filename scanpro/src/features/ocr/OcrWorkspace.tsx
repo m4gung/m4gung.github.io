@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useOcrStore } from '../../../stores/ocrStore'
-import { useTranslation } from '../../../lib/i18n'
+import { useOcrStore } from '../../stores/ocrStore'
+import { useTranslation } from '../../lib/i18n'
 import { OcrProgress } from './components/OcrProgress'
 import { OcrTextEditor } from './components/OcrTextEditor'
-import { Button } from '../../../components/ui/Button'
+import { Button } from '../../components/ui/Button'
 import { FileText, Image, Search, Globe, Loader2, CheckCircle, AlertCircle, Download, Copy } from 'lucide-react'
 
 export const OcrWorkspace = () => {
@@ -260,7 +260,13 @@ export const OcrWorkspace = () => {
                 </label>
               </div>
               <Button className="mt-4 w-full" size="lg" onClick={handleRunOcr} disabled={!isInitialized || isProcessing}>
-                {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Memproses Batch... : 'Mulai Batch OCR'}
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('ocr.batchTab.progress')}
+                  </>
+                ) : (
+                  t('ocr.batchTab.runBatch')
+                )}
               </Button>
             </div>
 

@@ -5,8 +5,8 @@ import {
   RunOcrBatchUseCase,
   SearchOcrTextUseCase,
   InitializeOcrUseCase,
-} from '../../application/use-cases/OcrUseCases'
-import type { OcrPageResult, OcrOptions } from '../../infrastructure/ocr/ocrAdapter'
+} from '../application/use-cases/OcrUseCases'
+import type { OcrPageResult, OcrOptions } from '../infrastructure/ocr/ocrAdapter'
 
 const runOcrOnDocument = new RunOcrOnDocumentUseCase()
 const runOcrOnImage = new RunOcrOnImageUseCase()

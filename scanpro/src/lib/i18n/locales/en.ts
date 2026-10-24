@@ -1,5 +1,5 @@
 // English translations
-import type { TranslationMessages } from './types';
+import type { TranslationMessages } from '../types';
 
 export const enMessages: TranslationMessages = {
   app: {

@@ -1,12 +1,12 @@
-import { documentRepository } from '../../../infrastructure/database/documentRepository'
-import { storageAdapter } from '../../../infrastructure/storage/storageAdapter'
+import { documentRepository } from '../../infrastructure/database/documentRepository'
+import { storageAdapter } from '../../infrastructure/storage/storageAdapter'
 import {
   isValidImageType,
   isValidPdfType,
   validateFileSize,
   MAX_IMAGE_SIZE,
-} from '../../../domain/validation'
-import type { SourceAsset, Document, DocumentPage } from '../../../domain/documents'
+} from '../../domain/validation'
+import type { SourceAsset, Document, DocumentPage } from '../../domain/documents'
 
 export interface ImportImageResult {
   success: boolean

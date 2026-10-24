@@ -1,6 +1,6 @@
-import { useCanvasStore } from '../../../../stores/canvasStore'
-import { Button } from '../../../../components/ui/Button'
-import { useTranslation } from '../../../../lib/i18n'
+import { useCanvasStore } from '../../../stores/canvasStore'
+import { Button } from '../../../components/ui/Button'
+import { useTranslation } from '../../../lib/i18n'
 import {
   MousePointer, Type, Square, Circle, Minus, ArrowRight, Pencil, Image, PenTool, StickyNote, Highlighter,
   RotateCcw, RotateCw, Copy, Trash2, Layers, Lock, Unlock, Maximize, Minimize, Grid,

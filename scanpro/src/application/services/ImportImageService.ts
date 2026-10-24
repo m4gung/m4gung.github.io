@@ -1,4 +1,4 @@
-import { ImportImageUseCase } from './ImportImage'
+import { ImportImageUseCase } from '../use-cases/ImportImage'
 
 export class ImportImageService {
   private useCase = new ImportImageUseCase()

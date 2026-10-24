@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { PDFPageRenderer } from './components/PDFPageRenderer'
-import { Button } from '../../../components/ui/Button'
-import { usePDFStore } from '../../../stores/pdfStore'
+import { Button } from '../../components/ui/Button'
+import { usePDFStore } from '../../stores/pdfStore'
 import {
   RotateCw, RotateCcw, Trash2, GripVertical, Download, FilePlus, Save, Printer, ChevronLeft, ChevronRight,
   FileText, LayoutGrid, Minus, Plus,

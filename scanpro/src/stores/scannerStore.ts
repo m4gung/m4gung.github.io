@@ -5,11 +5,11 @@ import {
   ProcessScanPageUseCase,
   SaveScanSessionUseCase,
   CancelScanSessionUseCase,
-} from '../../application/use-cases/ScannerUseCases'
-import type { ScanSession, ScanPage } from '../../application/use-cases/ScannerUseCases'
-import { cameraAdapter } from '../../infrastructure/camera/cameraAdapter'
-import { imageProcessingAdapter } from '../../infrastructure/image-processing/imageProcessingAdapter'
-import { scannerSessionRepository } from '../../infrastructure/database/scannerDatabase'
+} from '../application/use-cases/ScannerUseCases'
+import type { ScanSession, ScanPage } from '../application/use-cases/ScannerUseCases'
+import { cameraAdapter } from '../infrastructure/camera/cameraAdapter'
+import { imageProcessingAdapter } from '../infrastructure/image-processing/imageProcessingAdapter'
+import { scannerSessionRepository } from '../infrastructure/database/scannerDatabase'
 
 const startSession = new StartScanSessionUseCase()
 const capturePage = new CaptureScanPageUseCase()

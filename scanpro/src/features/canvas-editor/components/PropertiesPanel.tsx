@@ -1,5 +1,5 @@
-import { useCanvasStore } from '../../../../stores/canvasStore'
-import { useTranslation } from '../../../../lib/i18n'
+import { useCanvasStore } from '../../../stores/canvasStore'
+import { useTranslation } from '../../../lib/i18n'
 
 export const PropertiesPanel = () => {
   const { t } = useTranslation()

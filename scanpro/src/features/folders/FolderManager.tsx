@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Button } from '../../../components/ui/Button'
-import { CreateFolderUseCase, GetFoldersUseCase, UpdateFolderUseCase, DeleteFolderUseCase } from '../../../application/use-cases/FolderUseCases'
+import { Button } from '../../components/ui/Button'
+import { CreateFolderUseCase, GetFoldersUseCase, UpdateFolderUseCase, DeleteFolderUseCase } from '../../application/use-cases/FolderUseCases'
 
 const createFolderUseCase = new CreateFolderUseCase()
 const getFoldersUseCase = new GetFoldersUseCase()

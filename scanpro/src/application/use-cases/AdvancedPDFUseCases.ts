@@ -1,13 +1,13 @@
-import { pdfInspectionAdapter } from '../../../infrastructure/pdf-processing/advancedPDFAdapter'
-import { pdfAnnotationAdapter } from '../../../infrastructure/pdf-processing/advancedPDFAdapter'
-import { pdfFormAdapter } from '../../../infrastructure/pdf-processing/advancedPDFAdapter'
-import { pdfRedactionAdapter } from '../../../infrastructure/pdf-processing/advancedPDFAdapter'
-import { pdfOverlayAdapter } from '../../../infrastructure/pdf-processing/advancedPDFAdapter'
-import { pdfBackupAdapter } from '../../../infrastructure/pdf-processing/advancedPDFAdapter'
-import { documentRepository } from '../../../infrastructure/database/documentRepository'
-import { storageAdapter } from '../../../infrastructure/storage/storageAdapter'
-import type { ScanProDocument } from '../../../infrastructure/database/database'
-import type { PDFAnnotation, PDFFormField, PDFCapabilityReport } from '../../../infrastructure/pdf-processing/advancedPDFAdapter'
+import { pdfInspectionAdapter } from '../../infrastructure/pdf-processing/advancedPDFAdapter'
+import { pdfAnnotationAdapter } from '../../infrastructure/pdf-processing/advancedPDFAdapter'
+import { pdfFormAdapter } from '../../infrastructure/pdf-processing/advancedPDFAdapter'
+import { pdfRedactionAdapter } from '../../infrastructure/pdf-processing/advancedPDFAdapter'
+import { pdfOverlayAdapter } from '../../infrastructure/pdf-processing/advancedPDFAdapter'
+import { pdfBackupAdapter } from '../../infrastructure/pdf-processing/advancedPDFAdapter'
+import { documentRepository } from '../../infrastructure/database/documentRepository'
+import { storageAdapter } from '../../infrastructure/storage/storageAdapter'
+import type { ScanProDocument } from '../../infrastructure/database/database'
+import type { PDFAnnotation, PDFFormField, PDFCapabilityReport } from '../../infrastructure/pdf-processing/advancedPDFAdapter'
 
 export interface InspectPDFResult {
   success: boolean

@@ -101,10 +101,11 @@ export class PerformanceMonitor {
       try {
         let clsValue = 0
         const clsObserver = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
+for (const entry of list.getEntries()) {
             if (!(entry as any).hadRecentInput) {
               clsValue += (entry as any).value
-}
+            }
+          }
           this.metrics.cumulativeLayoutShift = clsValue
         })
         clsObserver.observe({ type: 'layout-shift', buffered: true })
@@ -230,7 +231,7 @@ export function measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> 
     performance.mark(`${name}-end`)
     performance.measure(name, `${name}-start`, `${name}-end`)
     console.log(`${name}: ${duration.toFixed(2)}ms`)
-  }
+  })
 }
 
 export function measureSync<T>(name: string, fn: () => T): T {

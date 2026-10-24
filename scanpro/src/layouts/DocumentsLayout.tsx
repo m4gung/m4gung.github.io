@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom'
 import { ArrowLeft, FolderOpen } from 'lucide-react'
-import { Button } from '../../components/ui/Button'
+import { Button } from '../components/ui/Button'
 
 export const DocumentsLayout = () => {
   return (

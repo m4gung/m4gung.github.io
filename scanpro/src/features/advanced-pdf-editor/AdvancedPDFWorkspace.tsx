@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useAdvancedPDFStore } from '../../../stores/advancedPDFStore'
-import { Button } from '../../../components/ui/Button'
+import { useAdvancedPDFStore } from '../../stores/advancedPDFStore'
+import { Button } from '../../components/ui/Button'
 import {
   FileText, Search, Highlighter, PenTool, Type, CheckSquare, Layers, 
   Redo2, Undo2, Download, Upload, Shield, Eye, EyeOff, Trash2,

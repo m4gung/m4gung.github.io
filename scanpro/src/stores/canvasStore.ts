@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { CanvasElementFactory, type CanvasElement } from '../../infrastructure/canvas/canvasElementFactory'
+import { CanvasElementFactory, type CanvasElement } from '../infrastructure/canvas/canvasElementFactory'
 import type {
   CanvasElement as CanvasElementType,
   CanvasTool,
@@ -7,7 +7,7 @@ import type {
   CanvasDocument,
   Point,
   Transform,
-} from '../../domain/canvas'
+} from '../domain/canvas'
 
 interface CanvasStoreState {
   document: CanvasDocument | null
@@ -284,7 +284,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
             ),
           }
         : null,
-    })
+    }))
   },
 
   deselectAll: () => {
@@ -396,6 +396,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
               : p
           ),
         },
+      }
     })
   },
 
@@ -415,6 +416,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
               : p
           ),
         },
+      }
     })
   },
 
@@ -429,7 +431,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
             })),
           }
         : null,
-    })
+    }))
   },
 
   setElementOpacity: (id: string, opacity: number) => {

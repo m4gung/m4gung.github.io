@@ -9,7 +9,7 @@ import type {
   HighlightElement,
   Point,
   Transform,
-} from '../../../domain/canvas'
+} from '../../domain/canvas'
 
 export class CanvasRenderer {
   private ctx: CanvasRenderingContext2D

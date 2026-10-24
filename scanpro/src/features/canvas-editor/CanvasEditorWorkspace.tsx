@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useCanvasStore } from '../../../stores/canvasStore'
+import { useCanvasStore } from '../../stores/canvasStore'
 import { CanvasViewport } from './components/CanvasViewport'
 import { Toolbar } from './components/Toolbar'
 import { PropertiesPanel } from './components/PropertiesPanel'
 import { LayersPanel } from './components/LayersPanel'
-import { Button } from '../../../components/ui/Button'
+import { Button } from '../../components/ui/Button'
 import { Save, Download, Upload, FilePlus, RotateCcw, RotateCw, Image, Printer, ChevronLeft, Plus, Minus, Undo2, Redo2 } from 'lucide-react'
 
 export const CanvasEditorWorkspace = () => {
@@ -251,9 +251,8 @@ export const CanvasEditorWorkspace = () => {
               document.addEventListener('mouseup', onMouseUp)
             }} />
 </aside>
-      </main>
+      </div>
     </div>
-  </div>
   )
 }
 

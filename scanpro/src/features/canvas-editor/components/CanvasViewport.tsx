@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
-import { CanvasRenderer, createCanvasRenderer } from '../../../../infrastructure/canvas/canvasRenderer'
-import { useCanvasStore } from '../../../../stores/canvasStore'
-import type { Point } from '../../../../domain/canvas'
+import { CanvasRenderer, createCanvasRenderer } from '../../../infrastructure/canvas/canvasRenderer'
+import { useCanvasStore } from '../../../stores/canvasStore'
+import type { Point } from '../../../domain/canvas'
 
 interface CanvasViewportProps {
   width: number

@@ -1,5 +1,5 @@
-import { documentRepository } from '../../../infrastructure/database/documentRepository'
-import type { Folder } from '../../../domain/documents'
+import { documentRepository } from '../../infrastructure/database/documentRepository'
+import type { Folder } from '../../domain/documents'
 
 export interface CreateFolderResult {
   success: boolean

@@ -1,8 +1,8 @@
-import { ocrAdapter } from '../../../infrastructure/ocr/ocrAdapter'
-import { documentRepository } from '../../../infrastructure/database/documentRepository'
-import { storageAdapter } from '../../../infrastructure/storage/storageAdapter'
-import type { OcrPageResult, OcrOptions } from '../../../infrastructure/ocr/ocrAdapter'
-import type { ScanProDocument } from '../../../infrastructure/database/database'
+import { ocrAdapter } from '../../infrastructure/ocr/ocrAdapter'
+import { documentRepository } from '../../infrastructure/database/documentRepository'
+import { storageAdapter } from '../../infrastructure/storage/storageAdapter'
+import type { OcrPageResult, OcrOptions } from '../../infrastructure/ocr/ocrAdapter'
+import type { ScanProDocument } from '../../infrastructure/database/database'
 
 export interface RunOcrOnDocumentResult {
   success: boolean

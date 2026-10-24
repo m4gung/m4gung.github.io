@@ -16,8 +16,8 @@ import {
   CreateBackupUseCase,
   VerifyBackupUseCase,
   PDFAdvancedEditUseCase,
-} from '../../application/use-cases/AdvancedPDFUseCases'
-import type { PDFCapabilityReport, PDFAnnotation, PDFFormField } from '../../infrastructure/pdf-processing/advancedPDFAdapter'
+} from '../application/use-cases/AdvancedPDFUseCases'
+import type { PDFCapabilityReport, PDFAnnotation, PDFFormField } from '../infrastructure/pdf-processing/advancedPDFAdapter'
 
 const inspectPDF = new InspectPDFUseCase()
 const addTextAnnotation = new AddTextAnnotationUseCase()
