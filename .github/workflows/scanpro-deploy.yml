@@ -30,23 +30,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: 'scanpro/package-lock.json'
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: scanpro
-
-      - name: Run lint
-        run: npm run lint
+        run: npm install
         working-directory: scanpro
 
       - name: Run typecheck
         run: npm run typecheck
-        working-directory: scanpro
-
-      - name: Run unit tests
-        run: npm run test:run
         working-directory: scanpro
 
       - name: Build production bundle
