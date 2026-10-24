@@ -1,0 +1,20 @@
+{
+  "short_name": "ScanPro",
+  "name": "ScanPro Studio",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "description": "ScanPro Studio - Local-first document scanning, PDF editing, canvas editing, OCR, and printing PWA"
+}

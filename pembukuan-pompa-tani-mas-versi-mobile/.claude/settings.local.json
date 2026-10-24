@@ -1,0 +1,15 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://openrouter.ai/api",
+    "ANTHROPIC_AUTH_TOKEN": "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",
+    "ANTHROPIC_API_KEY": "",
+    "ANTHROPIC_MODEL": "openai/gpt-oss-120b:free"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import PIL\")",
+      "Bash(python3 *)",
+      "Skill(update-config)"
+    ]
+  }
+}
