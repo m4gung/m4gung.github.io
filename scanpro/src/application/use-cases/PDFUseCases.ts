@@ -2,7 +2,8 @@ import { pdfRenderingAdapter } from '../../infrastructure/pdf-rendering/pdfRende
 import { pdfProcessingAdapter } from '../../infrastructure/pdf-processing/pdfProcessingAdapter'
 import { documentRepository } from '../../infrastructure/database/documentRepository'
 import { storageAdapter } from '../../infrastructure/storage/storageAdapter'
-import type { SourceAsset, DocumentPage, ScanProDocument } from '../../infrastructure/database/database'
+import type { ScanProDocument } from '../../infrastructure/database/database'
+import type { SourceAsset, DocumentPage } from '../../domain/documents'
 import { PDFPageOperation, PDFExportOptions, PDFMergeOptions } from '../../infrastructure/pdf-processing/pdfProcessingAdapter'
 
 export interface ImportPDFResult {

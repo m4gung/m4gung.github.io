@@ -67,7 +67,7 @@ export const documentSchema = z.object({
     lastAccessedAt: z.date().optional(),
     accessCount: z.number().int().nonnegative(),
     tags: z.array(z.string()).optional(),
-    customMetadata: z.record(z.unknown()).optional(),
+    customMetadata: z.record(z.string(), z.unknown()).optional(),
   }),
 })
 

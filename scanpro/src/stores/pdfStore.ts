@@ -10,7 +10,8 @@ import {
   ExtractPDFPagesUseCase,
   PrintPDFUseCase,
 } from '../application/use-cases/PDFUseCases'
-import type { ScanProDocument, SourceAsset } from '../infrastructure/database/database'
+import type { ScanProDocument } from '../infrastructure/database/database'
+import type { SourceAsset } from '../domain/documents'
 import { pdfRenderingAdapter } from '../infrastructure/pdf-rendering/pdfRenderingAdapter'
 
 const importPDF = new ImportPDFUseCase()
