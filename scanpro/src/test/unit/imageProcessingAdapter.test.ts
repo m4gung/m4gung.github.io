@@ -85,7 +85,7 @@ describe('ImageProcessingAdapter', () => {
       width: 100,
       height: 100,
     }
-    mockContext.getImageData.mockReturnValue(mockImageData)
+    ;(mockContext.getImageData as any).mockReturnValue(mockImageData)
 
     const result = await adapter.processImage(mockBlob, {
       enhance: { contrast: 1.5, brightness: 0.2 },
@@ -103,7 +103,7 @@ describe('ImageProcessingAdapter', () => {
       width: 100,
       height: 100,
     }
-    mockContext.getImageData.mockReturnValue(mockImageData)
+    ;(mockContext.getImageData as any).mockReturnValue(mockImageData)
 
     const result = await adapter.processImage(mockBlob, {
       enhance: { grayscale: true },
@@ -119,7 +119,7 @@ describe('ImageProcessingAdapter', () => {
       width: 100,
       height: 100,
     }
-    mockContext.getImageData.mockReturnValue(mockImageData)
+    ;(mockContext.getImageData as any).mockReturnValue(mockImageData)
 
     const result = await adapter.processImage(mockBlob, {
       enhance: { sharpen: true },

@@ -42,8 +42,8 @@ export class PDFRenderingAdapter {
       numPages: this.pdfDocument.numPages,
       fingerprints: this.pdfDocument.fingerprints,
       metadata: {
-        info: (await this.pdfDocument.getMetadata()).info,
-        metadata: (await this.pdfDocument.getMetadata()).metadata,
+        info: (await this.pdfDocument.getMetadata()).info as Record<string, unknown>,
+        metadata: (await this.pdfDocument.getMetadata()).metadata as unknown as Record<string, unknown>,
       },
     }
   }
@@ -91,7 +91,8 @@ export class PDFRenderingAdapter {
     await page.render({
       canvasContext: ctx,
       viewport,
-    }).promise
+      canvas,
+    } as any).promise
   }
 
   async getPageTextContent(pageNumber: number): Promise<PDFPageMetadata['textContent']> {
@@ -135,7 +136,9 @@ export class PDFRenderingAdapter {
 
   destroy(): void {
     if (this.pdfDocument) {
-      this.pdfDocument.destroy()
+      if (typeof (this.pdfDocument as any).destroy === 'function') {
+        (this.pdfDocument as any).destroy()
+      }
       this.pdfDocument = null
     }
   }
@@ -165,7 +168,8 @@ export class PDFThumbnailGenerator {
     await page.render({
       canvasContext: ctx,
       viewport: scaledViewport,
-    }).promise
+      canvas,
+    } as any).promise
 
     return canvas.toDataURL('image/jpeg', 0.7)
   }

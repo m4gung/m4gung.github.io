@@ -36,8 +36,8 @@ export interface ScanPageRecord {
 }
 
 export class ScanProScannerDB extends Dexie {
-  public sessions!: EntityTable<ScanSessionRecord, string>
-  public pages!: EntityTable<ScanPageRecord, string>
+  public sessions!: EntityTable<ScanSessionRecord, 'id'>
+  public pages!: EntityTable<ScanPageRecord, 'id'>
 
   constructor() {
     super('ScanProScanner')

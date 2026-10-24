@@ -1,3 +1,5 @@
+import type { ScanProDocument } from '../infrastructure/database/database'
+
 // Domain models for document processing
 
 export interface SourceAsset {
@@ -175,29 +177,7 @@ export interface ProcessingJob {
   retries: number
 }
 
-export interface Document {
-  id: string
-  name: string
-  description?: string
-  folderId?: string
-  sourceAssetId?: string
-  type: 'document'
-  status: 'active' | 'archived' | 'deleted'
-  pages: DocumentPage[]
-  ocrResults?: OcrPageResult[]
-  version: number
-  metadata: {
-    createdAt: Date
-    updatedAt: Date
-    createdBy?: string
-    lastAccessedAt?: Date
-    accessCount: number
-    tags?: string[]
-    customMetadata?: Record<string, unknown>
-  }
-  processingJobs?: ProcessingJob[]
-  shareLink?: string
-}
+export type Document = ScanProDocument
 
 export interface Folder {
   id: string

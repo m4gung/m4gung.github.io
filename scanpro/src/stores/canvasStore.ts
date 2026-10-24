@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import { CanvasElementFactory, type CanvasElement } from '../infrastructure/canvas/canvasElementFactory'
+import { CanvasElementFactory } from '../infrastructure/canvas/canvasElementFactory'
 import type {
-  CanvasElement as CanvasElementType,
+  CanvasElement,
   CanvasTool,
   CanvasPage,
   CanvasDocument,
@@ -48,10 +48,10 @@ interface CanvasStoreState {
   setGrid: (grid: Partial<{ enabled: boolean; size: number; snap: boolean }>) => void
 
   // Element actions
-  addElement: (type: CanvasTool, position: Point, defaults?: Partial<CanvasElementType>) => string
+  addElement: (type: CanvasTool, position: Point, defaults?: Partial<CanvasElement>) => string
   selectElement: (id: string, multi?: boolean) => void
   deselectAll: () => void
-  updateElement: (id: string, updates: Partial<CanvasElementType>) => void
+  updateElement: (id: string, updates: Partial<CanvasElement>) => void
   updateElementTransform: (id: string, transform: Partial<Transform>) => void
   deleteSelectedElements: () => void
   duplicateSelectedElements: () => void
@@ -73,8 +73,8 @@ interface CanvasStoreState {
   pushHistory: () => void
 
   // Selection helpers
-  getSelectedElements: () => CanvasElementType[]
-  getElement: (id: string) => CanvasElementType | undefined
+  getSelectedElements: () => CanvasElement[]
+  getElement: (id: string) => CanvasElement | undefined
 
   // Export
   exportToBlob: () => Promise<Blob | null>
@@ -239,7 +239,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
     }))
   },
 
-  addElement: (type: CanvasTool, position: Point, defaults?: Partial<CanvasElementType>) => {
+  addElement: (type: CanvasTool, position: Point, defaults?: Partial<CanvasElement>) => {
     const canvasTools: CanvasTool[] = ['text', 'rectangle', 'ellipse', 'line', 'arrow', 'freehand', 'image', 'signature', 'sticky-note', 'highlight']
     if (!canvasTools.includes(type)) return ''
 
@@ -301,7 +301,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
     }))
   },
 
-  updateElement: (id: string, updates: Partial<CanvasElementType>) => {
+  updateElement: (id: string, updates: Partial<CanvasElement>) => {
     get().pushHistory()
 
     set((state) => ({
@@ -311,7 +311,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
             pages: state.document.pages.map((p) => ({
               ...p,
               elements: p.elements.map((el) =>
-                el.id === id ? { ...el, ...updates, updatedAt: new Date() } : el
+                el.id === id ? ({ ...el, ...updates, updatedAt: new Date() } as CanvasElement) : el
               ),
             })),
           }
@@ -562,10 +562,10 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
   },
 
   exportToImage: async () => {
-    const { document, activePageIndex } = get()
-    if (!document) return null
-    const page = document.pages[activePageIndex]
-    const canvas = document.createElement('canvas')
+    const { document: canvasDoc, activePageIndex } = get()
+    if (!canvasDoc) return null
+    const page = canvasDoc.pages[activePageIndex]
+    const canvas = window.document.createElement('canvas')
     canvas.width = page.width
     canvas.height = page.height
     const ctx = canvas.getContext('2d')

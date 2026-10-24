@@ -38,6 +38,7 @@ export interface BaseCanvasElement {
   visible: boolean
   locked: boolean
   opacity: number
+  selected?: boolean
   createdAt: Date
   updatedAt: Date
 }

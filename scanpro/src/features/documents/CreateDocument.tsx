@@ -15,6 +15,7 @@ export const CreateDocument = () => {
     try {
       const result = await createDocument({
         name: name.trim(),
+        type: 'document',
         status: 'active',
         pages: [],
         version: 1,
@@ -24,7 +25,7 @@ export const CreateDocument = () => {
           accessCount: 0,
         },
       })
-      if (result.success) {
+      if (result) {
         // Navigate to dashboard or document list
       }
     } finally {

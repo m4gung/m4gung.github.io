@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { CanvasElementFactory } from '../../infrastructure/canvas/canvasElementFactory'
+import type { TextElement, ShapeElement, FreehandElement, StickyNoteElement } from '../../domain/canvas'
 
 describe('CanvasElementFactory', () => {
   beforeEach(() => {
@@ -10,7 +11,7 @@ describe('CanvasElementFactory', () => {
     const element = CanvasElementFactory.createElement({
       type: 'text',
       position: { x: 100, y: 100 },
-    })
+    }) as TextElement
 
     expect(element.id).toMatch(/^el_\d+_\d+$/)
     expect(element.type).toBe('text')
@@ -25,7 +26,7 @@ describe('CanvasElementFactory', () => {
     const element = CanvasElementFactory.createElement({
       type: 'rectangle',
       position: { x: 50, y: 50 },
-    })
+    }) as ShapeElement
 
     expect(element.type).toBe('rectangle')
     expect(element.strokeColor).toBe('#000000')
@@ -37,7 +38,7 @@ describe('CanvasElementFactory', () => {
     const element = CanvasElementFactory.createElement({
       type: 'freehand',
       position: { x: 0, y: 0 },
-    })
+    }) as FreehandElement
 
     expect(element.type).toBe('freehand')
     expect(element.points).toEqual([])
@@ -48,7 +49,7 @@ describe('CanvasElementFactory', () => {
     const element = CanvasElementFactory.createElement({
       type: 'sticky-note',
       position: { x: 100, y: 100 },
-    })
+    }) as StickyNoteElement
 
     expect(element.type).toBe('sticky-note')
     expect(element.color).toBe('#fef08a')
@@ -59,9 +60,9 @@ describe('CanvasElementFactory', () => {
     const original = CanvasElementFactory.createElement({
       type: 'text',
       position: { x: 100, y: 100 },
-    })
+    }) as TextElement
 
-    const cloned = CanvasElementFactory.cloneElement(original, { x: 20, y: 20 })
+    const cloned = CanvasElementFactory.cloneElement(original, { x: 20, y: 20 }) as TextElement
 
     expect(cloned.id).not.toBe(original.id)
     expect(cloned.transform.x).toBe(120)
@@ -78,7 +79,7 @@ describe('CanvasElementFactory', () => {
         fontSize: 24,
         color: '#ff0000',
       },
-    })
+    }) as TextElement
 
     expect(element.content).toBe('Custom Text')
     expect(element.fontSize).toBe(24)

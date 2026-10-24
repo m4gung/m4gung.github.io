@@ -175,7 +175,7 @@ for (const entry of list.getEntries()) {
   }
 
   getResourceTimings(): ResourceTimingEntry[] {
-    return performance.getEntriesByType('resource') as ResourceTimingEntry[]
+    return performance.getEntriesByType('resource') as unknown as ResourceTimingEntry[]
   }
 
   getSlowResources(threshold = 1000): ResourceTimingEntry[] {
@@ -248,7 +248,7 @@ export function measureSync<T>(name: string, fn: () => T): T {
 
 // Bundle size analyzer (dev only)
 export function analyzeBundleSize(): void {
-  if (import.meta.env.DEV) {
+  if ((import.meta as any).env?.DEV) {
     const scripts = document.querySelectorAll('script[src]')
     let totalSize = 0
     

@@ -198,7 +198,7 @@ export class OfflineManager {
 
   // Background sync
   async registerBackgroundSync(tag: string): Promise<void> {
-    if ('serviceWorker' in navigator && 'sync' in navigator.serviceWorker.registration.prototype) {
+    if ('serviceWorker' in navigator && 'sync' in (ServiceWorkerRegistration.prototype as any)) {
       const registration = await navigator.serviceWorker.ready
       await (registration as any).sync.register(tag)
     }
@@ -206,7 +206,7 @@ export class OfflineManager {
 
   // Periodic background sync (if supported)
   async registerPeriodicSync(tag: string, minInterval: number): Promise<void> {
-    if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker.registration.prototype) {
+    if ('serviceWorker' in navigator && 'periodicSync' in (ServiceWorkerRegistration.prototype as any)) {
       const registration = await navigator.serviceWorker.ready
       try {
         await (registration as any).periodicSync.register(tag, { minInterval })

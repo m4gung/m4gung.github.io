@@ -5,11 +5,11 @@ import { Toolbar } from './components/Toolbar'
 import { PropertiesPanel } from './components/PropertiesPanel'
 import { LayersPanel } from './components/LayersPanel'
 import { Button } from '../../components/ui/Button'
-import { Save, Download, Upload, FilePlus, RotateCcw, RotateCw, Image, Printer, ChevronLeft, Plus, Minus, Undo2, Redo2 } from 'lucide-react'
+import { Save, Download, Upload, FilePlus, RotateCcw, RotateCw, Image, Printer, ChevronLeft as LucideChevronLeft, Plus, Minus as LucideMinus, Undo2, Redo2, ChevronRight as LucideChevronRight, Copy as LucideCopy } from 'lucide-react'
 
 export const CanvasEditorWorkspace = () => {
   const {
-    document,
+    document: canvasDoc,
     activePageIndex,
     activeTool,
     history: { past, future },
@@ -68,7 +68,7 @@ export const CanvasEditorWorkspace = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
 
-  if (!document) {
+  if (!canvasDoc) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center p-8 max-w-md">
@@ -92,7 +92,7 @@ export const CanvasEditorWorkspace = () => {
     )
   }
 
-  const currentPage = document.pages[activePageIndex]
+  const currentPage = canvasDoc.pages[activePageIndex]
   const selectedCount = getSelectedElements().length
 
   return (
@@ -101,12 +101,12 @@ export const CanvasEditorWorkspace = () => {
         <div className="container mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
-              <ChevronLeft className="mr-2 h-4 w-4" />
+              <LucideChevronLeft className="mr-2 h-4 w-4" />
               Kembali
             </Button>
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate max-w-xs">{document.name}</h1>
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate max-w-xs">{canvasDoc.name}</h1>
             <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-              {activePageIndex + 1} / {document.pages.length}
+              {activePageIndex + 1} / {canvasDoc.pages.length}
             </span>
           </div>
 
@@ -129,9 +129,9 @@ export const CanvasEditorWorkspace = () => {
             <Button variant="secondary" size="sm" onClick={() => exportToBlob().then(blob => {
               if (blob) {
                 const url = URL.createObjectURL(blob)
-                const a = document.createElement('a')
+                const a = window.document.createElement('a')
                 a.href = url
-                a.download = `${document.name}.json`
+                a.download = `${canvasDoc.name}.png`
                 a.click()
                 URL.revokeObjectURL(url)
               }
@@ -154,11 +154,11 @@ export const CanvasEditorWorkspace = () => {
               onClick={() => setShowLayers(!showLayers)}
               className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
             >
-              {showLayers ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              {showLayers ? <LucideChevronLeft className="h-4 w-4" /> : <LucideChevronRight className="h-4 w-4" />}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            {document.pages.map((page, index) => (
+            {canvasDoc.pages.map((page, index) => (
               <button
                 key={page.id}
                 onClick={() => setActivePage(index)}
@@ -175,15 +175,15 @@ export const CanvasEditorWorkspace = () => {
                     className="p-1 text-gray-500 hover:text-gray-700"
                     title="Duplikat"
                   >
-                    <Copy className="h-3 w-3" />
+                    <LucideCopy className="h-3 w-3" />
                   </button>
-                  {document.pages.length > 1 && (
+                  {canvasDoc.pages.length > 1 && (
                     <button
                       onClick={(e) => { e.stopPropagation(); removePage(index); }}
                       className="p-1 text-red-500 hover:text-red-700"
                       title="Hapus"
                     >
-                      <Minus className="h-3 w-3" />
+                      <LucideMinus className="h-3 w-3" />
                     </button>
                   )}
                 </div>
@@ -201,15 +201,15 @@ export const CanvasEditorWorkspace = () => {
             onMouseDown={(e) => {
               const startX = e.clientX
               const startWidth = leftSidebarWidth
-              const onMouseMove = (e: MouseEvent) => {
-                setLeftSidebarWidth(Math.max(200, Math.min(500, startWidth + (e.clientX - startX))))
+              const onMouseMove = (ev: MouseEvent) => {
+                setLeftSidebarWidth(Math.max(200, Math.min(500, startWidth + (ev.clientX - startX))))
               }
               const onMouseUp = () => {
-                document.removeEventListener('mousemove', onMouseMove)
-                document.removeEventListener('mouseup', onMouseUp)
+                window.removeEventListener('mousemove', onMouseMove)
+                window.removeEventListener('mouseup', onMouseUp)
               }
-              document.addEventListener('mousemove', onMouseMove)
-              document.addEventListener('mouseup', onMouseUp)
+              window.addEventListener('mousemove', onMouseMove)
+              window.addEventListener('mouseup', onMouseUp)
             }} />
         </aside>
 
@@ -227,7 +227,7 @@ export const CanvasEditorWorkspace = () => {
               onClick={() => setShowProperties(!showProperties)}
               className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
             >
-              {showProperties ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+              {showProperties ? <LucideChevronRight className="h-4 w-4" /> : <LucideChevronLeft className="h-4 w-4" />}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -240,26 +240,18 @@ export const CanvasEditorWorkspace = () => {
             onMouseDown={(e) => {
               const startX = e.clientX
               const startWidth = sidebarWidth
-              const onMouseMove = (e: MouseEvent) => {
-                setSidebarWidth(Math.max(200, Math.min(500, startWidth - (e.clientX - startX))))
+              const onMouseMove = (ev: MouseEvent) => {
+                setSidebarWidth(Math.max(200, Math.min(500, startWidth - (ev.clientX - startX))))
               }
               const onMouseUp = () => {
-                document.removeEventListener('mousemove', onMouseMove)
-                document.removeEventListener('mouseup', onMouseUp)
+                window.removeEventListener('mousemove', onMouseMove)
+                window.removeEventListener('mouseup', onMouseUp)
               }
-              document.addEventListener('mousemove', onMouseMove)
-              document.addEventListener('mouseup', onMouseUp)
+              window.addEventListener('mousemove', onMouseMove)
+              window.addEventListener('mouseup', onMouseUp)
             }} />
-</aside>
+        </aside>
       </div>
     </div>
   )
 }
-
-const Copy = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-
-const Minus = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
-
-const ChevronRight = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-
-const ChevronLeft = () => <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>

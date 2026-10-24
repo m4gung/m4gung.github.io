@@ -314,7 +314,11 @@ export const idMessages: TranslationMessages = {
       fontStyle: 'Gaya Font',
       color: 'Warna',
       backgroundColor: 'Warna Latar',
-      textAlign: 'Perataan',
+      alignment: {
+        left: 'Kiri',
+        center: 'Tengah',
+        right: 'Kanan',
+      },
       lineHeight: 'Jarak Baris',
       padding: 'Padding',
     },

@@ -1,6 +1,6 @@
-import { ComponentType, ReactNode } from 'react'
+import type { FC, ButtonHTMLAttributes, ComponentType, ReactNode } from 'react'
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   isLoading?: boolean
@@ -9,7 +9,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode
 }
 
-export const Button: ComponentType<ButtonProps> = ({
+export const Button: FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
   isLoading = false,

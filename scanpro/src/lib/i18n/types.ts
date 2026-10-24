@@ -1,4 +1,4 @@
-export type Locale = 'id' | 'en' | 'ar' | 'zh' | 'fr' | 'de' | 'ja' | 'ko' | 'es' | 'ru';
+export type Locale = 'id' | 'en';
 
 export interface TranslationMessages {
   // App
@@ -166,6 +166,7 @@ export interface TranslationMessages {
     };
     review: {
       title: string;
+      pages?: string;
       reorder: string;
       deletePage: string;
       rotatePage: string;
@@ -721,23 +722,17 @@ export interface TranslationMessages {
     cm: string;
     inch: string;
   };
+
+  propertiesPanel?: Record<string, string>;
 }
 
 export const defaultLocale: Locale = 'id';
 
-export const supportedLocales: Locale[] = ['id', 'en', 'ar', 'zh', 'fr', 'de', 'ja', 'ko', 'es', 'ru'];
+export const supportedLocales: Locale[] = ['id', 'en'];
 
 export const localeNames: Record<Locale, string> = {
   id: 'Bahasa Indonesia',
   en: 'English',
-  ar: 'العربية',
-  zh: '中文',
-  fr: 'Français',
-  de: 'Deutsch',
-  ja: '日本語',
-  ko: '한국어',
-  es: 'Español',
-  ru: 'Русский',
 };
 
 export function getNestedValue(obj: any, path: string): string {
@@ -750,8 +745,8 @@ export function t(messages: TranslationMessages, key: string, params?: Record<st
     return key;
   }
   if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      value = value.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value));
+    Object.entries(params).forEach(([paramKey, paramVal]) => {
+      value = value.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(paramVal));
     });
   }
   return value;

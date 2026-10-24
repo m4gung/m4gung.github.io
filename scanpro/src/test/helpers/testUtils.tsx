@@ -246,7 +246,7 @@ export function createMockCanvas(width = 100, height = 100): HTMLCanvasElement {
 
 // Accessibility testing helpers
 export function getByRole(container: HTMLElement, role: string, name?: string): HTMLElement | null {
-  const elements = container.querySelectorAll(`[role="${role}"]`)
+  const elements = container.querySelectorAll<HTMLElement>(`[role="${role}"]`)
   if (name) {
     return Array.from(elements).find(el => 
       el.getAttribute('aria-label') === name || 

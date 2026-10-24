@@ -27,17 +27,18 @@ export interface DocumentQueryResult {
 
 export class DocumentRepository {
   async createDocument(
-    data: Omit<ScanProDocument, 'id' | 'version' | 'metadata'>
+    data: Omit<ScanProDocument, 'id' | 'version' | 'metadata'> & { version?: number; metadata?: Partial<ScanProDocument['metadata']> }
   ): Promise<ScanProDocument> {
     const now = new Date()
     const document: ScanProDocument = {
       ...data,
       id: `doc_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`,
-      version: 1,
+      version: data.version ?? 1,
       metadata: {
         createdAt: now,
         updatedAt: now,
         accessCount: 0,
+        ...data.metadata,
       },
     }
     await db.documents.add(document)

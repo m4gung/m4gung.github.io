@@ -175,7 +175,7 @@ describe('Advanced PDF Adapters', () => {
 
     it('should add radio group', async () => {
       const result = await adapter.addRadioGroup(new Uint8Array([1]), 'group1', [
-        { pageIndex: 0, type: 'radio', name: 'group1', rect: { x0: 100, y0: 100, x1: 120, y1: 120 }, exportValue: 'opt1', value: 'opt1' },
+        { id: 'radio1', pageIndex: 0, type: 'radio', name: 'group1', rect: { x0: 100, y0: 100, x1: 120, y1: 120 }, exportValue: 'opt1', value: 'opt1' },
       ])
       expect(result).toBeInstanceOf(Uint8Array)
     })

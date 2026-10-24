@@ -196,7 +196,11 @@ export class AddRadioGroupUseCase {
       }
 
       const pdfData = new Uint8Array()
-      await pdfFormAdapter.addRadioGroup(pdfData, groupName, fields)
+      const fullFields = fields.map((f, i) => ({
+        ...f,
+        id: `radio_${Date.now()}_${i}`,
+      }))
+      await pdfFormAdapter.addRadioGroup(pdfData, groupName, fullFields)
 
       return { success: true }
     } catch (error) {
@@ -440,7 +444,7 @@ export class PDFAdvancedEditUseCase {
         switch (op.type) {
           case 'annotation':
             if (op.data.type === 'text') {
-              await pdfAnnotationAdapter.addTextOverlay(pdfData, op.data.pageIndex, op.data.text, { x: op.data.x, y: op.data.y }, op.data.options)
+              await pdfOverlayAdapter.addTextOverlay(pdfData, op.data.pageIndex, op.data.text, { x: op.data.x, y: op.data.y }, op.data.options)
             } else if (op.data.type === 'highlight') {
               await pdfAnnotationAdapter.addHighlightAnnotation(pdfData, op.data.pageIndex, op.data.quads, op.data.color, op.data.opacity)
             } else if (op.data.type === 'ink') {

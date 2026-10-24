@@ -54,9 +54,7 @@ export class TesseractOcrAdapter {
     }
 
     this.currentLanguages = languages
-    this.worker = await createWorker(languages, {
-      logger: (m) => console.log('[Tesseract]', m.status, m.progress),
-    })
+    this.worker = await createWorker(languages)
 
     this.initialized = true
   }

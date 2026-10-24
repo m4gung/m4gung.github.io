@@ -87,7 +87,7 @@ export const ScannerWorkspace = () => {
       <header className="bg-white dark:bg-gray-800 shadow sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => { setActiveTab('capture'); stopSession(); }}>
+            <Button variant="ghost" size="sm" onClick={() => { setActiveTab('capture'); stopCamera(); }}>
               <ChevronLeft className="mr-2 h-4 w-4" />
               Selesai
             </Button>
@@ -119,7 +119,6 @@ export const ScannerWorkspace = () => {
         <div className="flex-1 container mx-auto px-4 py-8 flex flex-col items-center">
           <CameraPreview
             isStreaming={isStreaming}
-            onStreamReady={(video) => cameraAdapter.setVideoElement(video)}
           />
           <div className="mt-6 flex items-center justify-center gap-4">
             <Button
@@ -131,7 +130,7 @@ export const ScannerWorkspace = () => {
               <Settings className="h-6 w-6" />
             </Button>
             <Button
-              size="xl"
+              size="lg"
               className="w-20 h-20 rounded-full bg-blue-600 text-white shadow-lg active:scale-95"
               onClick={handleCapture}
               disabled={isProcessing || !isStreaming}

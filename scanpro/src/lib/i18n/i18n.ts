@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { idMessages } from './locales/id';
 import { enMessages } from './locales/en';
-import type { TranslationMessages, Locale, defaultLocale, supportedLocales } from './types';
+import type { TranslationMessages, Locale } from './types';
+import { defaultLocale, supportedLocales } from './types';
 
 const messages: Record<Locale, TranslationMessages> = {
   id: idMessages,
@@ -53,14 +54,6 @@ export const useI18n = create<I18nState>()(
         const names: Record<Locale, string> = {
           id: 'Bahasa Indonesia',
           en: 'English',
-          ar: 'العربية',
-          zh: '中文',
-          fr: 'Français',
-          de: 'Deutsch',
-          ja: '日本語',
-          ko: '한국어',
-          es: 'Español',
-          ru: 'Русский',
         };
         return names[locale] || locale;
       },

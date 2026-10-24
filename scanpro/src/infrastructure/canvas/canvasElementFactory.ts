@@ -15,7 +15,7 @@ import type {
 export interface ElementFactoryOptions {
   type: CanvasElementType
   position: Point
-  defaults?: Partial<CanvasElement>
+  defaults?: Record<string, any>
 }
 
 export class CanvasElementFactory {

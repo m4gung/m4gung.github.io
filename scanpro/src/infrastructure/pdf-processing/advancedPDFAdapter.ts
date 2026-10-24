@@ -88,8 +88,9 @@ export class PDFInspectionAdapter {
     const pageReports = pages.map((page, index) => {
       const { width, height } = page.getSize()
       const rotation = page.getRotation().angle
-      const annotations = page.getAnnotations()
-      const fonts = page.node.Resources?.Font ? Object.keys(page.node.Resources.Font) : []
+      const annotations: any[] = (page as any).getAnnotations ? (page as any).getAnnotations() : []
+      const resources = typeof (page.node as any).Resources === 'function' ? (page.node as any).Resources() : (page.node as any).Resources
+      const fonts = resources?.lookup && resources.lookup('Font') ? Object.keys(resources.lookup('Font')) : []
       
       return {
         index,
@@ -102,7 +103,7 @@ export class PDFInspectionAdapter {
       }
     })
 
-    const fontRefs = pdfDoc.getFonts()
+    const fontRefs: any[] = typeof (pdfDoc as any).getFonts === 'function' ? (pdfDoc as any).getFonts() : []
     const fontReports = fontRefs.map(font => ({
       name: font.name ?? 'Unknown',
       embedded: false, // Would need deeper inspection
@@ -215,14 +216,15 @@ export class PDFAnnotationAdapter {
 
     for (const path of paths) {
       if (path.length < 2) continue
-      page.drawLines(
-        path.map(p => ({ x: p.x, y: height - p.y })),
-        {
+      for (let i = 0; i < path.length - 1; i++) {
+        page.drawLine({
+          start: { x: path[i].x, y: height - path[i].y },
+          end: { x: path[i + 1].x, y: height - path[i + 1].y },
           color: rgb(color.r, color.g, color.b),
-          size: width,
+          thickness: width,
           opacity,
-        }
-      )
+        })
+      }
     }
 
     return pdfDoc.save()
@@ -256,10 +258,10 @@ export class PDFFormAdapter {
     })
 
     if (field.fontSize) fieldObj.setFontSize(field.fontSize)
-    if (field.fontColor) fieldObj.setTextColor(rgb(field.fontColor.r, field.fontColor.g, field.fontColor.b))
-    if (field.backgroundColor) fieldObj.setBackgroundColor(rgb(field.backgroundColor.r, field.backgroundColor.g, field.backgroundColor.b))
-    if (field.borderColor) fieldObj.setBorderColor(rgb(field.borderColor.r, field.borderColor.g, field.borderColor.b))
-    if (field.borderWidth) fieldObj.setBorderWidth(field.borderWidth)
+    if (field.fontColor && (fieldObj as any).setTextColor) (fieldObj as any).setTextColor(rgb(field.fontColor.r, field.fontColor.g, field.fontColor.b))
+    if (field.backgroundColor && (fieldObj as any).setBackgroundColor) (fieldObj as any).setBackgroundColor(rgb(field.backgroundColor.r, field.backgroundColor.g, field.backgroundColor.b))
+    if (field.borderColor && (fieldObj as any).setBorderColor) (fieldObj as any).setBorderColor(rgb(field.borderColor.r, field.borderColor.g, field.borderColor.b))
+    if (field.borderWidth && (fieldObj as any).setBorderWidth) (fieldObj as any).setBorderWidth(field.borderWidth)
 
     return pdfDoc.save()
   }
@@ -302,9 +304,8 @@ export class PDFFormAdapter {
     for (const field of fields) {
       const page = pdfDoc.getPage(field.pageIndex)
       const { height } = page.getSize()
-      const radioButton = radioGroup.addButtonToGroup(field.exportValue)
       const { x0, y0, x1, y1 } = field.rect
-      radioButton.addToPage(page, {
+      radioGroup.addOptionToPage(field.exportValue, page, {
         x: x0,
         y: height - y1,
         width: x1 - x0,
@@ -331,9 +332,7 @@ export class PDFFormAdapter {
 
     const dropdown = form.createDropdown(field.name)
     if (field.options) {
-      for (const option of field.options) {
-        dropdown.addOption(option)
-      }
+      dropdown.addOptions(field.options)
     }
     if (field.value) dropdown.select(field.value)
 
@@ -360,12 +359,12 @@ export class PDFFormAdapter {
     const { height } = page.getSize()
 
     const button = form.createButton(field.name)
-    if (onClickScript) {
-      button.setOnClickAction(onClickScript)
+    if (onClickScript && (button as any).setOnClickAction) {
+      (button as any).setOnClickAction(onClickScript)
     }
 
     const { x0, y0, x1, y1 } = field.rect
-    button.addToPage(page, {
+    button.addToPage(field.name, page, {
       x: x0,
       y: height - y1,
       width: x1 - x0,
@@ -399,7 +398,7 @@ export class PDFFormAdapter {
             pageIndex: 0, // Would need to find page
             type: this.mapFieldType(field.constructor.name),
             name: field.getName(),
-            value: field.getValue() as string,
+            value: (field as any).getText ? (field as any).getText() : (field as any).getValue ? (field as any).getValue() : '',
             rect: {
               x0: rect.x,
               y0: rect.y,
@@ -493,8 +492,8 @@ export class PDFOverlayAdapter {
 
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
     page.drawText(text, {
-      x: options.x,
-      y: height - options.y,
+      x: position.x,
+      y: height - position.y,
       size: options.fontSize ?? 12,
       font,
       color: rgb(options.color?.r ?? 0, options.color?.g ?? 0, options.color?.b ?? 0),
@@ -588,11 +587,18 @@ export class PDFBackupAdapter {
   }
 
   async verifyIntegrity(original: Uint8Array, backup: Uint8Array): Promise<boolean> {
-    // Compare checksums
-    const crypto = await import('crypto')
-    const originalHash = crypto.createHash('sha256').update(original).digest('hex')
-    const backupHash = crypto.createHash('sha256').update(backup).digest('hex')
-    return originalHash === backupHash
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+      const origBuf = await crypto.subtle.digest('SHA-256', original as unknown as BufferSource)
+      const backBuf = await crypto.subtle.digest('SHA-256', backup as unknown as BufferSource)
+      const origArr = Array.from(new Uint8Array(origBuf)).map(b => b.toString(16).padStart(2, '0')).join('')
+      const backArr = Array.from(new Uint8Array(backBuf)).map(b => b.toString(16).padStart(2, '0')).join('')
+      return origArr === backArr
+    }
+    if (original.length !== backup.length) return false
+    for (let i = 0; i < original.length; i++) {
+      if (original[i] !== backup[i]) return false
+    }
+    return true
   }
 
   async createIncrementalBackup(pdfData: Uint8Array, changes: any[]): Promise<Uint8Array> {

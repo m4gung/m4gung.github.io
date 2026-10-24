@@ -12,7 +12,7 @@ import type {
 } from '../../domain/canvas'
 
 export class CanvasRenderer {
-  private ctx: CanvasRenderingContext2D
+  public ctx: CanvasRenderingContext2D
   private scale: number = 1
   private offsetX: number = 0
   private offsetY: number = 0

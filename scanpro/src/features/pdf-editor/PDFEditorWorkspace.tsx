@@ -162,10 +162,10 @@ export const PDFEditorWorkspace = () => {
               {selectedPages.size} halaman dipilih
             </span>
             <div className="flex gap-2">
-              <Button variant="secondary" size="sm" onClick={() => { selectedPages.forEach(p => rotatePage(p, 90)); setSelectedPages(new Set()); }}>
+              <Button variant="secondary" size="sm" onClick={() => { selectedPages.forEach(p => rotatePage(String(p), 90)); setSelectedPages(new Set()); }}>
                 <RotateCw className="h-3 w-3 mr-1" /> Putar 90°
               </Button>
-              <Button variant="danger" size="sm" onClick={() => { selectedPages.forEach(p => deletePage(p)); setSelectedPages(new Set()); }}>
+              <Button variant="danger" size="sm" onClick={() => { selectedPages.forEach(p => deletePage(String(p))); setSelectedPages(new Set()); }}>
                 <Trash2 className="h-3 w-3 mr-1" /> Hapus
               </Button>
             </div>

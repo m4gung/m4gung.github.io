@@ -74,6 +74,7 @@ export class OpenCVEdgeDetector implements IEdgeDetector {
       const edges = new cv.Mat()
       const contours = new cv.MatVector()
       const hierarchy = new cv.Mat()
+      let bestContour: any = null
 
       try {
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
@@ -83,7 +84,6 @@ export class OpenCVEdgeDetector implements IEdgeDetector {
         cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
         let maxArea = 0
-        let bestContour: any = null
 
         for (let i = 0; i < contours.size(); i++) {
           const contour = contours.get(i)

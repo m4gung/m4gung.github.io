@@ -21,8 +21,8 @@ describe('PDF Editor Workflow Integration', () => {
   it('should import PDF and load pages', async () => {
     const mockFile = new File(['%PDF-1.4...'], 'test.pdf', { type: 'application/pdf' })
     const mockPdfPages = [
-      { pageNumber: 1, width: 595, height: 842, rotation: 0 },
-      { pageNumber: 2, width: 595, height: 842, rotation: 0 },
+      { pageNumber: 1, width: 595, height: 842, rotation: 0, viewport: { width: 595, height: 842, scale: 1 } },
+      { pageNumber: 2, width: 595, height: 842, rotation: 0, viewport: { width: 595, height: 842, scale: 1 } },
     ]
 
     vi.mocked(pdfRenderingAdapter.loadDocument).mockResolvedValue({

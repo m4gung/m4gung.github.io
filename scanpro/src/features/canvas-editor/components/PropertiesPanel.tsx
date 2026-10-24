@@ -227,7 +227,7 @@ export const PropertiesPanel = () => {
               placeholder={t('propertiesPanel.strokeWidth')}
             />
             <select
-              value={el.strokeStyle}
+              value={'strokeStyle' in el ? el.strokeStyle : 'solid'}
               onChange={(e) => updateElement(el.id, { strokeStyle: e.target.value as any })}
               className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
             >
@@ -270,7 +270,7 @@ export const PropertiesPanel = () => {
               placeholder={t('propertiesPanel.strokeWidth')}
             />
             <select
-              value={el.strokeStyle}
+              value={'strokeStyle' in el ? el.strokeStyle : 'solid'}
               onChange={(e) => updateElement(el.id, { strokeStyle: e.target.value as any })}
               className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
             >

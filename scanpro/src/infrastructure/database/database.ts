@@ -1,11 +1,4 @@
-import Dexie, { type Entity, type EntityTable } from 'dexie'
-
-export interface ScanProDatabaseShape {
-  documents: EntityTable<ScanProDocument, string>
-  folders: EntityTable<ScanProFolder, string>
-  settings: EntityTable<ScanProAppSettings, string>
-  versions: EntityTable<ScanProDocumentVersion, string>
-}
+import Dexie, { type EntityTable } from 'dexie'
 
 export interface ScanProDocument {
   id: string
@@ -45,7 +38,12 @@ export interface ScanProDocumentPage {
     width: number
     height: number
   }
-  perspective?: unknown
+  perspective?: {
+    topLeft: { x: number; y: number }
+    topRight: { x: number; y: number }
+    bottomLeft: { x: number; y: number }
+    bottomRight: { x: number; y: number }
+  }
   metadata: {
     createdAt: Date
     updatedAt: Date
@@ -139,18 +137,11 @@ export interface ScanProDocumentVersion {
   changeDescription?: string
 }
 
-export interface ScanProDatabase {
-  documents: ScanProDocument
-  folders: ScanProFolder
-  settings: ScanProAppSettings
-  versions: ScanProDocumentVersion
-}
-
-export class ScanProDatabase extends Dexie implements ScanProDatabaseShape {
-  public documents!: ScanProDocument
-  public folders!: ScanProFolder
-  public settings!: ScanProAppSettings
-  public versions!: ScanProDocumentVersion
+export class ScanProDatabase extends Dexie {
+  public documents!: EntityTable<ScanProDocument, 'id'>
+  public folders!: EntityTable<ScanProFolder, 'id'>
+  public settings!: EntityTable<ScanProAppSettings, 'id'>
+  public versions!: EntityTable<ScanProDocumentVersion, 'id'>
 
   constructor() {
     super('ScanProStudio')

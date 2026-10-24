@@ -19,8 +19,7 @@ export const CanvasViewport = ({ width, height }: CanvasViewportProps) => {
     activeTool,
     viewport,
     grid,
-    selectedIds,
-    getElement,
+    getSelectedElements,
   } = useCanvasStore()
 
   const currentPage = document?.pages[activePageIndex]
@@ -55,12 +54,14 @@ export const CanvasViewport = ({ width, height }: CanvasViewportProps) => {
       renderer.ctx.restore()
     }
 
+    const selectedIds = getSelectedElements().map((el) => el.id)
+
     currentPage.elements.forEach((element) => {
       const isSelected = selectedIds.includes(element.id)
       const isHovered = false
       renderer.renderElement(element, isSelected, isHovered)
     })
-  }, [document, activePageIndex, viewport, grid, selectedIds, currentPage])
+  }, [document, activePageIndex, viewport, grid, currentPage, getSelectedElements])
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect()
