@@ -53,9 +53,7 @@ export interface TranslationMessages {
     search: string;
     filter: string;
     sort: string;
-    view: string;
-    edit: string;
-    duplicate: string;
+    view: string;duplicate: string;
     download: string;
     upload: string;
     refresh: string;
@@ -605,11 +603,7 @@ export interface TranslationMessages {
       imageFile: string;
       width: string;
       height: string;
-      watermarkText: string;
-      fontSize: string;
-      rotation: string;
-      opacity: string;
-      spacing: string;
+      watermarkText: string;spacing: string;
       apply: string;
     };
     backup: {

@@ -36,7 +36,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/scanpro">
       <Routes>
         <Route path="/" element={<Layout><Dashboard /></Layout>} />
         <Route path="/documents" element={<Layout><DocumentList /></Layout>} />

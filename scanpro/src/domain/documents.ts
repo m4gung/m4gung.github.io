@@ -60,7 +60,6 @@ export interface CanvasElement {
     fontFamily?: string
     points?: { x: number; y: number }[]
     radius?: number
-    points?: { x: number; y: number }[]
     highlightColor?: string
   }
   style: {
