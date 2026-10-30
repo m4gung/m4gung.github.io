@@ -17,7 +17,7 @@ import {
   Layers,
   Truck
 } from 'lucide-react';
-import { useStore } from '../context/StoreContext';
+import { useStore } from '../context/useStore';
 import { formatRupiah, formatTanggal } from '../utils/format';
 import type { Sale } from '../types';
 

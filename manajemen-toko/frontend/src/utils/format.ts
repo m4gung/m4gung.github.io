@@ -23,3 +23,13 @@ export function formatTanggal(isoString: string): string {
     return isoString;
   }
 }
+
+export function formatThousand(val: number | undefined | null): string {
+  if (val === undefined || val === null || val === 0) return '';
+  return val.toLocaleString('id-ID');
+}
+
+export function parseThousand(str: string): number {
+  const digits = str.replace(/\D/g, '');
+  return digits ? parseInt(digits, 10) : 0;
+}

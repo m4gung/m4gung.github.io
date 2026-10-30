@@ -13,9 +13,11 @@ import {
   MapPin, 
   FileText,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  Pencil
 } from 'lucide-react';
-import { useStore } from '../context/StoreContext';
+import { useStore } from '../context/useStore';
+import { formatThousand, parseThousand } from '../utils/format';
 import type { Supplier, CreatePurchasePayload, Purchase } from '../types';
 
 export const PembelianPage: React.FC = () => {
@@ -30,8 +32,9 @@ export const PembelianPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
-  // Modal State: Create Purchase
+  // Modal State: Create / Edit Purchase
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
   const [purchaseSupplierId, setPurchaseSupplierId] = useState<string>('');
   const [purchaseNo, setPurchaseNo] = useState<string>('');
   const [purchasePaymentMethod, setPurchasePaymentMethod] = useState<'CASH' | 'TRANSFER' | 'CREDIT'>('CASH');
@@ -67,8 +70,9 @@ export const PembelianPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Auto-generate invoice number
+  // Auto-generate invoice number untuk pembelian baru
   const openNewPurchaseModal = () => {
+    setEditingPurchaseId(null);
     const today = new Date();
     const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
     const rand = Math.floor(1000 + Math.random() * 9000);
@@ -87,6 +91,36 @@ export const PembelianPage: React.FC = () => {
         costPrice: defaultProduct ? defaultProduct.costPrice : 0,
         subtotal: defaultProduct ? defaultProduct.costPrice : 0,
       },
+    ]);
+    setErrorMessage(null);
+    setIsPurchaseModalOpen(true);
+  };
+
+  // Buka modal untuk mengoreksi / mengedit transaksi pembelian yang salah input
+  const openEditPurchaseModal = (p: Purchase) => {
+    setEditingPurchaseId(p.id);
+    setPurchaseNo(p.purchaseNo);
+    setPurchaseSupplierId(p.supplierId || '');
+    setPurchasePaymentMethod(p.paymentMethod);
+    setPurchaseDueDate(p.dueDate || '');
+    setPurchaseNotes(p.notes || '');
+
+    const mappedItems = (p.items || []).map(it => ({
+      productId: it.productId,
+      productName: it.productName,
+      quantity: it.quantity,
+      costPrice: it.costPrice,
+      subtotal: it.subtotal || (it.quantity * it.costPrice)
+    }));
+
+    setPurchaseItems(mappedItems.length > 0 ? mappedItems : [
+      {
+        productId: products.length > 0 ? products[0].id : '',
+        productName: products.length > 0 ? products[0].name : '',
+        quantity: 1,
+        costPrice: products.length > 0 ? products[0].costPrice : 0,
+        subtotal: products.length > 0 ? products[0].costPrice : 0,
+      }
     ]);
     setErrorMessage(null);
     setIsPurchaseModalOpen(true);
@@ -124,11 +158,11 @@ export const PembelianPage: React.FC = () => {
         item.subtotal = item.quantity * found.costPrice;
       }
     } else if (field === 'quantity') {
-      const qty = Math.max(1, Number(value) || 1);
+      const qty = Number(value) || 0;
       item.quantity = qty;
       item.subtotal = qty * item.costPrice;
     } else if (field === 'costPrice') {
-      const cost = Math.max(0, Number(value) || 0);
+      const cost = Number(value) || 0;
       item.costPrice = cost;
       item.subtotal = item.quantity * cost;
     }
@@ -152,6 +186,10 @@ export const PembelianPage: React.FC = () => {
       setErrorMessage('Tambahkan minimal 1 barang untuk dibeli.');
       return;
     }
+    if (purchaseItems.some(it => it.quantity <= 0)) {
+      setErrorMessage('Jumlah Qty masuk untuk setiap barang harus lebih dari 0.');
+      return;
+    }
     if (purchasePaymentMethod === 'CREDIT' && !purchaseDueDate) {
       setErrorMessage('Untuk pembayaran tempo / kredit, wajib menentukan tanggal jatuh tempo.');
       return;
@@ -166,6 +204,7 @@ export const PembelianPage: React.FC = () => {
       const isCredit = purchasePaymentMethod === 'CREDIT';
 
       const payload: CreatePurchasePayload = {
+        id: editingPurchaseId || undefined,
         purchaseNo: purchaseNo || `PO-${Date.now()}`,
         supplierId: purchaseSupplierId,
         supplierName,
@@ -184,7 +223,11 @@ export const PembelianPage: React.FC = () => {
       await provider.createPurchase(payload);
       await refreshData();
       setIsPurchaseModalOpen(false);
-      setSuccessMessage('Transaksi pengadaan barang berhasil disimpan dan stok otomatis bertambah!');
+      setSuccessMessage(
+        editingPurchaseId
+          ? 'Transaksi pengadaan berhasil diperbarui dan koreksi stok berhasil disesuaikan!'
+          : 'Transaksi pengadaan barang berhasil disimpan dan stok otomatis bertambah!'
+      );
       setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: any) {
       setErrorMessage(err.message || 'Gagal menyimpan transaksi pembelian.');
@@ -480,13 +523,24 @@ export const PembelianPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <button
-                          onClick={() => setSelectedPurchase(purchase)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-brand-600 hover:bg-brand-50 border border-brand-200 transition-colors"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          Detail
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => setSelectedPurchase(purchase)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-brand-600 hover:bg-brand-50 border border-brand-200 transition-colors"
+                            title="Lihat rincian PO"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Detail
+                          </button>
+                          <button
+                            onClick={() => openEditPurchaseModal(purchase)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 transition-colors"
+                            title="Edit / koreksi data jika ada salah input"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            Edit
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -504,7 +558,7 @@ export const PembelianPage: React.FC = () => {
             <div className="px-6 py-4 bg-brand-600 text-white flex justify-between items-center">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <Truck className="w-5 h-5" />
-                Catat Pengadaan / Pembelian Barang
+                {editingPurchaseId ? 'Edit Data Pengadaan / Pembelian' : 'Catat Pengadaan / Pembelian Barang'}
               </h2>
               <button 
                 onClick={() => setIsPurchaseModalOpen(false)}
@@ -621,25 +675,27 @@ export const PembelianPage: React.FC = () => {
                         </select>
                       </div>
 
-                      <div className="w-full sm:w-24">
+                      <div className="w-full sm:w-28">
                         <label className="block text-[10px] font-semibold text-gray-500 mb-0.5">Qty Masuk</label>
                         <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs text-right font-medium"
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="0"
+                          value={formatThousand(item.quantity)}
+                          onChange={(e) => handleItemChange(idx, 'quantity', parseThousand(e.target.value))}
+                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs text-right font-medium focus:ring-1 focus:ring-brand-500 focus:outline-none"
                         />
                       </div>
 
                       <div className="w-full sm:w-36">
                         <label className="block text-[10px] font-semibold text-gray-500 mb-0.5">Harga Beli Satuan</label>
                         <input
-                          type="number"
-                          min="0"
-                          value={item.costPrice}
-                          onChange={(e) => handleItemChange(idx, 'costPrice', e.target.value)}
-                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs text-right font-medium"
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="0"
+                          value={formatThousand(item.costPrice)}
+                          onChange={(e) => handleItemChange(idx, 'costPrice', parseThousand(e.target.value))}
+                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs text-right font-medium focus:ring-1 focus:ring-brand-500 focus:outline-none"
                         />
                       </div>
 

@@ -11,15 +11,18 @@ import {
   AlertCircle, 
   Upload, 
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Trash2
 } from 'lucide-react';
-import { useStore } from '../context/StoreContext';
+import { useStore } from '../context/useStore';
+import { DEFAULT_SETTINGS } from '../adapters/IndexedDbAdapter';
 import type { StoreSettings } from '../types';
 
 export const PengaturanPage: React.FC = () => {
-  const { settings, updateSettings, switchDataSourceMode, testConnection } = useStore();
+  const { settings, updateSettings, switchDataSourceMode, testConnection, clearAllData } = useStore();
   const [formData, setFormData] = useState<StoreSettings>({ ...settings });
   const [saving, setSaving] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [testingConn, setTestingConn] = useState(false);
   const [connResult, setConnResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -75,6 +78,30 @@ export const PengaturanPage: React.FC = () => {
       setConnResult({ success: false, message: err.message });
     } finally {
       setTestingConn(false);
+    }
+  };
+
+  const handleClearAll = async () => {
+    const confirm1 = window.confirm(
+      'Peringatan: Apakah Anda yakin ingin mengosongkan semua data transaksi, master produk, pelanggan, supplier, dan piutang?'
+    );
+    if (!confirm1) return;
+
+    const confirm2 = window.confirm(
+      'Konfirmasi kedua: Seluruh data lokal akan dihapus secara permanen. Lanjutkan?'
+    );
+    if (!confirm2) return;
+
+    setClearing(true);
+    setMessage(null);
+    try {
+      await clearAllData();
+      setFormData({ ...DEFAULT_SETTINGS });
+      setMessage({ type: 'success', text: 'Semua data toko berhasil dibersihkan dan dikosongkan!' });
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'Gagal mengosongkan data: ' + err.message });
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -467,6 +494,32 @@ export const PengaturanPage: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* ZONA PEMBERSIHAN DATA */}
+        <div className="bg-rose-50/70 rounded-2xl border border-rose-200 p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="p-2.5 bg-rose-100 text-rose-600 rounded-xl flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-rose-900">Kosongkan Semua Data Toko (Reset)</h3>
+                <p className="text-xs text-rose-700 mt-0.5">
+                  Hapus seluruh data produk, riwayat transaksi kasir, pembelian, utang piutang, dan jurnal lokal.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              disabled={clearing}
+              onClick={handleClearAll}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all disabled:opacity-50 flex-shrink-0 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <Trash2 className="w-4 h-4" />
+              {clearing ? 'Membersihkan...' : 'Kosongkan Semua Data'}
+            </button>
           </div>
         </div>
 

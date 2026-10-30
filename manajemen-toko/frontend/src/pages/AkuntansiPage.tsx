@@ -14,7 +14,7 @@ import {
   Wallet,
   Building
 } from 'lucide-react';
-import { useStore } from '../context/StoreContext';
+import { useStore } from '../context/useStore';
 import { formatRupiah, formatTanggal } from '../utils/format';
 import type { JournalLine, ChartOfAccount } from '../types';
 

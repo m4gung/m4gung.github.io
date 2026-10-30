@@ -337,4 +337,50 @@ export class SpringBootAdapter implements IDataProvider {
       return this.localFallback.saveSettings(settings);
     }
   }
+
+  // Eksekusi aksi cloud untuk sinkronisasi outbox background
+  async executeCloudAction(action: string, payload: any): Promise<any> {
+    switch (action) {
+      case 'checkoutSale':
+        return await this.fetchApi('/api/v1/pos/checkout', { method: 'POST', body: JSON.stringify(payload) });
+      case 'createPurchase':
+        return await this.fetchApi('/api/v1/purchases', { method: 'POST', body: JSON.stringify(payload) });
+      case 'payReceivable':
+        return await this.fetchApi(`/api/v1/receivables/${payload.receivableId}/pay`, { method: 'POST', body: JSON.stringify(payload) });
+      case 'createManualJournal':
+        return await this.fetchApi('/api/v1/accounting/journal', { method: 'POST', body: JSON.stringify(payload) });
+      case 'saveProduct': {
+        const method = payload.id ? 'PUT' : 'POST';
+        const path = payload.id ? `/api/v1/products/${payload.id}` : '/api/v1/products';
+        return await this.fetchApi(path, { method, body: JSON.stringify(payload) });
+      }
+      case 'deleteProduct':
+        return await this.fetchApi(`/api/v1/products/${payload.id}`, { method: 'DELETE' });
+      case 'saveCategory': {
+        const method = payload.id ? 'PUT' : 'POST';
+        const path = payload.id ? `/api/v1/categories/${payload.id}` : '/api/v1/categories';
+        return await this.fetchApi(path, { method, body: JSON.stringify(payload) });
+      }
+      case 'deleteCategory':
+        return await this.fetchApi(`/api/v1/categories/${payload.id}`, { method: 'DELETE' });
+      case 'adjustStock':
+        return await this.fetchApi('/api/v1/inventory/adjust', { method: 'POST', body: JSON.stringify(payload) });
+      case 'saveCustomer': {
+        const method = payload.id ? 'PUT' : 'POST';
+        const path = payload.id ? `/api/v1/customers/${payload.id}` : '/api/v1/customers';
+        return await this.fetchApi(path, { method, body: JSON.stringify(payload) });
+      }
+      case 'saveSupplier': {
+        const method = payload.id ? 'PUT' : 'POST';
+        const path = payload.id ? `/api/v1/suppliers/${payload.id}` : '/api/v1/suppliers';
+        return await this.fetchApi(path, { method, body: JSON.stringify(payload) });
+      }
+      case 'deleteSupplier':
+        return await this.fetchApi(`/api/v1/suppliers/${payload.id}`, { method: 'DELETE' });
+      case 'saveSettings':
+        return await this.fetchApi('/api/v1/settings', { method: 'PUT', body: JSON.stringify(payload) });
+      default:
+        console.warn('Aksi cloud tidak dikenali:', action);
+    }
+  }
 }

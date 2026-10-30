@@ -31,6 +31,18 @@ export class GoogleSheetsAdapter implements IDataProvider {
     this.scriptUrl = url;
   }
 
+  // Memicu sinkronisasi antrean outbox di latar belakang secara asinkron tanpa memblokir UI
+  private triggerBackgroundSync() {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('toko:trigger-outbox-sync'));
+    }
+  }
+
+  // Eksekusi aksi outbox langsung ke Google Apps Script tanpa masuk ke queue lokal lagi
+  async executeCloudAction(action: string, payload: any): Promise<any> {
+    return await this.callApi(action, payload, 'POST');
+  }
+
   private async callApi(action: string, payload?: any, method: 'GET' | 'POST' = 'POST'): Promise<any> {
     if (!this.scriptUrl) {
       throw new Error('URL Web App Google Sheets belum diatur di menu Pengaturan.');
@@ -90,23 +102,27 @@ export class GoogleSheetsAdapter implements IDataProvider {
   }
 
   async saveProduct(product: Partial<Product>): Promise<Product> {
-    try {
-      const res = await this.callApi('saveProduct', product, 'POST');
-      await this.localFallback.saveProduct(res);
-      return res;
-    } catch {
-      return this.localFallback.saveProduct(product);
-    }
+    const saved = await this.localFallback.saveProduct(product);
+    await db.outboxQueue.add({
+      action: 'saveProduct',
+      payload: saved,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return saved;
   }
 
   async deleteProduct(id: string): Promise<boolean> {
-    try {
-      await this.callApi('deleteProduct', { id }, 'POST');
-      await this.localFallback.deleteProduct(id);
-      return true;
-    } catch {
-      return this.localFallback.deleteProduct(id);
-    }
+    const res = await this.localFallback.deleteProduct(id);
+    await db.outboxQueue.add({
+      action: 'deleteProduct',
+      payload: { id },
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return res;
   }
 
   async getCategories(): Promise<Category[]> {
@@ -118,33 +134,39 @@ export class GoogleSheetsAdapter implements IDataProvider {
   }
 
   async saveCategory(category: Partial<Category>): Promise<Category> {
-    try {
-      const res = await this.callApi('saveCategory', category, 'POST');
-      await this.localFallback.saveCategory(res);
-      return res;
-    } catch {
-      return this.localFallback.saveCategory(category);
-    }
+    const saved = await this.localFallback.saveCategory(category);
+    await db.outboxQueue.add({
+      action: 'saveCategory',
+      payload: saved,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return saved;
   }
 
   async deleteCategory(id: string): Promise<boolean> {
-    try {
-      await this.callApi('deleteCategory', { id }, 'POST');
-      await this.localFallback.deleteCategory(id);
-      return true;
-    } catch {
-      return this.localFallback.deleteCategory(id);
-    }
+    const res = await this.localFallback.deleteCategory(id);
+    await db.outboxQueue.add({
+      action: 'deleteCategory',
+      payload: { id },
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return res;
   }
 
   async adjustStock(payload: { productId: string; newStock: number; reason: 'RUSAK' | 'HILANG' | 'KOREKSI_OPNAME' | 'SALAH_INPUT' | 'LAINNYA'; notes?: string }): Promise<{ success: boolean; newStock: number }> {
-    try {
-      const res = await this.callApi('adjustStock', payload, 'POST');
-      await this.localFallback.adjustStock(payload);
-      return res;
-    } catch {
-      return this.localFallback.adjustStock(payload);
-    }
+    const res = await this.localFallback.adjustStock(payload);
+    await db.outboxQueue.add({
+      action: 'adjustStock',
+      payload,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return res;
   }
 
   async getStockMutations(productId?: string): Promise<StockMutation[]> {
@@ -164,23 +186,27 @@ export class GoogleSheetsAdapter implements IDataProvider {
   }
 
   async saveSupplier(supplier: Partial<Supplier>): Promise<Supplier> {
-    try {
-      const res = await this.callApi('saveSupplier', supplier, 'POST');
-      await this.localFallback.saveSupplier(res);
-      return res;
-    } catch {
-      return this.localFallback.saveSupplier(supplier);
-    }
+    const saved = await this.localFallback.saveSupplier(supplier);
+    await db.outboxQueue.add({
+      action: 'saveSupplier',
+      payload: saved,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return saved;
   }
 
   async deleteSupplier(id: string): Promise<boolean> {
-    try {
-      await this.callApi('deleteSupplier', { id }, 'POST');
-      await this.localFallback.deleteSupplier(id);
-      return true;
-    } catch {
-      return this.localFallback.deleteSupplier(id);
-    }
+    const res = await this.localFallback.deleteSupplier(id);
+    await db.outboxQueue.add({
+      action: 'deleteSupplier',
+      payload: { id },
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return res;
   }
 
   async getPurchases(): Promise<Purchase[]> {
@@ -192,40 +218,35 @@ export class GoogleSheetsAdapter implements IDataProvider {
   }
 
   async createPurchase(payload: CreatePurchasePayload): Promise<{ purchaseNo: string; success: boolean }> {
-    try {
-      const res = await this.callApi('createPurchase', payload, 'POST');
-      await this.localFallback.createPurchase(payload);
-      return res;
-    } catch {
-      // Pada saat offline, simpan lokal dan masukkan ke antrean outbox untuk auto-sync
-      const localRes = await this.localFallback.createPurchase(payload);
-      await db.outboxQueue.add({
-        action: 'createPurchase',
-        payload: { ...payload, purchaseNo: localRes.purchaseNo },
-        createdAt: new Date().toISOString(),
-        retryCount: 0
-      });
-      return localRes;
-    }
+    const localRes = await this.localFallback.createPurchase(payload);
+    const fullPayload = { ...payload, purchaseNo: localRes.purchaseNo };
+    await db.outboxQueue.add({
+      action: 'createPurchase',
+      payload: fullPayload,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return localRes;
   }
 
   async checkoutSale(payload: CheckoutPayload): Promise<{ invoiceNo: string; success: boolean }> {
-    try {
-      const res = await this.callApi('checkoutSale', payload, 'POST');
-      // Sync local cache as well
-      await this.localFallback.checkoutSale(payload);
-      return { invoiceNo: res.invoiceNo, success: true };
-    } catch {
-      // In offline scenario, commit locally dan daftarkan ke outboxQueue
-      const localRes = await this.localFallback.checkoutSale(payload);
-      await db.outboxQueue.add({
-        action: 'checkoutSale',
-        payload: { ...payload, invoiceNo: localRes.invoiceNo },
-        createdAt: new Date().toISOString(),
-        retryCount: 0
-      });
-      return localRes;
-    }
+    // 1. Simpan ke IndexedDB lokal secara instan (UI kasir & struk langsung siap < 15ms)
+    const localRes = await this.localFallback.checkoutSale(payload);
+    const fullPayload = { ...payload, invoiceNo: localRes.invoiceNo };
+    
+    // 2. Masukkan ke antrean sinkronisasi latar belakang
+    await db.outboxQueue.add({
+      action: 'checkoutSale',
+      payload: fullPayload,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    
+    // 3. Picu background sync secara non-blocking
+    this.triggerBackgroundSync();
+    
+    return localRes;
   }
 
   async getSalesHistory(): Promise<Sale[]> {
@@ -246,13 +267,15 @@ export class GoogleSheetsAdapter implements IDataProvider {
   }
 
   async saveCustomer(customer: Partial<Customer>): Promise<Customer> {
-    try {
-      const res = await this.callApi('saveCustomer', customer, 'POST');
-      await this.localFallback.saveCustomer(res);
-      return res;
-    } catch {
-      return this.localFallback.saveCustomer(customer);
-    }
+    const saved = await this.localFallback.saveCustomer(customer);
+    await db.outboxQueue.add({
+      action: 'saveCustomer',
+      payload: saved,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return saved;
   }
 
   async getReceivables(): Promise<Receivable[]> {
@@ -266,20 +289,15 @@ export class GoogleSheetsAdapter implements IDataProvider {
   async payReceivable(payload: PayReceivablePayload): Promise<boolean> {
     const paymentId = payload.paymentId || `PAY-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
     const fullPayload = { ...payload, paymentId };
-    try {
-      await this.callApi('payReceivable', fullPayload, 'POST');
-      await this.localFallback.payReceivable(fullPayload);
-      return true;
-    } catch {
-      await this.localFallback.payReceivable(fullPayload);
-      await db.outboxQueue.add({
-        action: 'payReceivable',
-        payload: fullPayload,
-        createdAt: new Date().toISOString(),
-        retryCount: 0
-      });
-      return true;
-    }
+    await this.localFallback.payReceivable(fullPayload);
+    await db.outboxQueue.add({
+      action: 'payReceivable',
+      payload: fullPayload,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return true;
   }
 
   async getAccountingReport(): Promise<{ journal: JournalLine[]; coa: ChartOfAccount[] }> {
@@ -291,29 +309,26 @@ export class GoogleSheetsAdapter implements IDataProvider {
   }
 
   async createManualJournal(payload: CreateManualJournalPayload): Promise<boolean> {
-    try {
-      await this.callApi('createManualJournal', payload, 'POST');
-      await this.localFallback.createManualJournal(payload);
-      return true;
-    } catch {
-      await this.localFallback.createManualJournal(payload);
-      await db.outboxQueue.add({
-        action: 'createManualJournal',
-        payload,
-        createdAt: new Date().toISOString(),
-        retryCount: 0
-      });
-      return true;
-    }
+    await this.localFallback.createManualJournal(payload);
+    await db.outboxQueue.add({
+      action: 'createManualJournal',
+      payload,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return true;
   }
 
   async saveSettings(settings: Partial<StoreSettings>): Promise<StoreSettings> {
-    try {
-      const res = await this.callApi('saveSettings', settings, 'POST');
-      await this.localFallback.saveSettings(settings);
-      return res;
-    } catch {
-      return this.localFallback.saveSettings(settings);
-    }
+    const saved = await this.localFallback.saveSettings(settings);
+    await db.outboxQueue.add({
+      action: 'saveSettings',
+      payload: saved,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+    this.triggerBackgroundSync();
+    return saved;
   }
 }

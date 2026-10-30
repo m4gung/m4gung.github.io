@@ -20,12 +20,12 @@ import type {
 } from '../types';
 
 export const DEFAULT_SETTINGS: StoreSettings = {
-  storeName: 'Toko Berkah Bersama',
-  storePhone: '081234567890',
-  storeAddress: 'Jl. Trans Sulawesi No. 12, Kolaka',
-  bankName: 'BCA',
-  bankAccountNo: '1234567890',
-  bankAccountHolder: 'Agung Maulana',
+  storeName: 'Toko UMKM',
+  storePhone: '',
+  storeAddress: '',
+  bankName: '',
+  bankAccountNo: '',
+  bankAccountHolder: '',
   qrisImageUrl: '',
   qrisString: '',
   dataSourceMode: 'indexeddb',
@@ -46,25 +46,6 @@ const DEFAULT_COA: ChartOfAccount[] = [
   { code: '6101', name: 'Beban Operasional Toko', type: 'BEBAN_OPERASIONAL', normalBalance: 'DEBIT' },
 ];
 
-const SEED_PRODUCTS: Product[] = [
-  { id: 'PRD-001', sku: 'MIE-001', barcode: '89910011001', name: 'Indomie Goreng Original', category: 'Makanan', unit: 'Bks', costPrice: 2800, sellingPrice: 3500, stock: 120, minStock: 20, updatedAt: new Date().toISOString() },
-  { id: 'PRD-002', sku: 'MIE-002', barcode: '89910011002', name: 'Indomie Kuah Ayam Bawang', category: 'Makanan', unit: 'Bks', costPrice: 2700, sellingPrice: 3500, stock: 85, minStock: 15, updatedAt: new Date().toISOString() },
-  { id: 'PRD-003', sku: 'MNM-001', barcode: '89920021001', name: 'Le Minerale 600ml', category: 'Minuman', unit: 'Btl', costPrice: 2500, sellingPrice: 3500, stock: 48, minStock: 12, updatedAt: new Date().toISOString() },
-  { id: 'PRD-004', sku: 'MNM-002', barcode: '89920021002', name: 'Teh Botol Sosro Kotak 250ml', category: 'Minuman', unit: 'Kotak', costPrice: 3200, sellingPrice: 4500, stock: 36, minStock: 10, updatedAt: new Date().toISOString() },
-  { id: 'PRD-005', sku: 'MB-001', barcode: '89930031001', name: 'Minyak Goreng Bimoli 1L', category: 'Sembako', unit: 'Pouch', costPrice: 17500, sellingPrice: 20000, stock: 24, minStock: 6, updatedAt: new Date().toISOString() },
-  { id: 'PRD-006', sku: 'SB-001', barcode: '89940041001', name: 'Sabun Mandi Lifebuoy 85g', category: 'Kebersihan', unit: 'Pcs', costPrice: 3800, sellingPrice: 5000, stock: 50, minStock: 10, updatedAt: new Date().toISOString() }
-];
-
-const SEED_CUSTOMERS: Customer[] = [
-  { id: 'CUST-001', name: 'Bu Warung Hj. Maryam', phone: '081244556677', address: 'Jl. Poros No. 5', creditLimit: 2000000, currentDebt: 350000, updatedAt: new Date().toISOString() },
-  { id: 'CUST-002', name: 'Pak RT Syamsul', phone: '081399887766', address: 'Blok B No. 14', creditLimit: 1000000, currentDebt: 0, updatedAt: new Date().toISOString() }
-];
-
-const SEED_SUPPLIERS: Supplier[] = [
-  { id: 'SUP-001', name: 'PT Sumber Pangan Makmur', phone: '081122334455', address: 'Kawasan Industri Pergudangan No. 8', isActive: true, createdAt: new Date().toISOString() },
-  { id: 'SUP-002', name: 'CV Berkah Retail Utama', phone: '081299887711', address: 'Jl. Niaga Sentra Blok C-2', isActive: true, createdAt: new Date().toISOString() }
-];
-
 export class IndexedDbAdapter implements IDataProvider {
   name = 'IndexedDB (Offline Local Store)';
 
@@ -73,37 +54,70 @@ export class IndexedDbAdapter implements IDataProvider {
   }
 
   async initDefaultsIfEmpty(): Promise<void> {
-    const productCount = await db.products.count();
-    if (productCount === 0) {
-      await db.products.bulkAdd(SEED_PRODUCTS);
-      await db.categories.bulkAdd([
-        { id: 'CAT-1', name: 'Sembako', createdAt: new Date().toISOString() },
-        { id: 'CAT-2', name: 'Makanan', createdAt: new Date().toISOString() },
-        { id: 'CAT-3', name: 'Minuman', createdAt: new Date().toISOString() },
-        { id: 'CAT-4', name: 'Kebersihan', createdAt: new Date().toISOString() }
-      ]);
-      await db.customers.bulkAdd(SEED_CUSTOMERS);
-      await db.suppliers.bulkAdd(SEED_SUPPLIERS);
-      await db.coa.bulkAdd(DEFAULT_COA);
+    // Bersihkan data dummy peninggalan versi sebelumnya jika masih ada di browser
+    const dummyProductIds = ['PRD-001', 'PRD-002', 'PRD-003', 'PRD-004', 'PRD-005', 'PRD-006'];
+    const dummyCustomerIds = ['CUST-001', 'CUST-002'];
+    const dummySupplierIds = ['SUP-001', 'SUP-002'];
+    const dummyReceivableIds = ['REC-INIT-001'];
 
-      // Default initial receivable for Bu Hj. Maryam
-      await db.receivables.add({
-        id: 'REC-INIT-001',
-        invoiceNo: 'INV-20261001001',
-        customerId: 'CUST-001',
-        customerName: 'Bu Warung Hj. Maryam',
-        totalAmount: 350000,
-        paidAmount: 0,
-        remainingAmount: 350000,
-        dueDate: '2026-10-25',
-        status: 'ACTIVE',
-        createdAt: '2026-10-01T10:00:00.000Z'
-      });
+    try {
+      await db.products.bulkDelete(dummyProductIds);
+      await db.customers.bulkDelete(dummyCustomerIds);
+      await db.suppliers.bulkDelete(dummySupplierIds);
+      await db.receivables.bulkDelete(dummyReceivableIds);
+
+      // Perbarui jika pengaturan masih tersimpan nama toko dummy lama
+      const currentSetting = await db.settings.get('main');
+      if (currentSetting && currentSetting.value?.storeName === 'Toko Berkah Bersama') {
+        await db.settings.put({
+          key: 'main',
+          value: {
+            ...currentSetting.value,
+            storeName: 'Toko UMKM',
+            storePhone: '',
+            storeAddress: '',
+            bankName: '',
+            bankAccountNo: '',
+            bankAccountHolder: ''
+          }
+        });
+      }
+    } catch {
+      // Abaikan bila tabel masih kosong
     }
 
+    // Inisialisasi Bagan Akun Standar (SAK EMKM) jika belum ada
+    const coaCount = await db.coa.count();
+    if (coaCount === 0) {
+      await db.coa.bulkAdd(DEFAULT_COA);
+    }
+
+    // Inisialisasi Pengaturan jika belum ada
     const settingsCount = await db.settings.count();
     if (settingsCount === 0) {
       await db.settings.add({ key: 'main', value: DEFAULT_SETTINGS });
+    }
+  }
+
+  async clearAllData(): Promise<void> {
+    await db.products.clear();
+    await db.categories.clear();
+    await db.customers.clear();
+    await db.suppliers.clear();
+    await db.sales.clear();
+    await db.saleItems.clear();
+    await db.purchases.clear();
+    await db.purchaseItems.clear();
+    await db.receivables.clear();
+    await db.receivablePayments.clear();
+    await db.stockMutations.clear();
+    await db.journalLines.clear();
+    await db.outboxQueue.clear();
+    await db.settings.put({ key: 'main', value: DEFAULT_SETTINGS });
+
+    const coaCount = await db.coa.count();
+    if (coaCount === 0) {
+      await db.coa.bulkAdd(DEFAULT_COA);
     }
   }
 
@@ -268,8 +282,36 @@ export class IndexedDbAdapter implements IDataProvider {
     const now = new Date().toISOString();
     const dateFormatted = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const purchaseNo = payload.purchaseNo || `PO-${dateFormatted}-${randomSuffix}`;
-    const purchaseId = `PUR-${Date.now()}`;
+
+    let purchaseId = payload.id || `PUR-${Date.now()}`;
+    let purchaseNo = payload.purchaseNo || `PO-${dateFormatted}-${randomSuffix}`;
+    let existingDate = now;
+
+    // Jika mode edit transaksi pembelian yang sudah ada, rollback stok lama & bersihkan catatan terkait
+    if (payload.id) {
+      const existing = await db.purchases.get(payload.id);
+      if (existing) {
+        purchaseNo = payload.purchaseNo || existing.purchaseNo;
+        existingDate = existing.date || now;
+
+        // Rollback stok lama
+        if (existing.items && existing.items.length > 0) {
+          for (const oldIt of existing.items) {
+            const prod = await db.products.get(oldIt.productId);
+            if (prod) {
+              prod.stock = Math.max(0, prod.stock - Number(oldIt.quantity));
+              prod.updatedAt = now;
+              await db.products.put(prod);
+            }
+          }
+        }
+
+        // Hapus item detail, mutasi, dan jurnal lama terkait PO ini
+        await db.purchaseItems.where('purchaseId').equals(payload.id).delete();
+        await db.stockMutations.where('referenceNo').equals(existing.purchaseNo).delete();
+        await db.journalLines.where('refNo').equals(existing.purchaseNo).delete();
+      }
+    }
 
     let totalAmount = 0;
     const itemsToSave: PurchaseItem[] = [];
@@ -304,7 +346,7 @@ export class IndexedDbAdapter implements IDataProvider {
       // Catat mutasi stok masuk (IN_PURCHASE)
       mutationsToSave.push({
         id: `MUT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        date: now,
+        date: existingDate,
         productId: it.productId,
         productName: it.productName,
         type: 'IN_PURCHASE',
@@ -323,7 +365,7 @@ export class IndexedDbAdapter implements IDataProvider {
       purchaseNo,
       supplierId: payload.supplierId,
       supplierName: payload.supplierName,
-      date: now,
+      date: existingDate,
       totalAmount,
       paymentMethod: payload.paymentMethod,
       paymentStatus: payload.paymentStatus,
@@ -496,7 +538,7 @@ export class IndexedDbAdapter implements IDataProvider {
       name: customer.name || 'Pelanggan Baru',
       phone: customer.phone || '',
       address: customer.address || '',
-      creditLimit: Number(customer.creditLimit || 5000000),
+      creditLimit: customer.creditLimit !== undefined ? Number(customer.creditLimit) : 5000000,
       currentDebt: Number(customer.currentDebt || 0),
       updatedAt: now
     };

@@ -14,8 +14,8 @@ import {
   TrendingUp, 
   ArrowUpDown
 } from 'lucide-react';
-import { useStore } from '../context/StoreContext';
-import { formatRupiah, formatTanggal } from '../utils/format';
+import { useStore } from '../context/useStore';
+import { formatRupiah, formatTanggal, formatThousand, parseThousand } from '../utils/format';
 import type { Product, StockMutation } from '../types';
 
 export const ProdukPage: React.FC = () => {
@@ -505,22 +505,23 @@ export const ProdukPage: React.FC = () => {
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Harga Beli / Modal (Rp) *</label>
                   <input
-                    type="number"
-                    min="0"
-                    required
-                    value={editingProduct.costPrice || 0}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, costPrice: Number(e.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={formatThousand(editingProduct.costPrice)}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, costPrice: parseThousand(e.target.value) })}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Harga Jual (Rp) *</label>
                   <input
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
                     required
-                    value={editingProduct.sellingPrice || 0}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, sellingPrice: Number(e.target.value) })}
+                    value={formatThousand(editingProduct.sellingPrice)}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, sellingPrice: parseThousand(e.target.value) })}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none font-bold text-brand-700"
                   />
                 </div>
@@ -530,22 +531,22 @@ export const ProdukPage: React.FC = () => {
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Stok Awal</label>
                   <input
-                    type="number"
-                    min="0"
-                    required
-                    value={editingProduct.stock || 0}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={formatThousand(editingProduct.stock)}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, stock: parseThousand(e.target.value) })}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Batas Minimum Peringatan Stok</label>
                   <input
-                    type="number"
-                    min="0"
-                    required
-                    value={editingProduct.minStock || 5}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, minStock: Number(e.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="5"
+                    value={formatThousand(editingProduct.minStock)}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, minStock: parseThousand(e.target.value) })}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
                   />
                 </div>
@@ -601,11 +602,12 @@ export const ProdukPage: React.FC = () => {
                   Stok Fisik Aktual Baru *
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0"
                   required
-                  value={newStockValue}
-                  onChange={(e) => setNewStockValue(Number(e.target.value))}
+                  value={formatThousand(newStockValue)}
+                  onChange={(e) => setNewStockValue(parseThousand(e.target.value))}
                   className="w-full px-3 py-2 text-base font-bold border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 />
                 <div className="text-xs text-gray-500 mt-1">

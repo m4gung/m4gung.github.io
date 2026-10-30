@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { 
   StoreSettings, 
   Product, 
@@ -14,33 +14,8 @@ import type { IDataProvider } from '../adapters/IDataProvider';
 import { IndexedDbAdapter, DEFAULT_SETTINGS } from '../adapters/IndexedDbAdapter';
 import { GoogleSheetsAdapter } from '../adapters/GoogleSheetsAdapter';
 import { SpringBootAdapter } from '../adapters/SpringBootAdapter';
-
 import { db } from '../db/indexedDb';
-
-export type SyncStatus = 'SYNCED' | 'SYNCING' | 'PENDING' | 'OFFLINE';
-
-interface StoreContextType {
-  settings: StoreSettings;
-  updateSettings: (newSettings: Partial<StoreSettings>) => Promise<void>;
-  provider: IDataProvider;
-  isOnline: boolean;
-  syncStatus: SyncStatus;
-  outboxCount: number;
-  syncOutboxQueue: () => Promise<void>;
-  products: Product[];
-  categories: Category[];
-  customers: Customer[];
-  suppliers: Supplier[];
-  purchases: Purchase[];
-  receivables: Receivable[];
-  coa: ChartOfAccount[];
-  loading: boolean;
-  refreshData: () => Promise<void>;
-  testConnection: () => Promise<{ success: boolean; message: string }>;
-  switchDataSourceMode: (mode: DataSourceMode, customUrl?: string) => Promise<void>;
-}
-
-const StoreContext = createContext<StoreContextType | null>(null);
+import { StoreContext, type SyncStatus } from './useStore';
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
@@ -56,6 +31,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [receivables, setReceivables] = useState<Receivable[]>([]);
   const [coa, setCoa] = useState<ChartOfAccount[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const isSyncingRef = useRef<boolean>(false);
 
   // Pantau jumlah antrean outbox di IndexedDB
   const refreshOutboxCount = async () => {
@@ -65,7 +41,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (!navigator.onLine) {
         setSyncStatus('OFFLINE');
       } else if (count > 0) {
-        setSyncStatus('PENDING');
+        // Jika sedang berjalan sinkronisasi, pertahankan SYNCING
+        setSyncStatus(prev => prev === 'SYNCING' ? 'SYNCING' : 'PENDING');
       } else {
         setSyncStatus('SYNCED');
       }
@@ -74,49 +51,77 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  // Proses pengiriman antrean outbox ke cloud provider
+  // Proses pengiriman antrean outbox ke cloud provider secara berurutan (FIFO)
   const syncOutboxQueue = async () => {
+    if (isSyncingRef.current) return;
     if (!navigator.onLine) {
       setSyncStatus('OFFLINE');
       return;
     }
 
-    const items = await db.outboxQueue.toArray();
-    if (items.length === 0) {
-      setSyncStatus('SYNCED');
-      setOutboxCount(0);
-      return;
-    }
+    isSyncingRef.current = true;
+    try {
+      const items = await db.outboxQueue.toArray();
+      if (items.length === 0) {
+        setSyncStatus('SYNCED');
+        setOutboxCount(0);
+        return;
+      }
 
-    setSyncStatus('SYNCING');
-    for (const item of items) {
-      try {
-        if (item.action === 'checkoutSale') {
-          await provider.checkoutSale(item.payload);
-        } else if (item.action === 'createPurchase') {
-          await provider.createPurchase(item.payload);
-        } else if (item.action === 'payReceivable') {
-          await provider.payReceivable(item.payload);
-        } else if (item.action === 'createManualJournal') {
-          await provider.createManualJournal(item.payload);
-        }
-        // Sukses disinkronkan, hapus dari outbox
-        if (item.id) {
-          await db.outboxQueue.delete(item.id);
-        }
-      } catch (err) {
-        console.warn(`Gagal menyinkronkan outbox item ${item.id} (${item.action}):`, err);
-        if (item.id) {
-          await db.outboxQueue.update(item.id, { retryCount: (item.retryCount || 0) + 1 });
+      setSyncStatus('SYNCING');
+      for (const item of items) {
+        try {
+          if (provider.executeCloudAction) {
+            await provider.executeCloudAction(item.action, item.payload);
+          } else {
+            // Fallback jika adapter tidak memiliki executeCloudAction
+            if (item.action === 'checkoutSale') {
+              await provider.checkoutSale(item.payload);
+            } else if (item.action === 'createPurchase') {
+              await provider.createPurchase(item.payload);
+            } else if (item.action === 'payReceivable') {
+              await provider.payReceivable(item.payload);
+            } else if (item.action === 'createManualJournal') {
+              await provider.createManualJournal(item.payload);
+            } else if (item.action === 'saveProduct') {
+              await provider.saveProduct(item.payload);
+            } else if (item.action === 'deleteProduct') {
+              await provider.deleteProduct(item.payload.id);
+            } else if (item.action === 'saveCategory') {
+              await provider.saveCategory(item.payload);
+            } else if (item.action === 'deleteCategory') {
+              await provider.deleteCategory(item.payload.id);
+            } else if (item.action === 'adjustStock') {
+              await provider.adjustStock(item.payload);
+            } else if (item.action === 'saveCustomer') {
+              await provider.saveCustomer(item.payload);
+            } else if (item.action === 'saveSupplier') {
+              await provider.saveSupplier(item.payload);
+            } else if (item.action === 'deleteSupplier') {
+              await provider.deleteSupplier(item.payload.id);
+            } else if (item.action === 'saveSettings') {
+              await provider.saveSettings(item.payload);
+            }
+          }
+
+          // Sukses disinkronkan ke cloud, hapus dari outbox
+          if (item.id) {
+            await db.outboxQueue.delete(item.id);
+          }
+        } catch (err) {
+          console.warn(`Gagal menyinkronkan outbox item ${item.id} (${item.action}):`, err);
+          if (item.id) {
+            await db.outboxQueue.update(item.id, { retryCount: (item.retryCount || 0) + 1 });
+          }
         }
       }
+    } finally {
+      isSyncingRef.current = false;
+      await refreshOutboxCount();
     }
-
-    await refreshOutboxCount();
-    await refreshData();
   };
 
-  // Pantau status online/offline dan trigger auto-sync saat online kembali
+  // Pantau status online/offline dan trigger auto-sync saat online kembali atau event outbox
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
@@ -127,10 +132,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setSyncStatus('OFFLINE');
     };
 
+    // Event listener saat ada penambahan outbox baru secara background
+    const handleTriggerSync = () => {
+      refreshOutboxCount();
+      if (navigator.onLine) {
+        syncOutboxQueue();
+      }
+    };
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('toko:trigger-outbox-sync', handleTriggerSync);
 
-    // Heartbeat auto-sync berkala tiap 30 detik jika ada pending queue
+    // Heartbeat auto-sync berkala tiap 25 detik jika ada pending queue
     const interval = setInterval(() => {
       if (navigator.onLine) {
         db.outboxQueue.count().then((count) => {
@@ -140,11 +154,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
         });
       }
-    }, 30000);
+    }, 25000);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('toko:trigger-outbox-sync', handleTriggerSync);
       clearInterval(interval);
     };
   }, [provider]);
@@ -162,13 +177,30 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const initApp = async () => {
     setLoading(true);
     try {
-      // Ambil pengaturan awal dari IndexedDB terlebih dahulu
+      // 1. Render data lokal IndexedDB terlebih dahulu secara instan (Stale-While-Revalidate)
       const localAdapter = new IndexedDbAdapter();
-      const initial = await localAdapter.getInitialData();
-      const currentSettings = initial.settings || DEFAULT_SETTINGS;
+      const localInitial = await localAdapter.getInitialData();
+      const currentSettings = localInitial.settings || DEFAULT_SETTINGS;
       setSettings(currentSettings);
+      
+      setProducts(localInitial.products || []);
+      setCategories(localInitial.categories || []);
+      setCustomers(localInitial.customers || []);
+      setCoa(localInitial.coa || []);
 
-      // Instansiasi adapter yang sesuai
+      const [supps, purchs, recs] = await Promise.all([
+        localAdapter.getSuppliers(),
+        localAdapter.getPurchases(),
+        localAdapter.getReceivables()
+      ]);
+      setSuppliers(supps || []);
+      setPurchases(purchs || []);
+      setReceivables(recs || []);
+
+      // Hentikan loading screen segera agar pengguna bisa langsung berinteraksi tanpa delay
+      setLoading(false);
+
+      // 2. Instansiasi adapter yang sesuai
       let activeAdapter: IDataProvider = localAdapter;
       if (currentSettings.dataSourceMode === 'google_sheets' && currentSettings.googleSheetsUrl) {
         activeAdapter = new GoogleSheetsAdapter(currentSettings.googleSheetsUrl);
@@ -177,46 +209,45 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       setProvider(activeAdapter);
 
-      // Muat data dari adapter aktif
-      const appData = await activeAdapter.getInitialData();
-      setProducts(appData.products || []);
-      setCategories(appData.categories || []);
-      setCustomers(appData.customers || []);
-      setCoa(appData.coa || []);
-
-      const supps = await activeAdapter.getSuppliers();
-      setSuppliers(supps || []);
-
-      const purchs = await activeAdapter.getPurchases();
-      setPurchases(purchs || []);
-
-      const recs = await activeAdapter.getReceivables();
-      setReceivables(recs || []);
+      // 3. Jika mode cloud dan online, revalidasi data terbaru di latar belakang
+      if (navigator.onLine && currentSettings.dataSourceMode !== 'indexeddb') {
+        activeAdapter.getInitialData().then((cloudData) => {
+          if (cloudData && cloudData.products && cloudData.products.length > 0) {
+            setProducts(cloudData.products);
+            setCategories(cloudData.categories || []);
+            setCustomers(cloudData.customers || []);
+            setCoa(cloudData.coa || []);
+          }
+        }).catch((err) => {
+          console.warn('Latar belakang revalidasi cloud gagal, tetap menggunakan cache lokal:', err);
+        });
+      }
     } catch (err) {
       console.error('Error saat inisialisasi aplikasi:', err);
-    } finally {
       setLoading(false);
     }
   };
 
+  // Muat data lokal secara instan (< 10ms) agar semua aksi (tambah/update/hapus/kasir) super smooth
   const refreshData = async () => {
     try {
-      const data = await provider.getInitialData();
+      const localAdapter = new IndexedDbAdapter();
+      const data = await localAdapter.getInitialData();
       setProducts(data.products || []);
       setCategories(data.categories || []);
       setCustomers(data.customers || []);
       setCoa(data.coa || []);
 
-      const supps = await provider.getSuppliers();
+      const [supps, purchs, recs] = await Promise.all([
+        localAdapter.getSuppliers(),
+        localAdapter.getPurchases(),
+        localAdapter.getReceivables()
+      ]);
       setSuppliers(supps || []);
-
-      const purchs = await provider.getPurchases();
       setPurchases(purchs || []);
-
-      const recs = await provider.getReceivables();
       setReceivables(recs || []);
     } catch (err) {
-      console.error('Gagal memperbarui data:', err);
+      console.error('Gagal memperbarui data lokal:', err);
     }
   };
 
@@ -249,6 +280,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await refreshData();
   };
 
+  const clearAllData = async () => {
+    setLoading(true);
+    try {
+      const localAdapter = new IndexedDbAdapter();
+      await localAdapter.clearAllData();
+      if (provider.clearAllData && provider !== (localAdapter as any)) {
+        await provider.clearAllData();
+      }
+      setSettings(DEFAULT_SETTINGS);
+      await refreshData();
+      await refreshOutboxCount();
+    } catch (err) {
+      console.error('Gagal mengosongkan data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const testConnection = async (): Promise<{ success: boolean; message: string }> => {
     return provider.ping();
   };
@@ -272,6 +321,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         coa,
         loading,
         refreshData,
+        clearAllData,
         testConnection,
         switchDataSourceMode
       }}
@@ -279,12 +329,4 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {children}
     </StoreContext.Provider>
   );
-};
-
-export const useStore = () => {
-  const context = useContext(StoreContext);
-  if (!context) {
-    throw new Error('useStore harus digunakan di dalam StoreProvider');
-  }
-  return context;
 };

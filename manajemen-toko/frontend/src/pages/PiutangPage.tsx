@@ -13,8 +13,8 @@ import {
   ShieldAlert,
   RefreshCw
 } from 'lucide-react';
-import { useStore } from '../context/StoreContext';
-import { formatRupiah, formatTanggal } from '../utils/format';
+import { useStore } from '../context/useStore';
+import { formatRupiah, formatTanggal, formatThousand, parseThousand } from '../utils/format';
 import type { Customer, Receivable } from '../types';
 
 export const PiutangPage: React.FC = () => {
@@ -24,6 +24,10 @@ export const PiutangPage: React.FC = () => {
     provider, 
     refreshData 
   } = useStore();
+
+  // Null safety untuk mencegah runtime error saat state awal belum siap atau revalidasi
+  const safeReceivables = Array.isArray(receivables) ? receivables : [];
+  const safeCustomers = Array.isArray(customers) ? customers : [];
 
   const [activeTab, setActiveTab] = useState<'receivables' | 'customers'>('receivables');
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,21 +58,26 @@ export const PiutangPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Helper: Hitung keterlambatan (hari)
-  const getDaysOverdue = (dueDateStr: string): number => {
+  // Helper: Hitung keterlambatan (hari) dengan validasi aman anti-NaN
+  const getDaysOverdue = (dueDateStr?: string): number => {
     if (!dueDateStr) return 0;
     const due = new Date(dueDateStr);
+    if (isNaN(due.getTime())) return 0;
     const today = new Date();
     // Reset jam agar perbandingan hari murni
     due.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
     const diffTime = today.getTime() - due.getTime();
-    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const res = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return isNaN(res) ? 0 : res;
   };
 
   // Helper: Klasifikasi kategori umur piutang
-  const getAgingCategory = (r: Receivable): 'CURRENT' | '1-30' | '31-60' | 'OVER-60' | 'PAID' => {
-    if (r.status === 'PAID' || Number(r.remainingAmount) <= 0) return 'PAID';
+  const getAgingCategory = (r?: Receivable): 'CURRENT' | '1-30' | '31-60' | 'OVER-60' | 'PAID' => {
+    if (!r) return 'PAID';
+    const remaining = Number(r.remainingAmount || 0);
+    if (r.status === 'PAID' || remaining <= 0) return 'PAID';
+    if (!r.dueDate) return 'CURRENT';
     const days = getDaysOverdue(r.dueDate);
     if (days <= 0) return 'CURRENT';
     if (days <= 30) return '1-30';
@@ -77,7 +86,7 @@ export const PiutangPage: React.FC = () => {
   };
 
   // Kalkulasi Aging Schedule Breakdown
-  const agingStats = receivables.reduce(
+  const agingStats = safeReceivables.reduce(
     (acc, r) => {
       const remaining = Number(r.remainingAmount || 0);
       if (r.status === 'PAID' || remaining <= 0) {
@@ -120,7 +129,7 @@ export const PiutangPage: React.FC = () => {
   );
 
   // Filter List Piutang
-  const filteredReceivables = receivables.filter((r) => {
+  const filteredReceivables = safeReceivables.filter((r) => {
     const custName = (r.customerName || '').toLowerCase();
     const invoice = (r.invoiceNo || '').toLowerCase();
     const matchesSearch =
@@ -134,7 +143,7 @@ export const PiutangPage: React.FC = () => {
   });
 
   // Filter List Pelanggan
-  const filteredCustomers = customers.filter((c) => {
+  const filteredCustomers = safeCustomers.filter((c) => {
     const name = (c.name || '').toLowerCase();
     const phone = (c.phone || '').toLowerCase();
     return name.includes(searchQuery.toLowerCase()) || phone.includes(searchQuery.toLowerCase());
@@ -195,7 +204,7 @@ export const PiutangPage: React.FC = () => {
         name: customer.name,
         phone: customer.phone || '',
         address: customer.address || '',
-        creditLimit: customer.creditLimit || 5000000,
+        creditLimit: customer.creditLimit !== undefined ? customer.creditLimit : 5000000,
       });
     } else {
       setEditingCustomer(null);
@@ -273,7 +282,7 @@ export const PiutangPage: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Tagihan Piutang ({receivables.length})
+              Tagihan Piutang ({safeReceivables.length})
             </button>
             <button
               onClick={() => setActiveTab('customers')}
@@ -283,7 +292,7 @@ export const PiutangPage: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Data Pelanggan ({customers.length})
+              Data Pelanggan ({safeCustomers.length})
             </button>
           </div>
 
@@ -431,7 +440,7 @@ export const PiutangPage: React.FC = () => {
               Daftar Faktur Bertempo & Status Aging ({filteredReceivables.length})
             </h3>
             <span className="text-xs text-gray-500">
-              Menampilkan {filteredReceivables.length} dari {receivables.length} data
+              Menampilkan {filteredReceivables.length} dari {safeReceivables.length} data
             </span>
           </div>
 
@@ -715,12 +724,12 @@ export const PiutangPage: React.FC = () => {
                   </div>
                 </div>
                 <input
-                  type="number"
-                  min="1"
-                  max={Number(selectedReceivable.remainingAmount)}
+                  type="text"
+                  inputMode="numeric"
                   required
-                  value={payAmount || ''}
-                  onChange={(e) => setPayAmount(Number(e.target.value))}
+                  value={formatThousand(payAmount)}
+                  onChange={(e) => setPayAmount(parseThousand(e.target.value))}
+                  placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-xl text-base font-bold text-brand-700 focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 />
                 <p className="text-[11px] text-gray-500 mt-1">
@@ -862,15 +871,16 @@ export const PiutangPage: React.FC = () => {
                   Batas Limit Kredit (Rp) *
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   required
-                  value={customerForm.creditLimit}
-                  onChange={(e) => setCustomerForm({ ...customerForm, creditLimit: Number(e.target.value) })}
+                  placeholder="0"
+                  value={formatThousand(customerForm.creditLimit)}
+                  onChange={(e) => setCustomerForm({ ...customerForm, creditLimit: parseThousand(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-xl text-xs font-bold text-gray-900 focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 />
-                <p className="text-[11px] text-gray-400 mt-1">
-                  Batas maksimal utang yang diizinkan saat belanja tempo di kasir POS.
+                <p className="text-[11px] text-gray-500 mt-1">
+                  Batas maksimal utang yang diizinkan saat belanja tempo di kasir POS. <span className="text-rose-600 font-semibold">(Isi 0 jika pelanggan dilarang berutang/tempo)</span>.
                 </p>
               </div>
 

@@ -17,7 +17,7 @@ import {
   Cloud,
   Check
 } from 'lucide-react';
-import { useStore } from '../context/StoreContext';
+import { useStore } from '../context/useStore';
 
 interface NavbarProps {
   activeTab: string;

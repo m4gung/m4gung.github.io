@@ -89,4 +89,6 @@ export interface IDataProvider {
   getAccountingReport(): Promise<{ journal: JournalLine[]; coa: ChartOfAccount[] }>;
   createManualJournal(payload: CreateManualJournalPayload): Promise<boolean>;
   saveSettings(settings: Partial<StoreSettings>): Promise<StoreSettings>;
+  executeCloudAction?(action: string, payload: any): Promise<any>;
+  clearAllData?(): Promise<void>;
 }

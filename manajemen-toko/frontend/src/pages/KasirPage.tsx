@@ -12,6 +12,8 @@ import {
   CheckCircle2, 
   Printer, 
   Copy, 
+  Check,
+  MessageCircle,
   X, 
   User,
   AlertCircle,
@@ -19,8 +21,8 @@ import {
   UserPlus,
   RefreshCw
 } from 'lucide-react';
-import { useStore } from '../context/StoreContext';
-import { formatRupiah, formatTanggal } from '../utils/format';
+import { useStore } from '../context/useStore';
+import { formatRupiah, formatTanggal, formatThousand, parseThousand } from '../utils/format';
 import type { Product, PaymentMethod } from '../types';
 
 interface CartItem {
@@ -65,6 +67,7 @@ export const KasirPage: React.FC = () => {
   const [completedSale, setCompletedSale] = useState<any | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [copiedBank, setCopiedBank] = useState(false);
+  const [copiedReceipt, setCopiedReceipt] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [checkoutErrorMessage, setCheckoutErrorMessage] = useState<string | null>(null);
 
@@ -223,14 +226,22 @@ export const KasirPage: React.FC = () => {
       return;
     }
 
-    if (paymentMethod === 'CREDIT' && !selectedCustomer) {
-      setCheckoutErrorMessage('Untuk pembayaran tempo/kredit, Anda wajib memilih Pelanggan Terdaftar!');
-      return;
+    if (paymentMethod === 'CREDIT') {
+      if (!selectedCustomer) {
+        setCheckoutErrorMessage('Untuk pembayaran tempo/kredit, Anda wajib memilih Pelanggan Terdaftar!');
+        return;
+      }
+      if (Number(selectedCustomer.creditLimit || 0) <= 0) {
+        setCheckoutErrorMessage(`Pelanggan "${selectedCustomer.name}" tidak diizinkan tempo / ngutang (Batas Limit Kredit: Rp 0). Silakan gunakan metode Tunai, QRIS, atau Transfer.`);
+        return;
+      }
     }
 
     setProcessing(true);
     setCheckoutErrorMessage(null);
     try {
+      const isCredit = paymentMethod === 'CREDIT';
+      const isCash = paymentMethod === 'CASH';
       const customerName = selectedCustomer ? selectedCustomer.name : 'Pelanggan Umum';
 
       const checkoutPayload = {
@@ -238,13 +249,13 @@ export const KasirPage: React.FC = () => {
         discount: discountAmount,
         finalAmount: finalTotal,
         paymentMethod,
-        cashReceived: paymentMethod === 'CASH' ? cashReceived : finalTotal,
-        changeAmount: paymentMethod === 'CASH' ? changeAmount : 0,
-        paymentStatus: (paymentMethod === 'CREDIT' ? 'UNPAID' : 'PAID') as 'PAID' | 'UNPAID',
+        cashReceived: isCredit ? 0 : (isCash ? cashReceived : finalTotal),
+        changeAmount: isCredit ? 0 : (isCash ? changeAmount : 0),
+        paymentStatus: (isCredit ? 'UNPAID' : 'PAID') as 'PAID' | 'UNPAID',
         notes,
         customerId: selectedCustomer ? selectedCustomer.id : undefined,
         customerName,
-        dueDate: paymentMethod === 'CREDIT' ? dueDate : undefined,
+        dueDate: isCredit ? dueDate : undefined,
         items: cart.map((item) => ({
           productId: item.product.id,
           productName: item.product.name,
@@ -262,7 +273,8 @@ export const KasirPage: React.FC = () => {
         ...checkoutPayload,
         invoiceNo: result.invoiceNo,
         date: new Date().toISOString(),
-        customerDebtSnapshot: selectedCustomer ? selectedCustomer.currentDebt + (paymentMethod === 'CREDIT' ? finalTotal : 0) : 0
+        customerDebtSnapshot: selectedCustomer ? selectedCustomer.currentDebt + (isCredit ? finalTotal : 0) : 0,
+        customerPhone: selectedCustomer ? selectedCustomer.phone : ''
       });
 
       // Reset Keranjang
@@ -276,6 +288,94 @@ export const KasirPage: React.FC = () => {
     } finally {
       setProcessing(false);
     }
+  };
+
+  // Helper membuat format teks struk yang rapi untuk WhatsApp / Clipboard
+  const generateReceiptText = (sale: any): string => {
+    const divider = '--------------------------------';
+    const doubleDivider = '================================';
+
+    const storeTitle = (settings.storeName || 'TOKO UMKM').toUpperCase();
+    let text = `${doubleDivider}\n`;
+    text += `       ${storeTitle}\n`;
+    if (settings.storeAddress) {
+      text += `  ${settings.storeAddress}\n`;
+    }
+    if (settings.storePhone) {
+      text += `       Telp: ${settings.storePhone}\n`;
+    }
+    text += `${doubleDivider}\n`;
+    text += `No. Faktur : ${sale.invoiceNo}\n`;
+    text += `Tanggal    : ${formatTanggal(sale.date)}\n`;
+    text += `Kasir      : Kasir POS\n`;
+    text += `Pelanggan  : ${sale.customerName || 'Pelanggan Umum'}\n`;
+    text += `Metode     : ${sale.paymentMethod === 'CREDIT' ? 'TEMPO (KREDIT)' : sale.paymentMethod}\n`;
+    if (sale.paymentMethod === 'CREDIT') {
+      text += `Status     : BELUM LUNAS (UTANG)\n`;
+      if (sale.dueDate) {
+        text += `Jatuh Tempo: ${formatTanggal(sale.dueDate)}\n`;
+      }
+    } else {
+      text += `Status     : LUNAS\n`;
+    }
+    text += `${divider}\n`;
+
+    (sale.items || []).forEach((it: any) => {
+      text += `${it.productName}\n`;
+      const qtyPrice = `  ${it.quantity} x ${formatRupiah(it.sellingPrice)}`;
+      const sub = formatRupiah(it.sellingPrice * it.quantity);
+      const spaceCount = Math.max(1, 32 - qtyPrice.length - sub.length);
+      text += `${qtyPrice}${' '.repeat(spaceCount)}${sub}\n`;
+    });
+
+    text += `${divider}\n`;
+    text += `Subtotal    : ${formatRupiah(sale.totalAmount)}\n`;
+    if (sale.discount > 0) {
+      text += `Diskon      : -${formatRupiah(sale.discount)}\n`;
+    }
+    text += `TOTAL AKHIR : ${formatRupiah(sale.finalAmount)}\n`;
+
+    if (sale.paymentMethod === 'CASH') {
+      text += `Tunai       : ${formatRupiah(sale.cashReceived)}\n`;
+      text += `Kembalian   : ${formatRupiah(sale.changeAmount)}\n`;
+    } else if (sale.paymentMethod === 'CREDIT') {
+      text += `Tagihan Ini : ${formatRupiah(sale.finalAmount)} (BELUM LUNAS)\n`;
+      if (sale.customerDebtSnapshot > 0) {
+        text += `Total Utang : ${formatRupiah(sale.customerDebtSnapshot)}\n`;
+      }
+    }
+
+    text += `${doubleDivider}\n`;
+    text += `  *** TERIMA KASIH TELAH BERBELANJA ***\n`;
+    text += ` Barang yang sudah dibeli\n`;
+    text += ` tidak dapat ditukar/dikembalikan.\n`;
+    text += `${doubleDivider}`;
+    return text;
+  };
+
+  // Salin Teks Struk ke Clipboard
+  const handleCopyReceiptText = () => {
+    if (!completedSale) return;
+    const txt = generateReceiptText(completedSale);
+    navigator.clipboard.writeText(txt);
+    setCopiedReceipt(true);
+    setTimeout(() => setCopiedReceipt(false), 2000);
+  };
+
+  // Kirim Struk via WhatsApp
+  const handleSendWhatsApp = () => {
+    if (!completedSale) return;
+    const txt = generateReceiptText(completedSale);
+    let phone = completedSale.customerPhone || selectedCustomer?.phone || '';
+    phone = phone.replace(/\D/g, '');
+    if (phone.startsWith('0')) {
+      phone = '62' + phone.slice(1);
+    }
+    const encoded = encodeURIComponent(txt);
+    const waUrl = phone
+      ? `https://wa.me/${phone}?text=${encoded}`
+      : `https://api.whatsapp.com/send?text=${encoded}`;
+    window.open(waUrl, '_blank');
   };
 
   // Cetak Struk Kasir
@@ -715,10 +815,11 @@ export const KasirPage: React.FC = () => {
                     Uang Diterima dari Pelanggan (Rp)
                   </label>
                   <input
-                    type="number"
-                    min="0"
-                    value={cashReceived || ''}
-                    onChange={(e) => setCashReceived(Number(e.target.value))}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={formatThousand(cashReceived)}
+                    onChange={(e) => setCashReceived(parseThousand(e.target.value))}
                     className="w-full px-3 py-2 text-lg font-bold border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none"
                   />
                 </div>
@@ -841,12 +942,17 @@ export const KasirPage: React.FC = () => {
                       </div>
 
                       {/* Peringatan Limit Plafon Kredit */}
-                      {selectedCustomer.currentDebt + finalTotal > selectedCustomer.creditLimit && (
+                      {Number(selectedCustomer.creditLimit || 0) <= 0 ? (
+                        <div className="p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 text-xs flex items-center gap-2 mt-1">
+                          <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                          <span>Pelanggan ini memiliki Limit Kredit Rp 0 (Dilarang berutang/tempo).</span>
+                        </div>
+                      ) : selectedCustomer.currentDebt + finalTotal > selectedCustomer.creditLimit ? (
                         <div className="p-2 bg-amber-50 border border-amber-300 rounded-lg text-amber-900 text-[11px] flex items-center gap-1.5 mt-1">
                           <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
                           <span>Peringatan: Total utang melebihi Limit Kredit ({formatRupiah(selectedCustomer.creditLimit)})!</span>
                         </div>
-                      )}
+                      ) : null}
                     </div>
 
                     <div>
@@ -1006,16 +1112,23 @@ export const KasirPage: React.FC = () => {
             {/* AREA STRUK THERMAL CETAK */}
             <div id="receipt-print-area" className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl font-mono text-xs text-gray-800 space-y-2 mb-4">
               <div className="text-center pb-2 border-b border-dashed border-gray-300">
-                <div className="font-bold text-sm uppercase">{settings.storeName}</div>
-                <div className="text-[10px] text-gray-500">{settings.storeAddress}</div>
-                <div className="text-[10px] text-gray-500">Telp: {settings.storePhone}</div>
+                <div className="font-bold text-sm uppercase">{settings.storeName || 'TOKO UMKM'}</div>
+                {settings.storeAddress && <div className="text-[10px] text-gray-500">{settings.storeAddress}</div>}
+                {settings.storePhone && <div className="text-[10px] text-gray-500">Telp: {settings.storePhone}</div>}
               </div>
 
               <div className="text-[11px] space-y-0.5 pb-2 border-b border-dashed border-gray-300">
-                <div>No: {completedSale.invoiceNo}</div>
-                <div>Tgl: {formatTanggal(completedSale.date)}</div>
-                <div>Metode: {completedSale.paymentMethod}</div>
-                <div>Pelanggan: {completedSale.customerName}</div>
+                <div>No      : {completedSale.invoiceNo}</div>
+                <div>Tgl     : {formatTanggal(completedSale.date)}</div>
+                <div>Kasir   : Kasir POS</div>
+                <div>Pelanggan: {completedSale.customerName || 'Pelanggan Umum'}</div>
+                <div>Metode  : {completedSale.paymentMethod === 'CREDIT' ? 'TEMPO (KREDIT)' : completedSale.paymentMethod}</div>
+                {completedSale.paymentMethod === 'CREDIT' && (
+                  <>
+                    <div className="text-rose-600 font-bold">Status  : BELUM LUNAS (UTANG)</div>
+                    {completedSale.dueDate && <div>Jatuh Tempo: {formatTanggal(completedSale.dueDate)}</div>}
+                  </>
+                )}
               </div>
 
               {/* Items List */}
@@ -1045,6 +1158,7 @@ export const KasirPage: React.FC = () => {
                   <span>TOTAL:</span>
                   <span>{formatRupiah(completedSale.finalAmount)}</span>
                 </div>
+
                 {completedSale.paymentMethod === 'CASH' && (
                   <>
                     <div className="flex justify-between">
@@ -1057,12 +1171,20 @@ export const KasirPage: React.FC = () => {
                     </div>
                   </>
                 )}
-                {/* Catatan Sisa Utang di Struk jika ada */}
-                {completedSale.customerDebtSnapshot > 0 && (
-                  <div className="flex justify-between text-rose-600 font-bold pt-1 border-t border-dashed border-gray-300">
-                    <span>Sisa Utang Pelanggan:</span>
-                    <span>{formatRupiah(completedSale.customerDebtSnapshot)}</span>
-                  </div>
+
+                {completedSale.paymentMethod === 'CREDIT' && (
+                  <>
+                    <div className="flex justify-between text-rose-600 font-bold">
+                      <span>Tagihan Tempo:</span>
+                      <span>{formatRupiah(completedSale.finalAmount)}</span>
+                    </div>
+                    {completedSale.customerDebtSnapshot > 0 && (
+                      <div className="flex justify-between text-rose-700 font-bold pt-1 border-t border-dashed border-gray-300">
+                        <span>Total Utang Pelanggan:</span>
+                        <span>{formatRupiah(completedSale.customerDebtSnapshot)}</span>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -1071,20 +1193,55 @@ export const KasirPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Tombol Aksi Struk */}
-            <div className="flex gap-2 w-full">
-              <button
-                type="button"
-                onClick={handlePrintReceipt}
-                className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md"
-              >
-                <Printer className="w-4 h-4" />
-                Cetak Struk
-              </button>
+            {/* Tombol Aksi Struk (no-print agar tidak ikut tercetak di kertas thermal) */}
+            <div className="no-print space-y-2 w-full">
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrintReceipt}
+                  className="py-2.5 px-2 bg-gray-800 hover:bg-gray-900 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-1 shadow-sm transition-colors"
+                  title="Cetak struk ke printer thermal"
+                >
+                  <Printer className="w-3.5 h-3.5 shrink-0" />
+                  <span>Cetak</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSendWhatsApp}
+                  className="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-1 shadow-sm transition-colors"
+                  title="Kirim struk digital via WhatsApp"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>Kirim WA</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyReceiptText}
+                  className={`py-2.5 px-2 font-semibold rounded-xl text-xs flex items-center justify-center gap-1 shadow-sm transition-colors ${
+                    copiedReceipt
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                      : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-300'
+                  }`}
+                  title="Salin teks struk ke clipboard"
+                >
+                  {copiedReceipt ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Tersalin!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 shrink-0" />
+                      <span>Salin Teks</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setIsReceiptModalOpen(false)}
-                className="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs shadow-md"
+                className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs shadow-md transition-colors"
               >
                 Transaksi Baru
               </button>

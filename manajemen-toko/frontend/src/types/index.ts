@@ -171,6 +171,7 @@ export interface Purchase {
 }
 
 export interface CreatePurchasePayload {
+  id?: string;
   purchaseNo?: string;
   supplierId?: string;
   supplierName: string;
