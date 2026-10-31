@@ -11,12 +11,6 @@ CREATE TABLE suppliers (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed Contoh Supplier Default
-INSERT INTO suppliers (id, name, phone, address, is_active) VALUES
-    ('SUP-001', 'PT Sumber Pangan Makmur', '081122334455', 'Kawasan Industri Pergudangan No. 8', TRUE),
-    ('SUP-002', 'CV Berkah Retail Utama', '081299887711', 'Jl. Niaga Sentra Blok C-2', TRUE)
-ON CONFLICT (id) DO NOTHING;
-
 -- 2. Transaksi Pembelian Barang (Purchase Orders)
 CREATE TABLE purchases (
     id VARCHAR(36) PRIMARY KEY,

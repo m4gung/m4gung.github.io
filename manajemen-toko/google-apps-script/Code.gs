@@ -194,12 +194,12 @@ function initSheetsIfNotExist() {
       
       // Default Seed untuk Pengaturan
       if (sheetName === SHEET_NAMES.SETTINGS) {
-        sheet.appendRow(['store_name', 'Toko Berkah Bersama', new Date().toISOString()]);
-        sheet.appendRow(['store_phone', '081234567890', new Date().toISOString()]);
-        sheet.appendRow(['store_address', 'Jl. Trans Sulawesi No. 12, Kolaka', new Date().toISOString()]);
-        sheet.appendRow(['bank_name', 'BCA', new Date().toISOString()]);
-        sheet.appendRow(['bank_account_no', '1234567890', new Date().toISOString()]);
-        sheet.appendRow(['bank_account_holder', 'Agung Maulana', new Date().toISOString()]);
+        sheet.appendRow(['store_name', 'Toko UMKM', new Date().toISOString()]);
+        sheet.appendRow(['store_phone', '', new Date().toISOString()]);
+        sheet.appendRow(['store_address', '', new Date().toISOString()]);
+        sheet.appendRow(['bank_name', '', new Date().toISOString()]);
+        sheet.appendRow(['bank_account_no', '', new Date().toISOString()]);
+        sheet.appendRow(['bank_account_holder', '', new Date().toISOString()]);
         sheet.appendRow(['qris_image_url', '', new Date().toISOString()]);
         sheet.appendRow(['qris_string', '', new Date().toISOString()]);
       }
@@ -562,7 +562,7 @@ function saveCustomer(customer) {
     customer.name,
     customer.phone || '',
     customer.address || '',
-    Number(customer.creditLimit || 5000000),
+    customer.creditLimit !== undefined ? Number(customer.creditLimit) : 5000000,
     Number(customer.currentDebt || 0),
     now
   ];

@@ -114,12 +114,12 @@ CREATE TABLE store_settings (
 );
 
 INSERT INTO store_settings (setting_key, setting_value) VALUES
-    ('store_name', 'Toko Berkah Bersama'),
-    ('store_phone', '081234567890'),
-    ('store_address', 'Jl. Trans Sulawesi No. 12, Kolaka'),
-    ('bank_name', 'BCA'),
-    ('bank_account_no', '1234567890'),
-    ('bank_account_holder', 'Agung Maulana'),
+    ('store_name', 'Toko UMKM'),
+    ('store_phone', ''),
+    ('store_address', ''),
+    ('bank_name', ''),
+    ('bank_account_no', ''),
+    ('bank_account_holder', ''),
     ('qris_image_url', ''),
     ('qris_string', '')
 ON CONFLICT (setting_key) DO NOTHING;
