@@ -25,7 +25,7 @@
 - [x] Fitur Kirim Struk via WhatsApp
   - Tersedia tombol "Kirim WA" yang otomatis membuka WhatsApp dengan teks struk ke nomor telepon pelanggan (jika tersedia) atau membuka dialog kirim WhatsApp. 
 
-# BUGS BARU
+
 ## Catat Pengadaan / Pembelian Barang
 - [x] QTY masuk
   - Inputan awal bisa dihapus bebas dengan backspace tanpa tersangkut angka 1/0.
@@ -47,3 +47,7 @@
   - Batas limit kredit kini dapat diisi 0 (tidak lagi otomatis kembali ke default 5.000.000).
   - Dilengkapi format separator ribuan.
   - Di Kasir POS, pelanggan dengan limit kredit Rp 0 otomatis dilarang berbelanja dengan metode Tempo/Kredit.
+
+# BUGS BARU
+## Edit Data Pengadaan / Pembelian
+- gagal edit, KeyPath referenceNo on object store stockMutations is not indexed
