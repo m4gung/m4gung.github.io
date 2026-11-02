@@ -42,14 +42,15 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-0QKZ0DC7J7"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
 
     gtag('config', 'G-0QKZ0DC7J7');
   </script>
 
   <!-- Google AdSense Script (Auto Ads across entire portal) -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885" crossorigin="anonymous"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6643133281488885"
+    crossorigin="anonymous"></script>
 
   <!-- Schema.org Multi-Structured Data (JSON-LD) -->
   <script type="application/ld+json">
@@ -702,22 +703,16 @@
       <!-- Search Input Box -->
       <div class="search-box-wrap rounded-2xl flex items-center px-4 py-2 relative shadow-lg">
         <span class="text-slate-400 text-lg mr-3 select-none">🔍</span>
-        <input
-          type="text"
-          id="app-search-input"
+        <input type="text" id="app-search-input"
           class="w-full bg-transparent border-none outline-none text-white text-sm md:text-base py-2 placeholder-slate-400"
-          placeholder="Cari aplikasi & tools (misal: Kasir, JSON, Toko, Game, Pompa)..."
-          autocomplete="off"
-          spellcheck="false"
-        >
-        <button
-          id="clear-search-btn"
-          type="button"
+          placeholder="Cari aplikasi & tools (misal: Kasir, JSON, Toko, Game, Pompa)..." autocomplete="off"
+          spellcheck="false">
+        <button id="clear-search-btn" type="button"
           class="text-slate-400 hover:text-white px-2 py-1 text-sm font-bold transition-colors select-none"
-          title="Clear search"
-          style="display: none;"
-        >✕</button>
-        <kbd class="hidden sm:inline-block px-2 py-0.5 text-[11px] font-semibold text-slate-400 bg-white/5 border border-white/10 rounded-md select-none ml-2">/ </kbd>
+          title="Clear search" style="display: none;">✕</button>
+        <kbd
+          class="hidden sm:inline-block px-2 py-0.5 text-[11px] font-semibold text-slate-400 bg-white/5 border border-white/10 rounded-md select-none ml-2">/
+        </kbd>
       </div>
 
       <!-- Category Filter Pills -->
@@ -747,7 +742,8 @@
 
       <!-- Search Meta Info -->
       <div id="search-meta" class="text-center text-xs text-slate-400 mt-4 hidden">
-        <span id="search-result-count" class="bg-blue-500/10 border border-blue-500/20 text-blue-300 px-3 py-1 rounded-full font-medium"></span>
+        <span id="search-result-count"
+          class="bg-blue-500/10 border border-blue-500/20 text-blue-300 px-3 py-1 rounded-full font-medium"></span>
       </div>
     </div>
 
@@ -761,542 +757,820 @@
     <div id="no-results" class="max-w-md mx-auto text-center py-12 px-6 glass-card rounded-3xl hidden my-8">
       <div class="text-5xl mb-4">🔎</div>
       <h3 id="no-results-title" class="text-xl font-bold text-white mb-2">Tidak ada aplikasi atau tools yang cocok</h3>
-      <p id="no-results-desc" class="text-slate-400 text-sm mb-6">Coba gunakan kata kunci lain atau pilih kategori yang berbeda.</p>
-      <button id="reset-search-btn" type="button" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-colors shadow-lg shadow-blue-500/30">
+      <p id="no-results-desc" class="text-slate-400 text-sm mb-6">Coba gunakan kata kunci lain atau pilih kategori yang
+        berbeda.</p>
+      <button id="reset-search-btn" type="button"
+        class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-colors shadow-lg shadow-blue-500/30">
         Tampilkan Semua Aplikasi & Tools
       </button>
     </div>
 
-    <div id="apps-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 max-w-7xl mx-auto">
+    <div id="apps-grid"
+      class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 max-w-7xl mx-auto">
 
       <!-- GeoLahan Pro - WebGIS Ukur Lahan -->
-      <a href="./geolahan/dist/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-emerald-500/30" data-category="agri" data-keywords="geolahan pro ukur tanah ukur lahan sawah kebun luas tanah keliling patok gps webgis peta satelit laporan pdf geojson pemetaan agraria">
-        <div class="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-teal-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./geolahan/dist/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-emerald-500/30"
+        data-category="agri"
+        data-keywords="geolahan pro ukur tanah ukur lahan sawah kebun luas tanah keliling patok gps webgis peta satelit laporan pdf geojson pemetaan agraria">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-teal-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🗺️</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
           GeoLahan Pro</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">WebGIS Ukur Lahan & Peta Satelit</p>
         <span class="cat-badge badge-agri bg-emerald-500/20 text-emerald-300 mt-3">Pertanian</span>
       </a>
 
       <!-- PDF Explorer & Viewer -->
-      <a href="./pdf-explorer/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-red-500/30" data-category="devtools" data-keywords="pdf explorer viewer fast search dokumen baca pdf file document portable reader offline in-text search">
-        <div class="w-14 h-14 bg-gradient-to-br from-red-500/20 to-rose-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./pdf-explorer/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-red-500/30"
+        data-category="devtools"
+        data-keywords="pdf explorer viewer fast search dokumen baca pdf file document portable reader offline in-text search">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-red-500/20 to-rose-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           📑</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-red-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-red-400 transition-colors text-sm mb-1 leading-tight">
           PDF Explorer</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Fast Search & Modern Viewer</p>
         <span class="cat-badge badge-devtools bg-red-500/20 text-red-300 mt-3">DevTool</span>
       </a>
 
       <!-- ScanPro Studio -->
-      <a href="./scanpro/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-blue-500/30" data-category="devtools" data-keywords="scanpro scan scan studio pdf editor canvas ocr document scanner pwa offline">
-        <div class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./scanpro/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-blue-500/30"
+        data-category="devtools"
+        data-keywords="scanpro scan scan studio pdf editor canvas ocr document scanner pwa offline">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           📄</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           ScanPro Studio</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Scan, Edit PDF, Canvas, OCR, Print</p>
         <span class="cat-badge badge-devtools bg-blue-500/20 text-blue-300 mt-3">DevTool</span>
       </a>
 
       <!-- 1. My DevTools Portal -->
-      <a href="./tools" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="tools dev tools developer utility utilitas web portal kumpulan">
-        <div class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools" data-keywords="tools dev tools developer utility utilitas web portal kumpulan">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🛠️</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           My DevTools</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Collection of Web Tools</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 2. Manajemen Toko -->
-      <a href="./manajemen-toko/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="business" data-keywords="manajemen toko pos kasir produk piutang laporan penjualan retail inventory barang warung">
-        <div class="w-14 h-14 bg-gradient-to-br from-teal-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./manajemen-toko/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="business"
+        data-keywords="manajemen toko pos kasir produk piutang laporan penjualan retail inventory barang warung">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-teal-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🏬</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           Manajemen Toko</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">POS, Produk, Piutang, Laporan</p>
         <span class="cat-badge badge-business bg-blue-500/20 text-blue-300 mt-3">Bisnis</span>
       </a>
 
       <!-- 3. Manajemen Barbershop -->
-      <a href="./manajemen-barbershop/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="business" data-keywords="manajemen barbershop barber potong cukur rambut pos produk absensi gaji kasir salon">
-        <div class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./manajemen-barbershop/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="business"
+        data-keywords="manajemen barbershop barber potong cukur rambut pos produk absensi gaji kasir salon">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           💈</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
           Manajemen Barbershop</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">POS, Produk, Absensi & Gaji</p>
         <span class="cat-badge badge-business bg-blue-500/20 text-blue-300 mt-3">Bisnis</span>
       </a>
 
       <!-- 4. Manajemen Cafe -->
-      <a href="./manajemen-cafe/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="business" data-keywords="manajemen cafe kafe resto restoran kopi pos kasir resep bom kds thermal print meja dapur order pesanan">
-        <div class="w-14 h-14 bg-gradient-to-br from-amber-700/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./manajemen-cafe/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="business"
+        data-keywords="manajemen cafe kafe resto restoran kopi pos kasir resep bom kds thermal print meja dapur order pesanan">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-amber-700/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           ☕</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
           Manajemen Cafe</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">POS Kasir, Resep BOM, KDS & Thermal Print</p>
         <span class="cat-badge badge-business bg-blue-500/20 text-blue-300 mt-3">Bisnis</span>
       </a>
 
       <!-- 5. Olshop Manager -->
-      <a href="./apl_penjualan" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="business" data-keywords="olshop manager online shop penjualan ecommerce pesanan pelanggan invoice order">
-        <div class="w-14 h-14 bg-gradient-to-br from-teal-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./apl_penjualan"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="business"
+        data-keywords="olshop manager online shop penjualan ecommerce pesanan pelanggan invoice order">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-teal-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🛍️</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           Olshop Manager</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Online Shop Management</p>
         <span class="cat-badge badge-business bg-blue-500/20 text-blue-300 mt-3">Bisnis</span>
       </a>
 
       <!-- 6. Pembukuan Pompanisasi -->
-      <a href="./pembukuan" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="agri" data-keywords="pembukuan pompanisasi pompa sawah irigasi air pertanian petani kas aliran dana solar diesel">
-        <div class="w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./pembukuan"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="agri"
+        data-keywords="pembukuan pompanisasi pompa sawah irigasi air pertanian petani kas aliran dana solar diesel">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           💧</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           Pembukuan Pompanisasi</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Pump Business Accounting</p>
         <span class="cat-badge badge-agri bg-emerald-500/20 text-emerald-300 mt-3">Pertanian</span>
       </a>
 
       <!-- 7. UD. Tani Mas -->
-      <a href="./pembukuan-pompa-tani-mas-versi-mobile/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="agri" data-keywords="ud tani mas pompa mobile pembukuan akuntansi irigasi sawah air tani petani">
-        <div class="w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./pembukuan-pompa-tani-mas-versi-mobile/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="agri" data-keywords="ud tani mas pompa mobile pembukuan akuntansi irigasi sawah air tani petani">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           💧</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           UD. Tani Mas</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Pump Business Accounting UD. Tani Mas</p>
         <span class="cat-badge badge-agri bg-emerald-500/20 text-emerald-300 mt-3">Pertanian</span>
       </a>
 
       <!-- 8. Mr Barbershop -->
-      <a href="./pos-barber-v2/" class="glass-card app-card bg-gradient-to-br from-purple-900/60 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-purple-500/40 relative overflow-hidden" data-category="business" data-keywords="mr barbershop pos barber mobile cashier potong rambut cukur salon kasir modern v2">
+      <a href="./pos-barber-v2/"
+        class="glass-card app-card bg-gradient-to-br from-purple-900/60 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-purple-500/40 relative overflow-hidden"
+        data-category="business"
+        data-keywords="mr barbershop pos barber mobile cashier potong rambut cukur salon kasir modern v2">
         <div class="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-transparent"></div>
-        <div class="w-14 h-14 bg-purple-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform duration-300 relative z-10">
+        <div
+          class="w-14 h-14 bg-purple-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform duration-300 relative z-10">
           💈</div>
-        <h3 class="app-title font-extrabold text-purple-300 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight relative z-10">
+        <h3
+          class="app-title font-extrabold text-purple-300 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight relative z-10">
           Mr Barbershop</h3>
         <p class="app-desc text-purple-200/60 text-[10px] md:text-xs relative z-10">Advanced Barber Mobile</p>
         <span class="cat-badge badge-business bg-blue-500/20 text-blue-300 mt-3 relative z-10">Bisnis</span>
       </a>
 
       <!-- 9. Booking Barbershop -->
-      <a href="./barbershop-booking/" class="glass-card app-card bg-gradient-to-br from-purple-900/60 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-purple-500/40 relative overflow-hidden" data-category="business" data-keywords="booking barbershop reservasi appointment antrean jadwal cukur potong rambut customer">
+      <a href="./barbershop-booking/"
+        class="glass-card app-card bg-gradient-to-br from-purple-900/60 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-purple-500/40 relative overflow-hidden"
+        data-category="business"
+        data-keywords="booking barbershop reservasi appointment antrean jadwal cukur potong rambut customer">
         <div class="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-transparent"></div>
-        <div class="w-14 h-14 bg-purple-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform duration-300 relative z-10">
+        <div
+          class="w-14 h-14 bg-purple-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform duration-300 relative z-10">
           💈</div>
-        <h3 class="app-title font-extrabold text-purple-300 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight relative z-10">
+        <h3
+          class="app-title font-extrabold text-purple-300 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight relative z-10">
           Booking Barbershop</h3>
         <p class="app-desc text-purple-200/60 text-[10px] md:text-xs relative z-10">Appointment System</p>
         <span class="cat-badge badge-business bg-blue-500/20 text-blue-300 mt-3 relative z-10">Bisnis</span>
       </a>
 
       <!-- 10. Admin Booking Barbershop -->
-      <a href="./barbershop-booking/admin/" class="glass-card app-card bg-gradient-to-br from-purple-900/60 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-purple-500/40 relative overflow-hidden" data-category="business" data-keywords="admin booking barbershop dashboard reservasi antrean kapster jadwal salon manajemen">
+      <a href="./barbershop-booking/admin/"
+        class="glass-card app-card bg-gradient-to-br from-purple-900/60 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-purple-500/40 relative overflow-hidden"
+        data-category="business"
+        data-keywords="admin booking barbershop dashboard reservasi antrean kapster jadwal salon manajemen">
         <div class="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-transparent"></div>
-        <div class="w-14 h-14 bg-purple-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform duration-300 relative z-10">
+        <div
+          class="w-14 h-14 bg-purple-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_20px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform duration-300 relative z-10">
           💈</div>
-        <h3 class="app-title font-extrabold text-purple-300 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight relative z-10">
+        <h3
+          class="app-title font-extrabold text-purple-300 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight relative z-10">
           Admin Booking Barbershop</h3>
         <p class="app-desc text-purple-200/60 text-[10px] md:text-xs relative z-10">Appointment Management</p>
         <span class="cat-badge badge-business bg-blue-500/20 text-blue-300 mt-3 relative z-10">Bisnis</span>
       </a>
 
       <!-- 11. TaniPintar -->
-       <a href="./petani/" class="glass-card app-card bg-gradient-to-br from-emerald-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-emerald-500/30" data-category="agri" data-keywords="tanipintar tani pintar petani pertanian pupuk tanaman sawah panen kalkulator padi jagung">
-        <div class="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="./petani/"
+        class="glass-card app-card bg-gradient-to-br from-emerald-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-emerald-500/30"
+        data-category="agri"
+        data-keywords="tanipintar tani pintar petani pertanian pupuk tanaman sawah panen kalkulator padi jagung">
+        <div
+          class="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform duration-300">
           🌾</div>
-        <h3 class="app-title font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
           TaniPintar (v1)</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Agricultural App System</p>
         <span class="cat-badge badge-agri bg-emerald-500/20 text-emerald-300 mt-3">Pertanian</span>
       </a>
 
-      <a href="./petani-v2/" class="glass-card app-card bg-gradient-to-br from-emerald-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-emerald-500/30" data-category="agri" data-keywords="tanipintar tani pintar petani pertanian pupuk tanaman sawah panen kalkulator padi jagung">
-        <div class="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="./petani-v2/"
+        class="glass-card app-card bg-gradient-to-br from-emerald-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-emerald-500/30"
+        data-category="agri"
+        data-keywords="tanipintar tani pintar petani pertanian pupuk tanaman sawah panen kalkulator padi jagung">
+        <div
+          class="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform duration-300">
           🌾</div>
-        <h3 class="app-title font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
           TaniPintar (v2)</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Agricultural App System</p>
         <span class="cat-badge badge-agri bg-emerald-500/20 text-emerald-300 mt-3">Pertanian</span>
       </a>
 
-      <a href="./petani-v3/" class="glass-card app-card bg-gradient-to-br from-emerald-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-emerald-500/30" data-category="agri" data-keywords="tanipintar tani pintar petani pertanian pupuk tanaman sawah panen kalkulator padi jagung">
-        <div class="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="./petani-v3/"
+        class="glass-card app-card bg-gradient-to-br from-emerald-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-emerald-500/30"
+        data-category="agri"
+        data-keywords="tanipintar tani pintar petani pertanian pupuk tanaman sawah panen kalkulator padi jagung">
+        <div
+          class="w-14 h-14 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform duration-300">
           🌾</div>
-        <h3 class="app-title font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
           TaniPintar (v3)</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Agricultural App System</p>
         <span class="cat-badge badge-agri bg-emerald-500/20 text-emerald-300 mt-3">Pertanian</span>
       </a>
 
       <!-- 12. APL Input Data -->
-      <a href="./apl_input_data/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="other" data-keywords="apl input data form entri data cloud petani catatan pencatatan">
-        <div class="w-14 h-14 bg-gradient-to-br from-slate-500/20 to-gray-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./apl_input_data/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="other" data-keywords="apl input data form entri data cloud petani catatan pencatatan">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-slate-500/20 to-gray-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           📝</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           APL Input Data</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Cloud Data Entry</p>
         <span class="cat-badge badge-other bg-fuchsia-500/20 text-fuchsia-300 mt-3">Lainnya</span>
       </a>
 
       <!-- 13. Bagi Hasil Panen -->
-      <a href="./perhitungan-hasil-panen.html" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="agri" data-keywords="bagi hasil panen kalkulator profit sharing sawah padi pertanian hitung petani pemilik modal garap">
-        <div class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./perhitungan-hasil-panen.html"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="agri"
+        data-keywords="bagi hasil panen kalkulator profit sharing sawah padi pertanian hitung petani pemilik modal garap">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🌾</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           Bagi Hasil Panen</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Harvest Profit Calculator</p>
         <span class="cat-badge badge-agri bg-emerald-500/20 text-emerald-300 mt-3">Pertanian</span>
       </a>
 
       <!-- 14. Hasil Panen Konversi -->
-      <a href="./hitung-hasil-2.html" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="agri" data-keywords="hasil panen konversi auto profit sharing gabah beras timbangan bagi hasil panen">
-        <div class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./hitung-hasil-2.html"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="agri"
+        data-keywords="hasil panen konversi auto profit sharing gabah beras timbangan bagi hasil panen">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🔄</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           Hasil Panen Konversi</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Auto Profit Sharing</p>
         <span class="cat-badge badge-agri bg-emerald-500/20 text-emerald-300 mt-3">Pertanian</span>
       </a>
 
       <!-- 15. Check Nama -->
-      <a href="./check-nama.html" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="other" data-keywords="check nama cek nama numerologi kalkulator nilai nama validasi periksa nama karakter lainnya">
-        <div class="w-14 h-14 bg-gradient-to-br from-fuchsia-500/20 to-pink-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./check-nama.html"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="other"
+        data-keywords="check nama cek nama numerologi kalkulator nilai nama validasi periksa nama karakter lainnya">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-fuchsia-500/20 to-pink-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           ✅</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           Check Nama</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Kalkulator Nilai Nama & Numerologi</p>
         <span class="cat-badge badge-other bg-fuchsia-500/20 text-fuchsia-300 mt-3">Lainnya</span>
       </a>
 
       <!-- 16. POS System -->
-      <a href="./pos/" class="glass-card app-card bg-gradient-to-br from-blue-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-blue-500/30" data-category="business" data-keywords="pos system point of sale main cashier kasir utama transaksi pembayaran struk toko warung pos">
-        <div class="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="./pos/"
+        class="glass-card app-card bg-gradient-to-br from-blue-900/40 to-slate-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-blue-500/30"
+        data-category="business"
+        data-keywords="pos system point of sale main cashier kasir utama transaksi pembayaran struk toko warung pos">
+        <div
+          class="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:scale-110 transition-transform duration-300">
           🏪</div>
-        <h3 class="app-title font-bold text-blue-300 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-blue-300 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           POS System</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Point of Sale (Main Cashier)</p>
         <span class="cat-badge badge-business bg-blue-500/20 text-blue-300 mt-3">Bisnis</span>
       </a>
 
       <!-- 17. My Photobooth -->
-      <a href="./my-photobooth/frontend-pwa/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="edu" data-keywords="my photobooth foto photo kamera camera polaroid offline photo strip frame cetak pwa">
-        <div class="w-14 h-14 bg-gradient-to-br from-red-500/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./my-photobooth/frontend-pwa/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="edu"
+        data-keywords="my photobooth foto photo kamera camera polaroid offline photo strip frame cetak pwa">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-red-500/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           📸</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           My Photobooth</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Free Offline Photobooth</p>
         <span class="cat-badge badge-edu bg-indigo-500/20 text-indigo-300 mt-3">Media</span>
       </a>
 
-      <!-- 18. Kids Zone -->
-      <a href="./belajar-anak.html" class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30" data-category="edu" data-keywords="kids zone portal belajar anak edukasi warna angka huruf hijaiyah hewan dinosaurus anak balita tk paud">
-        <div class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
+
+      <a href="./petualangan_dunia_coding_interaktif.html"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="edu" data-keywords="">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-red-500/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🎈</div>
-        <h3 class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        </h3>
+        <p class="app-desc text-slate-500 text-[10px] md:text-xs">Belajar Coding Anak</p>
+        <span class="cat-badge badge-edu bg-indigo-500/20 text-indigo-300 mt-3">Edukasi</span>
+      </a>
+
+      <!-- 18. Kids Zone -->
+      <a href="./belajar-anak.html"
+        class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30"
+        data-category="edu"
+        data-keywords="kids zone portal belajar anak edukasi warna angka huruf hijaiyah hewan dinosaurus anak balita tk paud">
+        <div
+          class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
+          🎈</div>
+        <h3
+          class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
           Kids Zone</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Portal Belajar Anak</p>
         <span class="cat-badge badge-edu bg-pink-500/20 text-pink-300 mt-3">Edukasi</span>
       </a>
 
       <!-- 19. Auto Chess -->
-      <a href="/auto-chess/index.html" class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30" data-category="game" data-keywords="auto chess catur game online strategi board turn based pertarungan pion">
-        <div class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="/auto-chess/index.html"
+        class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30"
+        data-category="game" data-keywords="auto chess catur game online strategi board turn based pertarungan pion">
+        <div
+          class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
           ♟️</div>
-        <h3 class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
           Auto Chess</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Game Strategi Online</p>
         <span class="cat-badge badge-game bg-pink-500/20 text-pink-300 mt-3">Game</span>
       </a>
 
       <!-- 20. Endless Bullet -->
-      <a href="./game-Endless-Bullet-Hell/index.html" class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30" data-category="game" data-keywords="endless bullet hell game tembak tembakan action arcade pesawat shooter peluru">
-        <div class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="./game-Endless-Bullet-Hell/index.html"
+        class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30"
+        data-category="game"
+        data-keywords="endless bullet hell game tembak tembakan action arcade pesawat shooter peluru">
+        <div
+          class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
           🎮</div>
-        <h3 class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
           Endless Bullet</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Game Tembak-Tembakan</p>
         <span class="cat-badge badge-game bg-pink-500/20 text-pink-300 mt-3">Game</span>
       </a>
 
       <!-- 21. Roguelite Deckbuilder -->
-      <a href="./game-Roguelite-Deckbuilder/index.html" class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30" data-category="game" data-keywords="roguelite deckbuilder game kartu strategi card roguelike dungeon rpg battle turn based">
-        <div class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="./game-Roguelite-Deckbuilder/index.html"
+        class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30"
+        data-category="game"
+        data-keywords="roguelite deckbuilder game kartu strategi card roguelike dungeon rpg battle turn based">
+        <div
+          class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
           🃏</div>
-        <h3 class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
           Roguelite Deckbuilder</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Game Kartu Strategi</p>
         <span class="cat-badge badge-game bg-pink-500/20 text-pink-300 mt-3">Game</span>
       </a>
 
       <!-- 22. Space Miner Idle -->
-      <a href="./game-Space-Miner-Idle/" class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30" data-category="game" data-keywords="space miner idle clicker simulator luar angkasa tambang mineral galaxy upgrade otomatis">
-        <div class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="./game-Space-Miner-Idle/"
+        class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30"
+        data-category="game"
+        data-keywords="space miner idle clicker simulator luar angkasa tambang mineral galaxy upgrade otomatis">
+        <div
+          class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
           🚀</div>
-        <h3 class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
           Space Miner Idle</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Game Penambangan Luar Angkasa</p>
         <span class="cat-badge badge-game bg-pink-500/20 text-pink-300 mt-3">Game</span>
       </a>
 
       <!-- 23. Survival Arena 2D -->
-      <a href="./game-Survival-Arena-2D/" class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30" data-category="game" data-keywords="survival arena 2d game aksi bertarung battle pertarungan monster senjata survive survi">
-        <div class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="./game-Survival-Arena-2D/"
+        class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30"
+        data-category="game"
+        data-keywords="survival arena 2d game aksi bertarung battle pertarungan monster senjata survive survi">
+        <div
+          class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
           ⚔️</div>
-        <h3 class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
           Survival Arena 2D</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Game Arena Bertarung 2D</p>
         <span class="cat-badge badge-game bg-pink-500/20 text-pink-300 mt-3">Game</span>
       </a>
 
       <!-- 24. Tower Defense -->
-      <a href="./game-Tower-Defense/" class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30" data-category="game" data-keywords="tower defense td game pertahanan menara benteng taktik strategi musuh wave castle">
-        <div class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
+      <a href="./game-Tower-Defense/"
+        class="glass-card app-card bg-gradient-to-br from-pink-900/40 to-purple-900/40 p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group border-pink-500/30"
+        data-category="game"
+        data-keywords="tower defense td game pertahanan menara benteng taktik strategi musuh wave castle">
+        <div
+          class="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform duration-300">
           🏰</div>
-        <h3 class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-pink-300 group-hover:text-pink-400 transition-colors text-sm mb-1 leading-tight">
           Tower Defense</h3>
         <p class="app-desc text-slate-400 text-[10px] md:text-xs">Game Pertahanan Menara</p>
         <span class="cat-badge badge-game bg-pink-500/20 text-pink-300 mt-3">Game</span>
       </a>
 
       <!-- 25. JSON Formatter -->
-      <a href="./tools/json-formatter/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="json formatter format beautify minify validator validate parser pretty print rapikan json devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 rounded-2xl flex items-center justify-center text-2xl font-mono font-bold text-amber-400 mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/json-formatter/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="json formatter format beautify minify validator validate parser pretty print rapikan json devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 rounded-2xl flex items-center justify-center text-2xl font-mono font-bold text-amber-400 mb-3 group-hover:scale-110 transition-transform duration-300">
           { }</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
           JSON Formatter</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Format & Validate JSON</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 26. Markdown Previewer -->
-      <a href="./tools/markdown-previewer/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="markdown previewer editor md split syntax highlighting export pdf catatan devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/markdown-previewer/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="markdown previewer editor md split syntax highlighting export pdf catatan devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           📝</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           Markdown Previewer</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Real-Time Markdown Editor</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 27. RegEx Tester -->
-      <a href="./tools/regex-tester/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="regex tester regular expression uji pola pattern match highlight regex devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-teal-500/10 rounded-2xl flex items-center justify-center text-xl font-mono font-bold text-emerald-400 mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/regex-tester/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="regex tester regular expression uji pola pattern match highlight regex devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-teal-500/10 rounded-2xl flex items-center justify-center text-xl font-mono font-bold text-emerald-400 mb-3 group-hover:scale-110 transition-transform duration-300">
           /.* /</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
           RegEx Tester</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Test Regular Expressions</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 28. Diff Checker -->
-      <a href="./tools/diff-checker/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="diff checker compare text perbandingan kode bandingkan text code selisih minimap devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-pink-500/10 rounded-2xl flex items-center justify-center text-2xl font-bold text-purple-400 mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/diff-checker/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="diff checker compare text perbandingan kode bandingkan text code selisih minimap devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-pink-500/10 rounded-2xl flex items-center justify-center text-2xl font-bold text-purple-400 mb-3 group-hover:scale-110 transition-transform duration-300">
           ±</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight">
           Diff Checker</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Compare Text & Code</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 29. PlantUML Editor -->
-      <a href="./tools/PlantUML-Reader-Editor/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="plantuml uml reader editor diagram arsitektur sequence class flow visual render devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-green-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/PlantUML-Reader-Editor/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="plantuml uml reader editor diagram arsitektur sequence class flow visual render devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-green-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🌿</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-green-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-green-400 transition-colors text-sm mb-1 leading-tight">
           PlantUML Editor</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Render UML Diagrams</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 30. Epoch Converter -->
-      <a href="./tools/EpochConverter/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="epoch converter unix timestamp waktu tanggal datetime date converter konversi waktu devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-sky-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/EpochConverter/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="epoch converter unix timestamp waktu tanggal datetime date converter konversi waktu devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-sky-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           ⏱️</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-sky-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-sky-400 transition-colors text-sm mb-1 leading-tight">
           Epoch Converter</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Unix Timestamp Converter</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 31. Cron Generator -->
-      <a href="./tools/cron-generator/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="cron generator schedule expressions penjadwalan crontab task scheduler devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-orange-500/20 to-amber-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/cron-generator/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="cron generator schedule expressions penjadwalan crontab task scheduler devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-orange-500/20 to-amber-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           ⏰</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-orange-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-orange-400 transition-colors text-sm mb-1 leading-tight">
           Cron Generator</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Generate Cron Expressions</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 32. SQL Formatter -->
-      <a href="./tools/sql-formatter/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="sql formatter query database format rapikan query postgres mysql beautifier devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-2xl flex items-center justify-center text-lg font-bold text-blue-400 mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/sql-formatter/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="sql formatter query database format rapikan query postgres mysql beautifier devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-2xl flex items-center justify-center text-lg font-bold text-blue-400 mb-3 group-hover:scale-110 transition-transform duration-300">
           SQL</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           SQL Formatter</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Format & Beautify SQL Queries</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 33. ISO8583 Formatter -->
-      <a href="./tools/ISO8583-Formatter/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="iso8583 formatter banking message transaction payment parsing financial switch devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-indigo-500/20 to-purple-500/10 rounded-2xl flex items-center justify-center text-sm font-bold text-indigo-400 mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/ISO8583-Formatter/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="iso8583 formatter banking message transaction payment parsing financial switch devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-indigo-500/20 to-purple-500/10 rounded-2xl flex items-center justify-center text-sm font-bold text-indigo-400 mb-3 group-hover:scale-110 transition-transform duration-300">
           ISO</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-indigo-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-indigo-400 transition-colors text-sm mb-1 leading-tight">
           ISO8583 Formatter</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Format Banking ISO Messages</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 34. Spring Properties YAML Converter -->
-      <a href="./tools/Spring-Properties-YAML-Converter/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="spring properties yaml yml converter konversi properties to yaml java application config devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-green-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/Spring-Properties-YAML-Converter/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="spring properties yaml yml converter konversi properties to yaml java application config devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-green-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🍃</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-green-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-green-400 transition-colors text-sm mb-1 leading-tight">
           Spring YAML Converter</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Properties to YAML & Vice Versa</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 35. Java Spring Stack Trace Beautifier -->
-      <a href="./tools/Java-Spring-Stack-Trace-Beautifier/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="spring log analyzer trace beautifier java stacktrace exception error log parser devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-amber-600/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/Java-Spring-Stack-Trace-Beautifier/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="spring log analyzer trace beautifier java stacktrace exception error log parser devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-amber-600/20 to-orange-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           ☕</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
           Spring Log & Trace</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Format & Analyze Stack Traces</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 36. BCrypt Hash Generator & Matcher -->
-      <a href="./tools/BCrypt-Hash-Generator-n-Matcher/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="bcrypt hash generator matcher compare password verify security password hash devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-red-500/20 to-amber-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/BCrypt-Hash-Generator-n-Matcher/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="bcrypt hash generator matcher compare password verify security password hash devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-red-500/20 to-amber-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🔐</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-red-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-red-400 transition-colors text-sm mb-1 leading-tight">
           BCrypt Generator</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Generate & Match BCrypt Hashes</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 37. JSON to Java POJO -->
-      <a href="./tools/JSON-to-Java-POJO/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="json to java pojo lombok jackson class converter generator dto model devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/JSON-to-Java-POJO/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="json to java pojo lombok jackson class converter generator dto model devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           ☕</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-amber-400 transition-colors text-sm mb-1 leading-tight">
           JSON to Java POJO</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Lombok & Jackson DTO Generator</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 38. JWT Decoder & Validator -->
-      <a href="./tools/JWT-Decoder&Validator/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="jwt decoder validator json web token decode claims payload signature bearer auth devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/JWT-Decoder&Validator/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="jwt decoder validator json web token decode claims payload signature bearer auth devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🔐</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-purple-400 transition-colors text-sm mb-1 leading-tight">
           JWT Validator</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Decode & Verify JSON Web Tokens</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 39. CSV/Excel Processor -->
-      <a href="./tools/CSV-Excel-Processor/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="csv excel processor spreadsheet table filter sort xlsx data viewer export search devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-green-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/CSV-Excel-Processor/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="csv excel processor spreadsheet table filter sort xlsx data viewer export search devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-green-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           📊</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-emerald-400 transition-colors text-sm mb-1 leading-tight">
           CSV/Excel Processor</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Filter, Sort & Export CSV/Excel</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 40. Encrypt-Decrypt & Hash Generator -->
-      <a href="./tools/Encrypt-Decrypt&Hash-Generator/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="encrypt decrypt hash generator aes des sha256 sha md5 enkripsi dekripsi security devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-rose-500/20 to-red-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/Encrypt-Decrypt&Hash-Generator/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="encrypt decrypt hash generator aes des sha256 sha md5 enkripsi dekripsi security devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-rose-500/20 to-red-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🔐</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-rose-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-rose-400 transition-colors text-sm mb-1 leading-tight">
           Encrypt-Decrypt & Hash</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">AES, SHA, MD5 & Enkripsi Teks</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 41. Focus & Task Tracker -->
-      <a href="./tools/Focus&TaskTracker/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="focus task tracker pomodoro todo list produktivitas timer waktu manajemen tugas devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-red-500/20 to-rose-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/Focus&TaskTracker/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="focus task tracker pomodoro todo list produktivitas timer waktu manajemen tugas devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-red-500/20 to-rose-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🎯</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-red-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-red-400 transition-colors text-sm mb-1 leading-tight">
           Focus & Task Tracker</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Pomodoro & To-Do List</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 42. cURL to Code Converter -->
-      <a href="./tools/curl-to-code/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="curl to code converter convert api request java httpclient okhttp python js fetch go devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/curl-to-code/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="curl to code converter convert api request java httpclient okhttp python js fetch go devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🔄</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-cyan-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-cyan-400 transition-colors text-sm mb-1 leading-tight">
           cURL to Code</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Convert cURL to Java, JS, Python, Go</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 43. UUID & ULID Studio -->
-      <a href="./tools/uuid-ulid-generator/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="uuid ulid nanoid generator v4 v7 inspector time ordered id unique generator devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-violet-500/20 to-purple-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/uuid-ulid-generator/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="uuid ulid nanoid generator v4 v7 inspector time ordered id unique generator devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-violet-500/20 to-purple-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🆔</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-violet-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-violet-400 transition-colors text-sm mb-1 leading-tight">
           UUID & ULID Studio</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Generator & Inspector UUID/ULID</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 44. HMAC & API Signature Studio -->
-      <a href="./tools/hmac-signature-generator/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="hmac signature api signature studio sha256 sha512 webhook string to sign payment gateway signer devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-teal-500/20 to-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/hmac-signature-generator/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="hmac signature api signature studio sha256 sha512 webhook string to sign payment gateway signer devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-teal-500/20 to-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🔐</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-teal-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-teal-400 transition-colors text-sm mb-1 leading-tight">
           HMAC Signature Studio</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">API Signatures & Webhook Testing</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 45. SNAP BI Signature Studio -->
-      <a href="./tools/snap-bi-token-signature-studio/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="snap bi access token signature studio aspi bank danamon rsa sha256 b2b signature devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-yellow-500/20 to-amber-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/snap-bi-token-signature-studio/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="snap bi access token signature studio aspi bank danamon rsa sha256 b2b signature devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-yellow-500/20 to-amber-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🏛️</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-yellow-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-yellow-400 transition-colors text-sm mb-1 leading-tight">
           SNAP BI Signature</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Asymmetric Token Signature Studio</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 46. Docker Run to Compose Converter -->
-      <a href="./tools/docker-run-to-compose/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="docker run compose converter yaml yml container devops docker compose devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-sky-500/20 to-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/docker-run-to-compose/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="docker run compose converter yaml yml container devops docker compose devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-sky-500/20 to-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           🐳</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-sky-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-sky-400 transition-colors text-sm mb-1 leading-tight">
           Docker Run to Compose</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Convert CLI to docker-compose.yml</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- 47. Parser Spek API WBK -->
-      <a href="./tools/parser-spek-api-wbk/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="devtools" data-keywords="parser spek api wbk fixed length string core banking cif account deposito json devtools">
-        <div class="w-14 h-14 bg-gradient-to-br from-slate-500/20 to-zinc-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./tools/parser-spek-api-wbk/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="devtools"
+        data-keywords="parser spek api wbk fixed length string core banking cif account deposito json devtools">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-slate-500/20 to-zinc-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           📑</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           Parser Spek API WBK</h3>
         <p class="app-desc text-slate-500 text-[10px] md:text-xs">Fixed-Length Core Banking Parser</p>
         <span class="cat-badge badge-devtools bg-amber-500/20 text-amber-300 mt-3">DevTool</span>
       </a>
 
       <!-- Kalender-->
-       <a href="./kalender-hijriah/" class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group" data-category="other" data-keywords="kalender hijriah islamic calendar tanggal hijriah ramadhan idul fitri idul adha">
-        <div class="w-14 h-14 bg-gradient-to-br from-fuchsia-500/20 to-pink-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+      <a href="./kalender-hijriah/"
+        class="glass-card app-card p-5 md:p-6 rounded-3xl flex flex-col items-center text-center group"
+        data-category="other"
+        data-keywords="kalender hijriah islamic calendar tanggal hijriah ramadhan idul fitri idul adha">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-fuchsia-500/20 to-pink-500/10 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
           📅</div>
-        <h3 class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
+        <h3
+          class="app-title font-bold text-slate-200 group-hover:text-blue-400 transition-colors text-sm mb-1 leading-tight">
           Kalender Hijriah</h3>
-        <p class="app-desc text-slate-500 text-[10px] md:text-xs">Kalender Hijriah yang memudahkan perhitungan tanggal dalam sistem hijriah</p>
+        <p class="app-desc text-slate-500 text-[10px] md:text-xs">Kalender Hijriah yang memudahkan perhitungan tanggal
+          dalam sistem hijriah</p>
         <span class="cat-badge badge-other bg-fuchsia-500/20 text-fuchsia-300 mt-3">Lainnya</span>
       </a>
 
@@ -1328,26 +1602,39 @@
     </div>
 
     <!-- FAQ & Information Section (SEO Rich Snippets) -->
-    <section class="mt-20 max-w-4xl mx-auto glass-card p-6 md:p-8 rounded-3xl" aria-label="Pertanyaan yang Sering Diajukan">
+    <section class="mt-20 max-w-4xl mx-auto glass-card p-6 md:p-8 rounded-3xl"
+      aria-label="Pertanyaan yang Sering Diajukan">
       <h2 class="text-xl md:text-2xl font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
         <span>💡</span> Pertanyaan Umum (FAQ) & Panduan
       </h2>
       <div class="space-y-4">
         <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
-          <h3 class="font-semibold text-blue-300 text-sm md:text-base mb-1">Apakah seluruh aplikasi dan tools di portal M4gung gratis?</h3>
-          <p class="text-slate-400 text-xs md:text-sm leading-relaxed">Ya, seluruh aplikasi kasir (POS), manajemen toko, pembukuan pertanian, dan developer tools dapat digunakan 100% gratis langsung melalui web browser tanpa perlu instalasi aplikasi tambahan atau biaya langganan.</p>
+          <h3 class="font-semibold text-blue-300 text-sm md:text-base mb-1">Apakah seluruh aplikasi dan tools di portal
+            M4gung gratis?</h3>
+          <p class="text-slate-400 text-xs md:text-sm leading-relaxed">Ya, seluruh aplikasi kasir (POS), manajemen toko,
+            pembukuan pertanian, dan developer tools dapat digunakan 100% gratis langsung melalui web browser tanpa
+            perlu instalasi aplikasi tambahan atau biaya langganan.</p>
         </div>
         <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
-          <h3 class="font-semibold text-emerald-300 text-sm md:text-base mb-1">Aplikasi apa saja yang tersedia untuk bisnis dan UMKM?</h3>
-          <p class="text-slate-400 text-xs md:text-sm leading-relaxed">Tersedia POS Kasir Toko, Manajemen Barbershop, Manajemen Cafe (lengkap dengan resep BOM & printer thermal), Olshop Manager, serta aplikasi pembukuan pompanisasi sawah dan TaniPintar.</p>
+          <h3 class="font-semibold text-emerald-300 text-sm md:text-base mb-1">Aplikasi apa saja yang tersedia untuk
+            bisnis dan UMKM?</h3>
+          <p class="text-slate-400 text-xs md:text-sm leading-relaxed">Tersedia POS Kasir Toko, Manajemen Barbershop,
+            Manajemen Cafe (lengkap dengan resep BOM & printer thermal), Olshop Manager, serta aplikasi pembukuan
+            pompanisasi sawah dan TaniPintar.</p>
         </div>
         <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
-          <h3 class="font-semibold text-amber-300 text-sm md:text-base mb-1">Apa saja developer tools yang dapat diakses?</h3>
-          <p class="text-slate-400 text-xs md:text-sm leading-relaxed">Tersedia lebih dari 20 utilitas developer seperti JSON Formatter, JWT Decoder & Validator, Diff Checker, SQL Formatter, PlantUML Editor, cURL to Code Converter, UUID & ULID Studio, serta Docker Run to Compose Converter.</p>
+          <h3 class="font-semibold text-amber-300 text-sm md:text-base mb-1">Apa saja developer tools yang dapat
+            diakses?</h3>
+          <p class="text-slate-400 text-xs md:text-sm leading-relaxed">Tersedia lebih dari 20 utilitas developer seperti
+            JSON Formatter, JWT Decoder & Validator, Diff Checker, SQL Formatter, PlantUML Editor, cURL to Code
+            Converter, UUID & ULID Studio, serta Docker Run to Compose Converter.</p>
         </div>
         <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
-          <h3 class="font-semibold text-purple-300 text-sm md:text-base mb-1">Apakah data sensitif saya aman saat menggunakan web tools?</h3>
-          <p class="text-slate-400 text-xs md:text-sm leading-relaxed">Sangat aman. Seluruh developer tools dan kalkulator berjalan 100% client-side (di browser Anda) tanpa menyimpan data rahasia atau mengirimnya ke server backend pihak ketiga.</p>
+          <h3 class="font-semibold text-purple-300 text-sm md:text-base mb-1">Apakah data sensitif saya aman saat
+            menggunakan web tools?</h3>
+          <p class="text-slate-400 text-xs md:text-sm leading-relaxed">Sangat aman. Seluruh developer tools dan
+            kalkulator berjalan 100% client-side (di browser Anda) tanpa menyimpan data rahasia atau mengirimnya ke
+            server backend pihak ketiga.</p>
         </div>
       </div>
     </section>

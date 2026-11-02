@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Petualangan Dunia Coding — Buku Interaktif Anak</title>
+<style>
+:root{--ink:#24345b;--blue:#4779e8;--yellow:#ffe58b;--pink:#ffdce8;--mint:#d8f7e6;--paper:#fffdf7;--purple:#8b68d9}
+*{box-sizing:border-box}body{margin:0;background:#eaf2ff;color:var(--ink);font-family:"Trebuchet MS",Arial,sans-serif;line-height:1.55}
+button{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:10px 16px;background:var(--blue);color:white;font-weight:700}
+button.secondary{background:#e8edff;color:var(--ink)}button:focus-visible{outline:3px solid #f4a340;outline-offset:3px}
+.top{position:sticky;top:0;z-index:5;background:#ffffffed;backdrop-filter:blur(8px);padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;box-shadow:0 2px 12px #1d376018}
+.brand{font-weight:900}.controls{display:flex;gap:8px;align-items:center}.progress{height:5px;background:#dfe7ff}.progress span{display:block;height:100%;background:#ffb84d;width:0;transition:width .2s}
+main{max-width:900px;margin:22px auto;padding:0 14px 30px}.page{display:none;background:var(--paper);border:3px solid white;border-radius:26px;box-shadow:0 12px 30px #263d6b18;padding:clamp(20px,5vw,48px);min-height:570px;position:relative;overflow:hidden}.page.active{display:block;animation:appear .25s ease}@keyframes appear{from{opacity:.5;transform:translateY(5px)}to{opacity:1;transform:none}}
+h1,h2,h3{line-height:1.15}h1{font-size:clamp(2.2rem,6vw,4.2rem);margin:10px 0}h2{font-size:clamp(1.7rem,4vw,2.6rem);margin-top:8px}h3{font-size:1.25rem}.kicker{display:inline-block;background:var(--yellow);border-radius:99px;padding:5px 14px;font-weight:900}.hero{text-align:center;background:linear-gradient(160deg,#e5f4ff,#fff5d4 55%,#fce5ef)}.hero .mascot{font-size:6rem;line-height:1.2}.subtitle{font-size:1.2rem;max-width:570px;margin:14px auto}.art{border-radius:20px;background:#e9f4ff;padding:18px;text-align:center;font-size:3.4rem;margin:18px 0}.note,.task,.story{padding:16px 18px;border-radius:18px;margin:14px 0}.note{background:#e9efff}.task{background:#fff1bf}.story{background:#e0f8eb}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.tile{padding:15px;background:#fff;border:2px solid #edf0ff;border-radius:18px}.tile .emoji{font-size:2rem}.blockrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}.block{display:inline-block;padding:10px 13px;border-radius:12px;background:#ffca55;color:#45350c;font-weight:900;box-shadow:inset 0 -3px #dca53d}.block.motion{background:#4f9cff;color:white;box-shadow:inset 0 -3px #2e71cc}.block.look{background:#9a79ed;color:white;box-shadow:inset 0 -3px #6d4ec0}.block.sound{background:#ed76ba;color:white;box-shadow:inset 0 -3px #c44f91}.block.event{background:#ffbf53;color:#503600}.block.control{background:#ffad49;color:#503600}.answer{display:block;text-align:left;width:100%;margin:8px 0;background:white;color:var(--ink);border:2px solid #dce5ff}.answer.correct{background:#d9f7e6;border-color:#32a66c}.answer.wrong{background:#ffe0e7;border-color:#df6480}.feedback{font-weight:800;min-height:28px;margin-top:8px}.checklist label{display:flex;gap:10px;padding:8px}.checklist input{width:20px;height:20px}.footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;color:#627098;font-size:.9rem}.tiny{font-size:.9rem;color:#526387}.contents a{display:block;padding:9px 12px;border-radius:12px;text-decoration:none;color:var(--ink);background:#f0f4ff;margin:7px 0}.contents a:hover{background:#dfe8ff}.bigbutton{font-size:1.1rem;padding:13px 22px}.win{font-size:1.6rem;color:#248b61;font-weight:900}.print-note{font-size:.85rem;color:#68779b}
+@media(max-width:560px){.top{align-items:flex-start;flex-direction:column}.controls{width:100%;justify-content:space-between}.page{min-height:0}.hero .mascot{font-size:4.5rem}}
+@media print{body{background:white}.top,.progress,.screen-only{display:none!important}main{margin:0;padding:0;max-width:none}.page{display:block!important;box-shadow:none;border:1px solid #ddd;border-radius:0;min-height:0;page-break-after:always;padding:24px}.page:last-child{page-break-after:auto}.answer{border:1px solid #aaa}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">⭐ Petualangan Dunia Coding</div><div class="controls"><button class="secondary" id="prev" aria-label="Halaman sebelumnya">← Kembali</button><span id="counter">1 / 15</span><button id="next" aria-label="Halaman berikutnya">Lanjut →</button><button class="secondary" onclick="window.print()">🖨️ Cetak</button></div></header><div class="progress"><span id="bar"></span></div>
+<main>
+<section class="page hero active">
+<div class="kicker">BUKU DIGITAL INTERAKTIF</div><div class="mascot">🧒🏻 💻 🐱</div>
+<h1>Petualangan<br><span style="color:#e98723">Dunia Coding</span></h1>
+<p class="subtitle"><b>Belajar logika dan membuat cerita dengan kode!</b></p>
+<div class="art">🧩 ➡️ 🐱 ➡️ ⭐</div>
+<p>Untuk anak usia <b>4–6 tahun</b></p><p class="tiny">Baca bersama orang dewasa. Belajar sedikit demi sedikit sambil bermain.</p>
+<button class="bigbutton screen-only" onclick="go(1)">Ayo mulai! 🚀</button>
+<div class="footer"><span>Nama petualang: __________________</span><span>🌈</span></div>
+</section>
+<section class="page">
+<span class="kicker">HALAMAN 2</span><h2>Halo, calon pencipta!</h2><div class="art">🐱💬 “Hai! Aku Kiko!”</div>
+<div class="story"><b>Ini Kiko si Kucing.</b><br>Kiko ingin pergi ke bintang. Tapi Kiko perlu petunjuk agar tahu harus bergerak ke mana. Bisakah kamu membantu?</div>
+<h3>Di buku ini, kita akan:</h3><div class="grid"><div class="tile"><div class="emoji">🧠</div><b>Berpikir</b><br>Menyusun langkah.</div><div class="tile"><div class="emoji">🧩</div><b>Menyusun kode</b><br>Seperti menyusun puzzle.</div><div class="tile"><div class="emoji">🎨</div><b>Membuat cerita</b><br>Menggerakkan tokoh.</div></div>
+<div class="note">👨‍👩‍👧 <b>Untuk pendamping:</b> cukup 10–15 menit per sesi. Bacakan instruksi, biarkan anak mencoba, dan puji usahanya. Tidak harus menyelesaikan satu bab sekaligus.</div>
+</section>
+<section class="page">
+<span class="kicker">HALAMAN 3 · DAFTAR ISI</span><h2>Peta petualangan</h2><nav class="contents">
+<a href="#" onclick="go(3);return false">1. Apa itu coding?</a><a href="#" onclick="go(4);return false">2. Beri perintah seperti robot</a><a href="#" onclick="go(5);return false">3. Kenalan dengan ScratchJr</a><a href="#" onclick="go(6);return false">4. Kiko bergerak</a><a href="#" onclick="go(7);return false">5. Mulai cerita dengan bendera hijau</a><a href="#" onclick="go(8);return false">6. Urutan langkah</a><a href="#" onclick="go(9);return false">7. Jika… maka…</a><a href="#" onclick="go(10);return false">8. Ulangi lagi!</a><a href="#" onclick="go(11);return false">9. Suara dan tampilan</a><a href="#" onclick="go(12);return false">10. Proyek akhir: Kiko mencari bintang</a><a href="#" onclick="go(13);return false">11. Latihan seru</a><a href="#" onclick="go(14);return false">12. Kunci jawaban</a><a href="#" onclick="go(15);return false">13. Evaluasi dan sertifikat</a>
+</nav><p class="print-note">Tips: pada layar, gunakan tombol Kembali dan Lanjut. Pilih “Cetak” jika ingin menyimpan sebagai PDF.</p>
+</section>
+<section class="page">
+<span class="kicker">BAB 1</span><h2>Apa itu coding?</h2><div class="art">👩‍🍳 📋 🍪</div>
+<p><b>Coding</b> adalah memberi perintah kepada komputer agar melakukan sesuatu.</p><div class="story">Bayangkan kita membuat kue. Kita perlu mengikuti langkah: ambil mangkuk, masukkan bahan, lalu aduk. Komputer juga perlu petunjuk yang jelas!</div>
+<h3>Contoh perintah</h3><div class="blockrow"><span class="block motion">Bergerak</span><span class="block look">Katakan “Halo!”</span><span class="block sound">Mainkan suara</span></div>
+<div class="task"><b>🎯 Ayo coba!</b><p>Minta Kiko melambaikan tangan. Perintah apa yang bisa kita berikan?</p><button class="secondary" onclick="reveal('r1')">Lihat ide</button><p id="r1" hidden>“Kiko, bergerak!” atau “Kiko, katakan Halo!” adalah contoh perintah. Kita perlu memilih perintah yang cocok dengan keinginan kita.</p></div>
+</section>
+<section class="page">
+<span class="kicker">BAB 2</span><h2>Beri perintah seperti robot</h2><div class="art">🤖 ⬆️ ➡️ ⬇️</div>
+<p>Robot akan melakukan perintah yang kita berikan. Mari menjadi robot!</p><div class="grid"><div class="tile"><div class="emoji">⬆️</div><b>Maju</b><br>Melangkah ke depan.</div><div class="tile"><div class="emoji">⬅️</div><b>Kiri</b><br>Melangkah ke kiri.</div><div class="tile"><div class="emoji">➡️</div><b>Kanan</b><br>Melangkah ke kanan.</div></div>
+<div class="task"><b>🎯 Tantangan gerak</b><p>Letakkan boneka di lantai. Beri 2 perintah agar boneka maju dua langkah.</p><div class="blockrow"><span class="block motion">Maju 1</span><span class="block motion">Maju 1</span></div><p>Hebat! Dua langkah kecil membentuk satu urutan.</p></div>
+<div class="note">🧠 <b>Ingat:</b> urutan perintah itu penting. “Pakai sepatu lalu kaus kaki” berbeda dari “pakai kaus kaki lalu sepatu”.</div>
+</section>
+<section class="page">
+<span class="kicker">BAB 3</span><h2>Kenalan dengan ScratchJr</h2><div class="art">📱 🐱 🟦 🟨 🟪</div>
+<p><b>ScratchJr</b> adalah aplikasi belajar coding dengan blok gambar berwarna. Anak menyambungkan blok seperti puzzle untuk membuat tokoh bergerak dan bercerita.</p>
+<div class="grid"><div class="tile"><div class="emoji">🔵</div><b>Gerakan</b><br>Membuat tokoh bergerak.</div><div class="tile"><div class="emoji">🟣</div><b>Tampilan</b><br>Mengubah ukuran atau tampilan tokoh.</div><div class="tile"><div class="emoji">🟡</div><b>Mulai</b><br>Menjalankan cerita.</div></div>
+<div class="note">👨‍👩‍👧 <b>Siapkan perangkat:</b> pendamping dapat memasang ScratchJr dari toko aplikasi resmi yang sesuai dengan perangkat. Antarmuka dapat berbeda menurut versi. Jika belum ada perangkat, lakukan permainan robot di bab sebelumnya.</div>
+<div class="task"><b>🎯 Cari bersama</b><p>Temukan tokoh kucing, panggung, blok gerakan, dan tombol bendera hijau. Tunjuk satu per satu.</p></div>
+</section>
+<section class="page">
+<span class="kicker">BAB 4</span><h2>Kiko bergerak!</h2><div class="art">🐱 ➡️ ➡️ ⭐</div>
+<p>Mari membuat Kiko berjalan ke kanan.</p><h3>Langkah-langkah</h3><ol><li>Buka proyek baru di ScratchJr.</li><li>Pilih tokoh kucing.</li><li>Ambil blok mulai dengan bendera hijau.</li><li>Sambungkan blok gerak ke kanan.</li><li>Tekan bendera hijau dan lihat hasilnya.</li></ol>
+<div class="blockrow"><span class="block event">🟩 Bendera hijau</span><span class="block motion">➡️ Bergerak ke kanan</span></div>
+<div class="task"><b>🎯 Ayo pilih!</b><p>Kalau Kiko harus bergerak ke kanan, blok mana yang kamu pilih?</p><div id="q1"><button class="answer" onclick="quiz('q1',this,false,'Coba lagi. Cari blok dengan panah ke kanan.')">⬅️ Panah kiri</button><button class="answer" onclick="quiz('q1',this,true,'Benar! Panah kanan membuat Kiko bergerak ke kanan.')">➡️ Panah kanan</button><button class="answer" onclick="quiz('q1',this,false,'Itu bukan blok gerakan ke kanan.')">🔊 Suara</button></div><div class="feedback" id="q1fb"></div></div>
+</section>
+<section class="page">
+<span class="kicker">BAB 5</span><h2>Mulai dengan bendera hijau</h2><div class="art">🟩 ➡️ 🐱 💬</div>
+<p>Bendera hijau seperti tombol “Mulai!”. Saat ditekan, cerita atau program berjalan.</p>
+<div class="blockrow"><span class="block event">🟩 Mulai</span><span class="block motion">➡️ Bergerak</span><span class="block look">💬 Katakan “Hai!”</span></div>
+<div class="story">Kiko berkata: “Hai, teman!” setelah mulai bergerak. Kita bisa menyusun beberapa blok agar menjadi cerita.</div>
+<div class="task"><b>🎯 Ayo coba!</b><ol><li>Susun blok bendera hijau.</li><li>Tambahkan blok gerak.</li><li>Tambahkan blok bicara jika tersedia.</li><li>Tekan bendera hijau.</li></ol><p>Apa yang terjadi lebih dulu? Gerak atau bicara? Coba ubah urutannya.</p></div>
+</section>
+<section class="page">
+<span class="kicker">BAB 6</span><h2>Urutan langkah</h2><div class="art">1️⃣ 🧦 2️⃣ 👟 3️⃣ 🚶</div>
+<p>Komputer menjalankan perintah satu demi satu. Urutan yang tepat membantu kita mencapai tujuan.</p>
+<div class="task"><b>🎯 Susun urutan pagi hari</b><p>Mana urutan yang masuk akal?</p><div id="q2"><button class="answer" onclick="quiz('q2',this,false,'Belum tepat. Kita biasanya bangun dulu.')">Pakai sepatu → bangun tidur → berdiri</button><button class="answer" onclick="quiz('q2',this,true,'Betul! Bangun, berdiri, lalu memakai sepatu.')">Bangun tidur → berdiri → memakai sepatu</button><button class="answer" onclick="quiz('q2',this,false,'Coba pikirkan langkah yang dilakukan pertama kali.')">Berdiri → memakai sepatu → bangun tidur</button></div><div class="feedback" id="q2fb"></div></div>
+<div class="note">🧩 Dalam coding, blok-blok yang tersambung membentuk urutan perintah.</div>
+</section>
+<section class="page">
+<span class="kicker">BAB 7</span><h2>Jika… maka…</h2><div class="art">🌧️ ➡️ ☂️</div>
+<p>Kita bisa membuat keputusan dengan aturan sederhana: <b>Jika</b> sesuatu terjadi, <b>maka</b> lakukan sesuatu.</p>
+<div class="story"><b>Contoh:</b> Jika hujan, maka pakai payung.</div>
+<div class="blockrow"><span class="block control">JIKA hujan</span><span class="block motion">MAKA ambil payung</span></div>
+<div class="task"><b>🎯 Pilih jawaban</b><p>Jika tangan kotor, maka apa yang sebaiknya dilakukan?</p><div id="q3"><button class="answer" onclick="quiz('q3',this,false,'Coba lagi. Pilih tindakan yang membuat tangan bersih.')">Menyentuh kue</button><button class="answer" onclick="quiz('q3',this,true,'Benar! Cuci tangan membantu membersihkan tangan.')">Mencuci tangan</button><button class="answer" onclick="quiz('q3',this,false,'Itu tidak membersihkan tangan.')">Memakai topi</button></div><div class="feedback" id="q3fb"></div></div>
+<p class="tiny">Di ScratchJr, anak bisa mencoba aturan dengan menyentuh tokoh atau objek, sesuai blok yang tersedia.</p>
+</section>
+<section class="page">
+<span class="kicker">BAB 8</span><h2>Ulangi lagi!</h2><div class="art">👏 👏 👏 🔁</div>
+<p>Kalau kita ingin melakukan hal yang sama berkali-kali, kita bisa memakai pengulangan. Dalam coding, pengulangan sering disebut <i>loop</i>.</p>
+<div class="blockrow"><span class="block control">Ulangi 3 kali</span><span class="block sound">👏 Tepuk tangan</span></div>
+<div class="story">Tanpa pengulangan: tepuk, tepuk, tepuk. Dengan pengulangan: “Ulangi tepuk tangan 3 kali!”</div>
+<div class="task"><b>🎯 Gerak berulang</b><p>Ayo tepuk tangan tiga kali. Hitung bersama: satu, dua, tiga!</p><p>Kalau Kiko melompat 2 kali, berapa lompatan yang dilakukan?</p><div id="q4"><button class="answer" onclick="quiz('q4',this,false,'Hitung lagi: satu, dua.')">1 lompatan</button><button class="answer" onclick="quiz('q4',this,true,'Benar! Dua kali berarti dua lompatan.')">2 lompatan</button><button class="answer" onclick="quiz('q4',this,false,'Coba hitung lagi.')">4 lompatan</button></div><div class="feedback" id="q4fb"></div></div>
+</section>
+<section class="page">
+<span class="kicker">BAB 9</span><h2>Suara dan tampilan</h2><div class="art">🐱 💬 “Meong!” 🎵</div>
+<p>Cerita jadi lebih seru jika tokoh bisa bicara, mengeluarkan suara, atau berganti tampilan.</p>
+<div class="grid"><div class="tile"><div class="emoji">💬</div><b>Bicara</b><br>Kiko berkata “Halo!”.</div><div class="tile"><div class="emoji">🎵</div><b>Suara</b><br>Kiko membuat suara.</div><div class="tile"><div class="emoji">🎭</div><b>Tampilan</b><br>Kiko terlihat berbeda.</div></div>
+<div class="task"><b>🎯 Buat salam Kiko</b><ol><li>Pilih tokoh Kiko.</li><li>Tambahkan blok bicara atau suara yang tersedia.</li><li>Jalankan cerita.</li><li>Minta teman menonton.</li></ol></div>
+<div class="note">Tidak semua blok atau fitur terlihat sama di setiap aplikasi. Jika tidak menemukan fitur suara, gunakan blok bicara atau ceritakan suara dengan mulut.</div>
+</section>
+<section class="page">
+<span class="kicker">PROYEK AKHIR</span><h2>Kiko mencari bintang ⭐</h2><div class="art">🐱 🟩 ➡️ ➡️ ⭐ 🎉</div>
+<p><b>Misi:</b> bantu Kiko bergerak menuju bintang dan mengucapkan “Aku berhasil!”</p>
+<h3>Yang kamu perlukan</h3><ul><li>Tokoh kucing</li><li>Latar panggung yang disukai</li><li>Blok mulai</li><li>Blok gerakan</li><li>Blok bicara, jika tersedia</li></ul>
+<h3>Susun program</h3><div class="blockrow"><span class="block event">🟩 Bendera hijau</span><span class="block motion">➡️ Bergerak</span><span class="block motion">➡️ Bergerak</span><span class="block look">💬 “Aku berhasil!”</span></div>
+<div class="task"><b>Langkah petualangan</b><ol><li>Buat panggung dan tambahkan bintang. Bintang boleh hanya menjadi gambar hiasan.</li><li>Atur Kiko di satu sisi panggung.</li><li>Susun blok mulai dan dua gerakan ke arah bintang.</li><li>Tambahkan ucapan “Aku berhasil!” jika bisa.</li><li>Tekan bendera hijau untuk mencoba.</li><li>Jika Kiko belum sampai, ubah jumlah langkah dan coba lagi.</li></ol></div>
+<p class="win">🎉 Selamat mencoba, pencipta kecil!</p><p class="tiny">Tidak apa-apa jika hasilnya belum persis. Mencoba, mengamati, dan memperbaiki adalah bagian penting dari coding.</p>
+</section>
+<section class="page">
+<span class="kicker">LATIHAN SERU</span><h2>Uji kemampuanmu!</h2>
+<p>Minta pendamping membacakan pertanyaan. Pilih jawaban yang menurutmu benar.</p>
+<h3>1. Coding adalah…</h3><div id="q5"><button class="answer" onclick="quiz('q5',this,true,'Hebat! Coding berarti memberi instruksi kepada komputer.')">Memberi perintah kepada komputer</button><button class="answer" onclick="quiz('q5',this,false,'Coba lagi. Coding bukan hanya menggambar.')">Hanya menggambar</button><button class="answer" onclick="quiz('q5',this,false,'Coba lagi. Coding bukan tidur.')">Tidur siang</button></div><div class="feedback" id="q5fb"></div>
+<h3>2. Blok gerak digunakan untuk…</h3><div id="q6"><button class="answer" onclick="quiz('q6',this,false,'Suara menggunakan blok suara jika tersedia.')">Membuat suara</button><button class="answer" onclick="quiz('q6',this,true,'Benar! Blok gerak menggerakkan tokoh.')">Menggerakkan tokoh</button><button class="answer" onclick="quiz('q6',this,false,'Blok gerak bukan untuk mematikan perangkat.')">Mematikan komputer</button></div><div class="feedback" id="q6fb"></div>
+<h3>3. Kalau ingin perintah dilakukan berkali-kali, kita bisa…</h3><div id="q7"><button class="answer" onclick="quiz('q7',this,false,'Coba pikirkan kata yang berarti melakukan lagi.')">Menghapus semua blok</button><button class="answer" onclick="quiz('q7',this,true,'Betul! Pengulangan membuat perintah dilakukan beberapa kali.')">Menggunakan pengulangan</button><button class="answer" onclick="quiz('q7',this,false,'Mengganti warna tidak mengulang perintah.')">Mengganti warna</button></div><div class="feedback" id="q7fb"></div>
+<h3>4. Kiko bergerak ke arah yang salah. Apa yang kita lakukan?</h3><div id="q8"><button class="answer" onclick="quiz('q8',this,true,'Tepat! Periksa blok, ubah, lalu coba lagi.')">Periksa blok dan coba lagi</button><button class="answer" onclick="quiz('q8',this,false,'Kesalahan adalah kesempatan untuk belajar.')">Langsung menyerah</button><button class="answer" onclick="quiz('q8',this,false,'Menutup aplikasi tidak memperbaiki perintahnya.')">Tutup mata</button></div><div class="feedback" id="q8fb"></div>
+</section>
+<section class="page">
+<span class="kicker">KUNCI JAWABAN</span><h2>Jawaban untuk pendamping</h2>
+<div class="story"><b>Latihan pilihan ganda:</b><br>Bab 4: panah kanan.<br>Bab 6: bangun tidur → berdiri → memakai sepatu.<br>Bab 7: mencuci tangan.<br>Bab 8: 2 lompatan.<br>Latihan seru: 1) memberi perintah kepada komputer, 2) menggerakkan tokoh, 3) menggunakan pengulangan, 4) periksa blok dan coba lagi.</div>
+<div class="note"><b>Catatan:</b> kegiatan gerak, cerita, dan proyek akhir bisa memiliki banyak jawaban benar. Nilai usaha anak, bukan hanya hasil akhirnya.</div>
+<h3>Contoh jawaban proyek</h3><div class="blockrow"><span class="block event">Mulai</span><span class="block motion">Gerak kanan</span><span class="block motion">Gerak kanan</span><span class="block look">Katakan “Aku berhasil!”</span></div>
+<p>Jika kucing bergerak terlalu jauh atau terlalu dekat, bantu anak mencoba jumlah langkah yang berbeda.</p>
+</section>
+<section class="page">
+<span class="kicker">EVALUASI AKHIR</span><h2>Aku hebat belajar coding!</h2><div class="art">🏆 🐱 🌟</div>
+<p>Orang tua atau pendamping, beri tanda setelah anak mencoba. Tidak perlu terburu-buru.</p>
+<div class="checklist"><label><input type="checkbox"> Aku tahu coding berarti memberi perintah.</label><label><input type="checkbox"> Aku bisa menyusun dua langkah secara berurutan.</label><label><input type="checkbox"> Aku mengenali blok gerakan.</label><label><input type="checkbox"> Aku tahu bendera hijau untuk memulai.</label><label><input type="checkbox"> Aku memahami contoh “jika… maka…”.</label><label><input type="checkbox"> Aku mencoba pengulangan.</label><label><input type="checkbox"> Aku membuat atau mencoba proyek Kiko.</label><label><input type="checkbox"> Aku mau mencoba lagi jika ada kesalahan.</label></div>
+<div class="task"><b>🎨 Tantangan terakhir</b><p>Buat Kiko bergerak, lalu ucapkan “Halo, teman!” Tunjukkan karyamu kepada keluarga.</p></div>
+<h2 style="text-align:center;color:#e58a20">SERTIFIKAT PETUALANG CODING</h2><p style="text-align:center">Diberikan kepada:</p><p style="text-align:center;border-bottom:2px dashed #8aa3e8;padding:12px">________________________________</p><p style="text-align:center">Karena telah mencoba belajar logika dan coding bersama Kiko! 🐱</p><p style="text-align:center">Tanggal: ______________ &nbsp; Pendamping: ______________</p>
+<div class="note"><b>Pesan untuk anak:</b> Kamu tidak harus langsung bisa. Setiap pencipta hebat belajar dengan mencoba. Terus bertanya, bermain, dan berkreasi! 💛</div>
+</section>
+</main>
+<script>
+const pages=[...document.querySelectorAll('.page')];let current=0;
+function go(n){current=Math.max(0,Math.min(pages.length-1,n));pages.forEach((p,i)=>p.classList.toggle('active',i===current));document.getElementById('counter').textContent=(current+1)+' / '+pages.length;document.getElementById('bar').style.width=((current+1)/pages.length*100)+'%';document.getElementById('prev').disabled=current===0;document.getElementById('next').disabled=current===pages.length-1;window.scrollTo({top:0,behavior:'smooth'});}
+document.getElementById('prev').addEventListener('click',()=>go(current-1));document.getElementById('next').addEventListener('click',()=>go(current+1));
+function quiz(id,btn,correct,msg){const root=document.getElementById(id);root.querySelectorAll('button').forEach(b=>b.classList.remove('correct','wrong'));btn.classList.add(correct?'correct':'wrong');const fb=document.getElementById(id+'fb');fb.textContent=msg;fb.style.color=correct?'#168153':'#b54460';}
+function reveal(id){const e=document.getElementById(id);e.hidden=!e.hidden;}
+go(0);
+</script>
+</body></html>
