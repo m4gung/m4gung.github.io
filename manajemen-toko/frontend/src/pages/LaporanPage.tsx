@@ -14,10 +14,12 @@ import {
   Trash2,
   CheckCircle2,
   AlertCircle,
+  Printer,
 } from 'lucide-react';
 import { useStore } from '../context/useStore';
 import { formatRupiah, formatTanggal, formatThousand, parseThousand } from '../utils/format';
 import { exportToCsv } from '../utils/exportCsv';
+import { ThermalReceipt } from '../components/ThermalReceipt';
 import type { CheckoutPayload } from '../adapters/IDataProvider';
 import type { PaymentMethod, Sale } from '../types';
 
@@ -32,9 +34,10 @@ interface EditItemRow {
 }
 
 export const LaporanPage: React.FC = () => {
-  const { provider, products, customers, refreshData } = useStore();
+  const { provider, products, customers, settings, refreshData } = useStore();
 
   const [sales, setSales] = useState<Sale[]>([]);
+  const [receiptSale, setReceiptSale] = useState<Sale | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Filter state
@@ -473,13 +476,22 @@ export const LaporanPage: React.FC = () => {
                       )}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => openEditModal(sale)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px]"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                        Edit
-                      </button>
+                      <div className="inline-flex items-center gap-1.5">
+                        <button
+                          onClick={() => setReceiptSale(sale)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px]"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          Struk
+                        </button>
+                        <button
+                          onClick={() => openEditModal(sale)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px]"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          Edit
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -652,6 +664,42 @@ export const LaporanPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Cetak Struk Thermal */}
+      {receiptSale && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 bg-gray-900 text-white flex justify-between items-center no-print">
+              <div>
+                <h3 className="text-base font-bold">Struk Transaksi: {receiptSale.invoiceNo}</h3>
+                <p className="text-xs text-gray-400 mt-0.5">{formatTanggal(receiptSale.date)}</p>
+              </div>
+              <button onClick={() => setReceiptSale(null)} className="text-white/80 hover:text-white text-xl font-bold">
+                &times;
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <ThermalReceipt sale={receiptSale} settings={settings} />
+              <div className="flex justify-between items-center pt-2 no-print">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm"
+                >
+                  <Printer className="w-4 h-4" /> Cetak Struk
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReceiptSale(null)}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

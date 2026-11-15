@@ -20,6 +20,7 @@ import {
 import { useStore } from '../context/useStore';
 import { formatRupiah, formatTanggal } from '../utils/format';
 import { exportToCsv } from '../utils/exportCsv';
+import { ThermalReceipt } from '../components/ThermalReceipt';
 import type { Sale } from '../types';
 
 interface DashboardProps {
@@ -562,10 +563,10 @@ export const DashboardPage: React.FC<DashboardProps> = ({ setActiveTab }) => {
       {/* MODAL: DETAIL STRUK PENJUALAN */}
       {selectedSaleDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden my-8">
-            <div className="px-6 py-4 bg-gray-900 text-white flex justify-between items-center">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden my-8">
+            <div className="px-6 py-4 bg-gray-900 text-white flex justify-between items-center no-print">
               <div>
-                <h3 className="text-base font-bold">Rincian Faktur: {selectedSaleDetail.invoiceNo}</h3>
+                <h3 className="text-base font-bold">Detail Struk: {selectedSaleDetail.invoiceNo}</h3>
                 <p className="text-xs text-gray-400 mt-0.5">{formatTanggal(selectedSaleDetail.date)}</p>
               </div>
               <button
@@ -577,77 +578,20 @@ export const DashboardPage: React.FC<DashboardProps> = ({ setActiveTab }) => {
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-xs bg-gray-50 p-3 rounded-xl border border-gray-200">
-                <div>
-                  <span className="text-gray-500 block">Pelanggan:</span>
-                  <span className="font-bold text-gray-900">{selectedSaleDetail.customerName || 'Pelanggan Umum'}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block">Metode Pembayaran:</span>
-                  <span className="font-bold text-gray-900">{selectedSaleDetail.paymentMethod}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block">Status:</span>
-                  <span className="font-bold text-emerald-600">{selectedSaleDetail.paymentStatus}</span>
-                </div>
-                {selectedSaleDetail.dueDate && (
-                  <div>
-                    <span className="text-gray-500 block">Jatuh Tempo:</span>
-                    <span className="font-bold text-amber-600">{selectedSaleDetail.dueDate}</span>
-                  </div>
-                )}
-              </div>
+              <ThermalReceipt sale={selectedSaleDetail} settings={settings} />
 
-              {/* Tabel Barang Belanjaan */}
-              <div className="border border-gray-200 rounded-xl overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead className="bg-gray-50 border-b border-gray-200 font-semibold text-gray-600">
-                    <tr>
-                      <th className="py-2 px-3">Item Barang</th>
-                      <th className="py-2 px-3 text-center">Qty</th>
-                      <th className="py-2 px-3 text-right">Harga</th>
-                      <th className="py-2 px-3 text-right">Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {selectedSaleDetail.items?.map((item, idx) => (
-                      <tr key={idx}>
-                        <td className="py-2 px-3 font-medium text-gray-900">{item.productName}</td>
-                        <td className="py-2 px-3 text-center">{item.quantity}</td>
-                        <td className="py-2 px-3 text-right">{formatRupiah(item.sellingPrice)}</td>
-                        <td className="py-2 px-3 text-right font-bold">{formatRupiah(item.subtotal)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-gray-50 border-t border-gray-200 font-bold text-xs">
-                    {selectedSaleDetail.discount > 0 && (
-                      <tr>
-                        <td colSpan={3} className="py-1.5 px-3 text-right text-gray-500">Diskon:</td>
-                        <td className="py-1.5 px-3 text-right text-rose-600">-{formatRupiah(selectedSaleDetail.discount)}</td>
-                      </tr>
-                    )}
-                    <tr className="text-sm">
-                      <td colSpan={3} className="py-2 px-3 text-right text-gray-900">Total Akhir:</td>
-                      <td className="py-2 px-3 text-right text-brand-700 font-black">
-                        {formatRupiah(selectedSaleDetail.finalAmount)}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-
-              <div className="flex justify-between items-center pt-2">
+              <div className="flex justify-between items-center pt-2 no-print">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-50"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm"
                 >
                   <Printer className="w-4 h-4" /> Cetak Struk
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedSaleDetail(null)}
-                  className="px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-bold"
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold"
                 >
                   Tutup
                 </button>
