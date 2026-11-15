@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../context/useStore';
 import { formatRupiah, formatTanggal } from '../utils/format';
+import { exportToCsv } from '../utils/exportCsv';
 import type { Sale } from '../types';
 
 interface DashboardProps {
@@ -127,25 +128,18 @@ export const DashboardPage: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
     const headers = ['No Faktur', 'Tanggal', 'Pelanggan', 'Metode Bayar', 'Status Bayar', 'Total Tagihan', 'Diskon', 'Total Akhir', 'Catatan'];
     const rows = sales.map((s) => [
-      `"${s.invoiceNo}"`,
-      `"${s.date}"`,
-      `"${s.customerName || 'Pelanggan Umum'}"`,
-      `"${s.paymentMethod}"`,
-      `"${s.paymentStatus}"`,
+      s.invoiceNo,
+      s.date,
+      s.customerName || 'Pelanggan Umum',
+      s.paymentMethod,
+      s.paymentStatus,
       s.totalAmount,
       s.discount,
       s.finalAmount,
-      `"${s.notes || ''}"`
+      s.notes || ''
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Laporan_Penjualan_${todayStr}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    exportToCsv(`Laporan_Penjualan_${todayStr}.csv`, headers, rows);
   };
 
   // 8. Ekspor Jurnal Akuntansi ke CSV
@@ -160,25 +154,18 @@ export const DashboardPage: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
       const headers = ['No Jurnal', 'Tanggal', 'Tipe Ref', 'No Ref', 'Kode Akun', 'Nama Akun', 'Debet', 'Kredit', 'Keterangan'];
       const rows = journals.map((j) => [
-        `"${j.entryNo}"`,
-        `"${j.date}"`,
-        `"${j.refType}"`,
-        `"${j.refNo}"`,
-        `"${j.accountCode}"`,
-        `"${j.accountName}"`,
+        j.entryNo,
+        j.date,
+        j.refType,
+        j.refNo,
+        j.accountCode,
+        j.accountName,
         j.debit,
         j.credit,
-        `"${j.notes || ''}"`
+        j.notes || ''
       ]);
 
-      const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `Jurnal_Akuntansi_${todayStr}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      exportToCsv(`Jurnal_Akuntansi_${todayStr}.csv`, headers, rows);
     } catch (err: any) {
       alert('Gagal mengekspor jurnal: ' + err.message);
     }

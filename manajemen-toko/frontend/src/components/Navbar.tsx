@@ -15,7 +15,8 @@ import {
   Database,
   RefreshCw,
   Cloud,
-  Check
+  Check,
+  FileText
 } from 'lucide-react';
 import { useStore } from '../context/useStore';
 
@@ -34,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
     { id: 'pembelian', label: 'Pembelian', icon: Truck },
     { id: 'piutang', label: 'Piutang', icon: CreditCard },
     { id: 'akuntansi', label: 'Akuntansi', icon: BookOpen },
+    { id: 'laporan', label: 'Laporan', icon: FileText },
     { id: 'pengaturan', label: 'Pengaturan', icon: Settings },
   ];
 

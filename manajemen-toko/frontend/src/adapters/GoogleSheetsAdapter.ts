@@ -249,6 +249,10 @@ export class GoogleSheetsAdapter implements IDataProvider {
     return localRes;
   }
 
+  async updateSale(invoiceNo: string, payload: CheckoutPayload): Promise<Sale> {
+    return this.localFallback.updateSale(invoiceNo, payload);
+  }
+
   async getSalesHistory(): Promise<Sale[]> {
     try {
       const res = await this.callApi('getSalesHistory', null, 'GET');

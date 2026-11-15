@@ -81,6 +81,7 @@ export interface IDataProvider {
   getPurchases(): Promise<Purchase[]>;
   createPurchase(payload: CreatePurchasePayload): Promise<{ purchaseNo: string; success: boolean }>;
   checkoutSale(payload: CheckoutPayload): Promise<{ invoiceNo: string; success: boolean }>;
+  updateSale?(invoiceNo: string, payload: CheckoutPayload): Promise<Sale>;
   getSalesHistory(): Promise<Sale[]>;
   getCustomers(): Promise<Customer[]>;
   saveCustomer(customer: Partial<Customer>): Promise<Customer>;

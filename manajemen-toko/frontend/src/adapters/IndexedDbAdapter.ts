@@ -538,7 +538,7 @@ export class IndexedDbAdapter implements IDataProvider {
       name: customer.name || 'Pelanggan Baru',
       phone: customer.phone || '',
       address: customer.address || '',
-      creditLimit: customer.creditLimit !== undefined ? Number(customer.creditLimit) : 5000000,
+      creditLimit: customer.creditLimit !== undefined ? Number(customer.creditLimit) : 0,
       currentDebt: Number(customer.currentDebt || 0),
       updatedAt: now
     };
@@ -636,5 +636,256 @@ export class IndexedDbAdapter implements IDataProvider {
     const merged = { ...(currentItem ? currentItem.value : DEFAULT_SETTINGS), ...settings };
     await db.settings.put({ key: 'main', value: merged });
     return merged;
+  }
+
+  /**
+   * Edit Transaksi Penjualan secara atomik:
+   * 1. Kembalikan stok lama, hapus item lama, piutang lama & jurnal lama
+   * 2. Terapkan item baru, stok baru, piutang baru & jurnal baru dengan invoiceNo yang sama
+   */
+  async updateSale(invoiceNo: string, payload: CheckoutPayload): Promise<Sale> {
+    const existing = await db.sales.get(invoiceNo);
+    if (!existing) {
+      throw new Error(`Transaksi ${invoiceNo} tidak ditemukan.`);
+    }
+
+    const now = new Date().toISOString();
+
+    // 1. Revert stok lama
+    for (const oldItem of existing.items || []) {
+      const prod = await db.products.get(oldItem.productId);
+      if (prod) {
+        prod.stock += Number(oldItem.quantity);
+        prod.updatedAt = now;
+        await db.products.put(prod);
+      }
+    }
+
+    // 2. Hapus saleItems, stockMutations, & journalLines lama terkait invoiceNo
+    await db.saleItems.where('invoiceNo').equals(invoiceNo).delete();
+    const oldMutations = await db.stockMutations.filter((m) => m.referenceNo === invoiceNo).toArray();
+    if (oldMutations.length > 0) {
+      await db.stockMutations.bulkDelete(oldMutations.map((m) => m.id));
+    }
+    const oldJournals = await db.journalLines.filter((j) => j.refNo === invoiceNo).toArray();
+    if (oldJournals.length > 0) {
+      await db.journalLines.bulkDelete(oldJournals.map((j) => j.id));
+    }
+
+    // 3. Revert piutang & currentDebt pelanggan lama jika ada
+    const oldReceivables = await db.receivables.where('invoiceNo').equals(invoiceNo).toArray();
+    for (const rec of oldReceivables) {
+      if (rec.customerId) {
+        const oldCust = await db.customers.get(rec.customerId);
+        if (oldCust) {
+          oldCust.currentDebt = Math.max(0, Number(oldCust.currentDebt) - Number(rec.remainingAmount));
+          oldCust.updatedAt = now;
+          await db.customers.put(oldCust);
+        }
+      }
+      await db.receivables.delete(rec.id);
+    }
+
+    // 4. Terapkan item baru & mutasi stok baru
+    let totalCost = 0;
+    const itemsToSave: SaleItem[] = [];
+    const mutationsToSave: StockMutation[] = [];
+
+    for (const it of payload.items) {
+      const subtotal = Number(it.sellingPrice) * Number(it.quantity);
+      totalCost += Number(it.costPrice || 0) * Number(it.quantity);
+
+      itemsToSave.push({
+        id: `SITM-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        invoiceNo,
+        productId: it.productId,
+        productName: it.productName,
+        costPrice: Number(it.costPrice || 0),
+        sellingPrice: Number(it.sellingPrice),
+        quantity: Number(it.quantity),
+        subtotal
+      });
+
+      const prod = await db.products.get(it.productId);
+      if (prod) {
+        prod.stock -= Number(it.quantity);
+        prod.updatedAt = now;
+        await db.products.put(prod);
+      }
+
+      mutationsToSave.push({
+        id: `MUT-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        date: now,
+        productId: it.productId,
+        productName: it.productName,
+        type: 'OUT_SALE',
+        quantity: Number(it.quantity),
+        referenceNo: invoiceNo,
+        notes: 'Edit Penjualan Kasir'
+      });
+    }
+
+    await db.saleItems.bulkAdd(itemsToSave);
+    await db.stockMutations.bulkAdd(mutationsToSave);
+
+    const updatedSale: Sale = {
+      invoiceNo,
+      date: payload.invoiceNo ? existing.date : existing.date,
+      customerName: payload.customerName || 'Pelanggan Umum',
+      customerId: payload.customerId,
+      totalAmount: payload.totalAmount,
+      discount: payload.discount,
+      finalAmount: payload.finalAmount,
+      paymentMethod: payload.paymentMethod,
+      cashReceived: payload.cashReceived,
+      changeAmount: payload.changeAmount,
+      paymentStatus: payload.paymentStatus,
+      notes: payload.notes,
+      dueDate: payload.dueDate,
+      items: itemsToSave
+    };
+    await db.sales.put(updatedSale);
+
+    // 5. Catat piutang baru jika CREDIT / UNPAID
+    if (payload.paymentMethod === 'CREDIT' || payload.paymentStatus === 'UNPAID') {
+      const remainingAmount = payload.finalAmount - (payload.cashReceived || 0);
+      await db.receivables.add({
+        id: `REC-${Date.now()}`,
+        invoiceNo,
+        customerId: payload.customerId || 'CUST-001',
+        customerName: payload.customerName || 'Pelanggan',
+        totalAmount: payload.finalAmount,
+        paidAmount: payload.cashReceived || 0,
+        remainingAmount,
+        dueDate: payload.dueDate || new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
+        status: 'ACTIVE',
+        createdAt: now
+      });
+
+      if (payload.customerId) {
+        const cust = await db.customers.get(payload.customerId);
+        if (cust) {
+          cust.currentDebt += remainingAmount;
+          cust.updatedAt = now;
+          await db.customers.put(cust);
+        }
+      }
+    }
+
+    // 6. Posting ulang jurnal double-entry
+    const entryNo = `JRN-${invoiceNo}`;
+    const journals: JournalLine[] = [];
+    if (payload.paymentMethod === 'CASH') {
+      journals.push(
+        { id: `JL-${Date.now()}-1`, entryNo, date: existing.date, refType: 'SALE', refNo: invoiceNo, accountCode: '1101', accountName: 'Kas Toko', debit: payload.finalAmount, credit: 0, notes: 'Kas Penjualan (Edit)' },
+        { id: `JL-${Date.now()}-2`, entryNo, date: existing.date, refType: 'SALE', refNo: invoiceNo, accountCode: '4101', accountName: 'Pendapatan Penjualan', debit: 0, credit: payload.finalAmount, notes: 'Penjualan Barang (Edit)' }
+      );
+    } else if (payload.paymentMethod === 'QRIS' || payload.paymentMethod === 'TRANSFER') {
+      journals.push(
+        { id: `JL-${Date.now()}-1`, entryNo, date: existing.date, refType: 'SALE', refNo: invoiceNo, accountCode: '1102', accountName: 'Bank', debit: payload.finalAmount, credit: 0, notes: `Penerimaan ${payload.paymentMethod} (Edit)` },
+        { id: `JL-${Date.now()}-2`, entryNo, date: existing.date, refType: 'SALE', refNo: invoiceNo, accountCode: '4101', accountName: 'Pendapatan Penjualan', debit: 0, credit: payload.finalAmount, notes: 'Penjualan Barang (Edit)' }
+      );
+    } else if (payload.paymentMethod === 'CREDIT') {
+      journals.push(
+        { id: `JL-${Date.now()}-1`, entryNo, date: existing.date, refType: 'SALE', refNo: invoiceNo, accountCode: '1103', accountName: 'Piutang Usaha', debit: payload.finalAmount, credit: 0, notes: 'Penjualan Kredit (Edit)' },
+        { id: `JL-${Date.now()}-2`, entryNo, date: existing.date, refType: 'SALE', refNo: invoiceNo, accountCode: '4101', accountName: 'Pendapatan Penjualan', debit: 0, credit: payload.finalAmount, notes: 'Penjualan Barang (Edit)' }
+      );
+    }
+    if (totalCost > 0) {
+      journals.push(
+        { id: `JL-${Date.now()}-3`, entryNo, date: existing.date, refType: 'COGS', refNo: invoiceNo, accountCode: '5101', accountName: 'Beban Pokok Penjualan (HPP)', debit: totalCost, credit: 0, notes: 'Pengakuan HPP (Edit)' },
+        { id: `JL-${Date.now()}-4`, entryNo, date: existing.date, refType: 'COGS', refNo: invoiceNo, accountCode: '1201', accountName: 'Persediaan Barang Dagang', debit: 0, credit: totalCost, notes: 'Pengurangan Stok (Edit)' }
+      );
+    }
+    await db.journalLines.bulkAdd(journals);
+
+    return updatedSale;
+  }
+
+  /** Ekspor seluruh tabel IndexedDB ke objek JSON siap backup */
+  async exportAllData() {
+    await this.initDefaultsIfEmpty();
+    return {
+      app: 'manajemen-toko-web',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      tables: {
+        settings: await db.settings.toArray(),
+        categories: await db.categories.toArray(),
+        products: await db.products.toArray(),
+        stockMutations: await db.stockMutations.toArray(),
+        customers: await db.customers.toArray(),
+        suppliers: await db.suppliers.toArray(),
+        purchases: await db.purchases.toArray(),
+        purchaseItems: await db.purchaseItems.toArray(),
+        sales: await db.sales.toArray(),
+        saleItems: await db.saleItems.toArray(),
+        receivables: await db.receivables.toArray(),
+        receivablePayments: await db.receivablePayments.toArray(),
+        coa: await db.coa.toArray(),
+        journalLines: await db.journalLines.toArray(),
+      },
+    };
+  }
+
+  /** Import / pulihkan seluruh data toko dari file JSON backup secara atomik */
+  async importAllData(backup: any): Promise<void> {
+    if (!backup || typeof backup !== 'object' || !backup.tables || typeof backup.tables !== 'object') {
+      throw new Error('Format file backup tidak valid (objek tables tidak ditemukan).');
+    }
+
+    const t = backup.tables;
+    await db.transaction(
+      'rw',
+      [
+        db.settings,
+        db.categories,
+        db.products,
+        db.stockMutations,
+        db.customers,
+        db.suppliers,
+        db.purchases,
+        db.purchaseItems,
+        db.sales,
+        db.saleItems,
+        db.receivables,
+        db.receivablePayments,
+        db.coa,
+        db.journalLines,
+      ],
+      async () => {
+        await Promise.all([
+          db.settings.clear(),
+          db.categories.clear(),
+          db.products.clear(),
+          db.stockMutations.clear(),
+          db.customers.clear(),
+          db.suppliers.clear(),
+          db.purchases.clear(),
+          db.purchaseItems.clear(),
+          db.sales.clear(),
+          db.saleItems.clear(),
+          db.receivables.clear(),
+          db.receivablePayments.clear(),
+          db.coa.clear(),
+          db.journalLines.clear(),
+        ]);
+
+        if (Array.isArray(t.settings) && t.settings.length) await db.settings.bulkPut(t.settings);
+        if (Array.isArray(t.categories) && t.categories.length) await db.categories.bulkPut(t.categories);
+        if (Array.isArray(t.products) && t.products.length) await db.products.bulkPut(t.products);
+        if (Array.isArray(t.stockMutations) && t.stockMutations.length) await db.stockMutations.bulkPut(t.stockMutations);
+        if (Array.isArray(t.customers) && t.customers.length) await db.customers.bulkPut(t.customers);
+        if (Array.isArray(t.suppliers) && t.suppliers.length) await db.suppliers.bulkPut(t.suppliers);
+        if (Array.isArray(t.purchases) && t.purchases.length) await db.purchases.bulkPut(t.purchases);
+        if (Array.isArray(t.purchaseItems) && t.purchaseItems.length) await db.purchaseItems.bulkPut(t.purchaseItems);
+        if (Array.isArray(t.sales) && t.sales.length) await db.sales.bulkPut(t.sales);
+        if (Array.isArray(t.saleItems) && t.saleItems.length) await db.saleItems.bulkPut(t.saleItems);
+        if (Array.isArray(t.receivables) && t.receivables.length) await db.receivables.bulkPut(t.receivables);
+        if (Array.isArray(t.receivablePayments) && t.receivablePayments.length) await db.receivablePayments.bulkPut(t.receivablePayments);
+        if (Array.isArray(t.coa) && t.coa.length) await db.coa.bulkPut(t.coa);
+        if (Array.isArray(t.journalLines) && t.journalLines.length) await db.journalLines.bulkPut(t.journalLines);
+      }
+    );
   }
 }

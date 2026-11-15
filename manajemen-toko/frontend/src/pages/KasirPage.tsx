@@ -47,7 +47,7 @@ export const KasirPage: React.FC = () => {
   const [quickCustomerName, setQuickCustomerName] = useState('');
   const [quickCustomerPhone, setQuickCustomerPhone] = useState('');
   const [quickCustomerAddress, setQuickCustomerAddress] = useState('');
-  const [quickCustomerLimit, setQuickCustomerLimit] = useState<number>(5000000);
+  const [quickCustomerLimit, setQuickCustomerLimit] = useState<number>(0);
   const [savingCustomer, setSavingCustomer] = useState(false);
 
   // State Pencarian & Scanner
@@ -171,7 +171,7 @@ export const KasirPage: React.FC = () => {
         name: quickCustomerName.trim(),
         phone: quickCustomerPhone.trim(),
         address: quickCustomerAddress.trim(),
-        creditLimit: Number(quickCustomerLimit) || 5000000,
+        creditLimit: Math.max(0, Number(quickCustomerLimit) || 0),
       });
 
       await refreshData();
@@ -180,7 +180,7 @@ export const KasirPage: React.FC = () => {
       setQuickCustomerName('');
       setQuickCustomerPhone('');
       setQuickCustomerAddress('');
-      setQuickCustomerLimit(5000000);
+      setQuickCustomerLimit(0);
     } catch (err: any) {
       alert('Gagal menambah pelanggan: ' + err.message);
     } finally {

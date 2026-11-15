@@ -212,7 +212,7 @@ export const PiutangPage: React.FC = () => {
         name: '',
         phone: '',
         address: '',
-        creditLimit: 5000000,
+        creditLimit: 0,
       });
     }
     setErrorMessage(null);
@@ -868,19 +868,18 @@ export const PiutangPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Batas Limit Kredit (Rp) *
+                  Batas Limit Kredit (Rp) <span className="font-normal text-gray-400">(Opsional)</span>
                 </label>
                 <input
                   type="text"
                   inputMode="numeric"
-                  required
-                  placeholder="0"
+                  placeholder="0 (Kosongkan atau isi 0 jika tidak bisa tempo)"
                   value={formatThousand(customerForm.creditLimit)}
                   onChange={(e) => setCustomerForm({ ...customerForm, creditLimit: parseThousand(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-xl text-xs font-bold text-gray-900 focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 />
                 <p className="text-[11px] text-gray-500 mt-1">
-                  Batas maksimal utang yang diizinkan saat belanja tempo di kasir POS. <span className="text-rose-600 font-semibold">(Isi 0 jika pelanggan dilarang berutang/tempo)</span>.
+                  Batas maksimal utang yang diizinkan saat belanja tempo di kasir POS. <span className="text-rose-600 font-semibold">(Isi 0 atau kosongkan jika pelanggan tidak diizinkan berutang/tempo)</span>.
                 </p>
               </div>
 

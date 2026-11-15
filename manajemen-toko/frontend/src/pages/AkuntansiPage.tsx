@@ -12,10 +12,12 @@ import {
   Trash2, 
   RefreshCw,
   Wallet,
-  Building
+  Building,
+  Download
 } from 'lucide-react';
 import { useStore } from '../context/useStore';
 import { formatRupiah, formatTanggal } from '../utils/format';
+import { exportToCsv } from '../utils/exportCsv';
 import type { JournalLine, ChartOfAccount } from '../types';
 
 export const AkuntansiPage: React.FC = () => {
@@ -240,6 +242,24 @@ export const AkuntansiPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={() => {
+              if (journals.length === 0) {
+                alert('Belum ada data jurnal untuk diekspor.');
+                return;
+              }
+              const todayStr = new Date().toISOString().slice(0, 10);
+              exportToCsv(
+                `Jurnal_Umum_${todayStr}.csv`,
+                ['No Jurnal', 'Tanggal', 'Tipe Ref', 'No Ref', 'Kode Akun', 'Nama Akun', 'Debet', 'Kredit', 'Keterangan'],
+                journals.map((j) => [j.entryNo, j.date, j.refType, j.refNo, j.accountCode, j.accountName, j.debit, j.credit, j.notes || ''])
+              );
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-2 border border-emerald-300 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 shadow-sm transition-all"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Ekspor Jurnal (CSV)
+          </button>
           <button
             onClick={loadAccountingData}
             disabled={loading}

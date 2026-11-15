@@ -239,6 +239,10 @@ export class SpringBootAdapter implements IDataProvider {
     }
   }
 
+  async updateSale(invoiceNo: string, payload: CheckoutPayload): Promise<Sale> {
+    return this.localFallback.updateSale(invoiceNo, payload);
+  }
+
   async getSalesHistory(): Promise<Sale[]> {
     try {
       return await this.fetchApi('/api/v1/sales');

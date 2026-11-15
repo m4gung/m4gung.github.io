@@ -4,6 +4,13 @@ Aplikasi manajemen operasional toko ritel dan grosir untuk UMKM Indonesia dengan
 
 ---
 
+## 📱 Rencana Transformasi Mobile & Tablet (Flutter)
+Dokumentasi perancangan migrasi aplikasi ke ekosistem native Android & iOS (HP, Tablet, iPhone, iPad) dengan fokus kemudahan bagi pengguna UMKM awam:
+- 📘 [Blueprint & Konteks Proyek Flutter](file:///Users/agungmaulana/Projects/MY-PROJECTS/m4gung.github.io/manajemen-toko/PROSES_DAN_PROJECT_CONTEXT_FLUTTER.md)
+- 🗺️ [Roadmap Implementasi Bertahap (Android HP -> Tablet -> iOS -> iPad)](file:///Users/agungmaulana/Projects/MY-PROJECTS/m4gung.github.io/manajemen-toko/ROADMAP_IMPLEMENTASI_FLUTTER.md)
+
+---
+
 ## 🌟 Fitur Unggulan
 
 ### 1. Katalog Produk, Kategori & Manajemen Stok Fisik

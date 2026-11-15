@@ -12,17 +12,19 @@ import {
   Upload, 
   RefreshCw,
   ExternalLink,
-  Trash2
+  Trash2,
+  Download
 } from 'lucide-react';
 import { useStore } from '../context/useStore';
 import { DEFAULT_SETTINGS } from '../adapters/IndexedDbAdapter';
 import type { StoreSettings } from '../types';
 
 export const PengaturanPage: React.FC = () => {
-  const { settings, updateSettings, switchDataSourceMode, testConnection, clearAllData } = useStore();
+  const { settings, updateSettings, switchDataSourceMode, testConnection, clearAllData, exportBackup, importBackup } = useStore();
   const [formData, setFormData] = useState<StoreSettings>({ ...settings });
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [backingUp, setBackingUp] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [testingConn, setTestingConn] = useState(false);
   const [connResult, setConnResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -102,6 +104,68 @@ export const PengaturanPage: React.FC = () => {
       setMessage({ type: 'error', text: 'Gagal mengosongkan data: ' + err.message });
     } finally {
       setClearing(false);
+    }
+  };
+
+  const handleExportBackup = async () => {
+    setBackingUp(true);
+    setMessage(null);
+    try {
+      const backup = await exportBackup();
+      const jsonStr = JSON.stringify(backup, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `backup-toko-${todayStr}.json`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setMessage({ type: 'success', text: 'File backup (.json) berhasil diunduh!' });
+    } catch (err: any) {
+      setMessage({ type: 'error', text: `Gagal membuat backup: ${err.message}` });
+    } finally {
+      setBackingUp(false);
+    }
+  };
+
+  const handleImportBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setBackingUp(true);
+    setMessage(null);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!parsed?.tables) {
+        throw new Error('Format file backup tidak valid.');
+      }
+
+      const prodCount = Array.isArray(parsed.tables.products) ? parsed.tables.products.length : 0;
+      const saleCount = Array.isArray(parsed.tables.sales) ? parsed.tables.sales.length : 0;
+      const custCount = Array.isArray(parsed.tables.customers) ? parsed.tables.customers.length : 0;
+
+      const confirmed = window.confirm(
+        `Pulihkan data dari backup?\n• Produk: ${prodCount}\n• Transaksi: ${saleCount}\n• Pelanggan: ${custCount}\n\nData lokal saat ini akan digantikan oleh isi file backup.`
+      );
+      if (!confirmed) {
+        setBackingUp(false);
+        return;
+      }
+
+      await importBackup(parsed);
+      setMessage({
+        type: 'success',
+        text: `Data berhasil dipulihkan! (${prodCount} produk, ${saleCount} transaksi, ${custCount} pelanggan)`,
+      });
+    } catch (err: any) {
+      setMessage({ type: 'error', text: `Gagal mengimpor backup: ${err.message}` });
+    } finally {
+      setBackingUp(false);
     }
   };
 
@@ -493,6 +557,45 @@ export const PengaturanPage: React.FC = () => {
                   <p className="text-[11px]">Unggah foto QRIS toko Anda agar kasir dapat menampilkannya</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* BACKUP & IMPORT DATA TOKO */}
+        <div className="bg-emerald-50/70 rounded-2xl border border-emerald-200 p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="p-2.5 bg-emerald-100 text-emerald-700 rounded-xl flex-shrink-0">
+                <Database className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-emerald-950">Backup & Import Data Toko (.json)</h3>
+                <p className="text-xs text-emerald-800 mt-0.5">
+                  Cadangkan seluruh produk, transaksi, pelanggan, piutang, dan jurnal ke file JSON atau pulihkan kembali kapan saja.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+              <button
+                type="button"
+                disabled={backingUp}
+                onClick={handleExportBackup}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                {backingUp ? 'Memproses...' : 'Download Backup (.json)'}
+              </button>
+              <label className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer">
+                <Upload className="w-4 h-4" />
+                Import / Restore (.json)
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  onChange={handleImportBackup}
+                  disabled={backingUp}
+                  className="hidden"
+                />
+              </label>
             </div>
           </div>
         </div>

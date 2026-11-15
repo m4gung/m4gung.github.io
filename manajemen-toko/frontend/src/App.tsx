@@ -7,6 +7,7 @@ import { ProdukPage } from './pages/ProdukPage';
 import { PembelianPage } from './pages/PembelianPage';
 import { PiutangPage } from './pages/PiutangPage';
 import { AkuntansiPage } from './pages/AkuntansiPage';
+import { LaporanPage } from './pages/LaporanPage';
 import { PengaturanPage } from './pages/PengaturanPage';
 
 export const AppContent: React.FC = () => {
@@ -22,6 +23,7 @@ export const AppContent: React.FC = () => {
         {activeTab === 'pembelian' && <PembelianPage />}
         {activeTab === 'piutang' && <PiutangPage />}
         {activeTab === 'akuntansi' && <AkuntansiPage />}
+        {activeTab === 'laporan' && <LaporanPage />}
         {activeTab === 'pengaturan' && <PengaturanPage />}
       </main>
     </div>

@@ -302,6 +302,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return provider.ping();
   };
 
+  const exportBackup = async () => {
+    const localAdapter = new IndexedDbAdapter();
+    return localAdapter.exportAllData();
+  };
+
+  const importBackup = async (backup: any) => {
+    setLoading(true);
+    try {
+      const localAdapter = new IndexedDbAdapter();
+      await localAdapter.importAllData(backup);
+      await refreshData();
+      await refreshOutboxCount();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <StoreContext.Provider
       value={{
@@ -322,6 +339,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         loading,
         refreshData,
         clearAllData,
+        exportBackup,
+        importBackup,
         testConnection,
         switchDataSourceMode
       }}

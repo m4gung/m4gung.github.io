@@ -32,6 +32,8 @@ export interface StoreContextType {
   loading: boolean;
   refreshData: () => Promise<void>;
   clearAllData: () => Promise<void>;
+  exportBackup: () => Promise<any>;
+  importBackup: (backup: any) => Promise<void>;
   testConnection: () => Promise<{ success: boolean; message: string }>;
   switchDataSourceMode: (mode: DataSourceMode, customUrl?: string) => Promise<void>;
 }
