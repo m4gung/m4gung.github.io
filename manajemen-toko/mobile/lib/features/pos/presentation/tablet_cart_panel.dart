@@ -5,7 +5,9 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../models/customer_model.dart';
 import '../../../models/sale_model.dart';
 import '../controllers/pos_controller.dart';
+import 'checkout_modal.dart';
 import 'qris_display_widget.dart';
+import 'quick_customer_dialog.dart';
 import 'receipt_dialog.dart';
 
 /// Panel keranjang kasir statis untuk Tablet/iPad (Sisi Kanan Dual-Pane 40%).
@@ -103,6 +105,7 @@ class _TabletCartPanelState extends ConsumerState<TabletCartPanel> {
     final canSubmit = !posState.isEmpty &&
         (_selectedMethod != PaymentMethod.cash || !isCashShort) &&
         (_selectedMethod != PaymentMethod.credit || isCreditValid);
+    final isCompactHeight = MediaQuery.sizeOf(context).height < 520;
 
     return Container(
       color: Colors.white,
@@ -110,40 +113,46 @@ class _TabletCartPanelState extends ConsumerState<TabletCartPanel> {
         children: [
           // Header Keranjang Statis
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: isCompactHeight ? 8 : 12),
             decoration: const BoxDecoration(
               border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.shopping_cart, color: Color(0xFF059669)),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Keranjang Kasir',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    if (!posState.isEmpty) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD1FAE5),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.shopping_cart, color: Color(0xFF059669), size: 20),
+                      const SizedBox(width: 6),
+                      const Flexible(
                         child: Text(
-                          '${posState.totalItemCount} item',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF047857),
-                          ),
+                          'Keranjang Kasir',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ),
+                      if (!posState.isEmpty) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD1FAE5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${posState.totalItemCount} item',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF047857),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
                 if (!posState.isEmpty)
                   TextButton.icon(
@@ -151,48 +160,75 @@ class _TabletCartPanelState extends ConsumerState<TabletCartPanel> {
                       ref.read(posProvider.notifier).clearCart();
                       setState(() => _cashReceived = 0);
                     },
-                    icon: const Icon(Icons.delete_outline, size: 18, color: Color(0xFFDC2626)),
-                    label: const Text('Kosongkan', style: TextStyle(color: Color(0xFFDC2626))),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    icon: const Icon(Icons.delete_outline, size: 16, color: Color(0xFFDC2626)),
+                    label: const Text('Hapus', style: TextStyle(fontSize: 12, color: Color(0xFFDC2626))),
                   ),
               ],
             ),
           ),
 
-          // Pilih Pelanggan
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-            child: DropdownButtonFormField<CustomerModel?>(
-              initialValue: _selectedCustomer,
-              isExpanded: true,
-              isDense: true,
-              decoration: const InputDecoration(
-                labelText: 'Pelanggan',
-                prefixIcon: Icon(Icons.person_outline, size: 20),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-              items: [
-                const DropdownMenuItem<CustomerModel?>(
-                  value: null,
-                  child: Text('Pelanggan Umum (Tunai)'),
-                ),
-                ..._customers.map((c) {
-                  return DropdownMenuItem<CustomerModel?>(
-                    value: c,
-                    child: Text(
-                      '${c.name}${c.currentDebt > 0 ? ' (Hutang: ${CurrencyFormatter.formatNumber(c.currentDebt)})' : ''}',
-                      overflow: TextOverflow.ellipsis,
+          // Pilih Pelanggan (disembunyikan di HP landscape agar list produk lega; tersedia di modal BAYAR)
+          if (!isCompactHeight)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<CustomerModel?>(
+                      initialValue: _selectedCustomer,
+                      isExpanded: true,
+                      isDense: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Pelanggan',
+                        prefixIcon: Icon(Icons.person_outline, size: 20),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                      items: [
+                        const DropdownMenuItem<CustomerModel?>(
+                          value: null,
+                          child: Text('Pelanggan Umum (Tunai)'),
+                        ),
+                        ..._customers.map((c) {
+                          return DropdownMenuItem<CustomerModel?>(
+                            value: c,
+                            child: Text(
+                              '${c.name}${c.currentDebt > 0 ? ' (Hutang: ${CurrencyFormatter.formatNumber(c.currentDebt)})' : ''}',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }),
+                      ],
+                      onChanged: (cust) {
+                        setState(() {
+                          _selectedCustomer = cust;
+                          ref.read(posProvider.notifier).setCustomer(cust);
+                        });
+                      },
                     ),
-                  );
-                }),
-              ],
-              onChanged: (cust) {
-                setState(() {
-                  _selectedCustomer = cust;
-                  ref.read(posProvider.notifier).setCustomer(cust);
-                });
-              },
+                  ),
+                  const SizedBox(width: 6),
+                  IconButton(
+                    tooltip: 'Tambah Pelanggan Cepat',
+                    onPressed: () async {
+                      final added = await showQuickAddCustomerDialog(context);
+                      if (added != null && mounted) {
+                        setState(() {
+                          _customers.add(added);
+                          _selectedCustomer = added;
+                        });
+                        ref.read(posProvider.notifier).setCustomer(added);
+                      }
+                    },
+                    icon: const Icon(Icons.person_add_alt_1, color: Color(0xFF059669)),
+                  ),
+                ],
+              ),
             ),
-          ),
 
           // Daftar Item Belanja
           Expanded(
@@ -286,7 +322,51 @@ class _TabletCartPanelState extends ConsumerState<TabletCartPanel> {
                   ),
           ),
 
-          // Bagian Bawah: Metode Bayar, Numpad POS, Total & Tombol Bayar
+          // Bagian Bawah: Mode Ringkas (HP Landscape) vs Mode Lengkap (Tablet/iPad)
+          if (isCompactHeight)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8FAFC),
+                border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Total', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                        Text(
+                          CurrencyFormatter.formatRupiah(total),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF059669)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: posState.isEmpty
+                        ? null
+                        : () async {
+                            await showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (ctx) => const CheckoutModal(),
+                            );
+                            widget.onCheckoutSuccess?.call();
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF059669),
+                      minimumSize: const Size(100, 42),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    child: const Text('BAYAR', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            )
+          else
           Container(
             padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(

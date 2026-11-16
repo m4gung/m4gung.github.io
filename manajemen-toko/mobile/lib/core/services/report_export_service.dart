@@ -5,6 +5,8 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../models/cash_movement_model.dart';
+import '../../models/product_model.dart';
 import '../database/app_database.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/date_formatter.dart';
@@ -45,6 +47,64 @@ class ReportExportService {
     return '"$str"';
   }
 
+  /// Bangun konten CSV Jurnal / Buku Kas (Uang Masuk & Keluar)
+  String generateCashbookCsv(List<CashMovementModel> movements) {
+    final buffer = StringBuffer('\uFEFF');
+    buffer.writeln('Tanggal,Jenis,Kategori,Nominal,Catatan,Referensi');
+
+    for (final m in movements) {
+      final dateStr = DateFormatter.formatShortDateTime(m.date);
+      final typeLabel = m.type == CashType.income ? 'Uang Masuk' : 'Uang Keluar';
+      buffer.writeln(
+        '${_csvEscape(dateStr)},'
+        '${_csvEscape(typeLabel)},'
+        '${_csvEscape(m.category)},'
+        '${m.amount},'
+        '${_csvEscape(m.notes)},'
+        '${_csvEscape(m.refNo ?? '')}',
+      );
+    }
+    return buffer.toString();
+  }
+
+  /// Bangun konten CSV Master Data Produk
+  String generateProductsCsv(List<ProductModel> products) {
+    final buffer = StringBuffer('\uFEFF');
+    buffer.writeln('SKU,Barcode,Nama Produk,Kategori,Satuan,Harga Modal,Harga Jual,Stok,Stok Minimum');
+
+    for (final p in products) {
+      buffer.writeln(
+        '${_csvEscape(p.sku)},'
+        '${_csvEscape(p.barcode)},'
+        '${_csvEscape(p.name)},'
+        '${_csvEscape(p.category)},'
+        '${_csvEscape(p.unit)},'
+        '${p.costPrice},'
+        '${p.sellingPrice},'
+        '${p.stock},'
+        '${p.minStock}',
+      );
+    }
+    return buffer.toString();
+  }
+
+  Future<void> _shareCsvFile({
+    required String csvContent,
+    required String fileName,
+    required String shareText,
+  }) async {
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsString(csvContent, flush: true);
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path, mimeType: 'text/csv')],
+        text: shareText,
+      ),
+    );
+  }
+
   /// Ekspor laporan penjualan ke file .csv dan bagikan ke Excel / WhatsApp / Google Drive
   Future<void> exportAndShareSalesCsv({
     required DateTime start,
@@ -53,16 +113,33 @@ class ReportExportService {
   }) async {
     final sales = await AppDatabase.instance.getSalesWithItemsForExport(start: start, end: end);
     final csvContent = generateSalesCsv(sales);
-    final dir = await getTemporaryDirectory();
     final safeLabel = periodLabel.toLowerCase().replaceAll(' ', '_');
-    final file = File('${dir.path}/laporan_kasirku_$safeLabel.csv');
-    await file.writeAsString(csvContent, flush: true);
+    await _shareCsvFile(
+      csvContent: csvContent,
+      fileName: 'laporan_kasirku_$safeLabel.csv',
+      shareText: 'Laporan Penjualan Kasirku ($periodLabel)',
+    );
+  }
 
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path, mimeType: 'text/csv')],
-        text: 'Laporan Penjualan Kasirku ($periodLabel)',
-      ),
+  /// Ekspor jurnal / buku kas ke file .csv
+  Future<void> exportAndShareCashbookCsv({int limit = 1000}) async {
+    final movements = await AppDatabase.instance.getCashMovements(limit: limit);
+    final csvContent = generateCashbookCsv(movements);
+    await _shareCsvFile(
+      csvContent: csvContent,
+      fileName: 'jurnal_buku_kas_kasirku.csv',
+      shareText: 'Jurnal & Buku Kas Toko Kasirku',
+    );
+  }
+
+  /// Ekspor master data produk ke file .csv
+  Future<void> exportAndShareProductsCsv() async {
+    final products = await AppDatabase.instance.getProducts();
+    final csvContent = generateProductsCsv(products);
+    await _shareCsvFile(
+      csvContent: csvContent,
+      fileName: 'data_produk_kasirku.csv',
+      shareText: 'Master Data Produk Toko Kasirku',
     );
   }
 

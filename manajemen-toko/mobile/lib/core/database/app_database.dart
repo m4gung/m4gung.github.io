@@ -344,6 +344,143 @@ class AppDatabase {
     ''', [deltaDebt, DateTime.now().toIso8601String(), customerId]);
   }
 
+  Future<void> upsertCustomer(CustomerModel customer) async {
+    final db = await instance.database;
+    await db.insert(
+      'customers',
+      customer.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Ambil seluruh riwayat penjualan beserta item barangnya
+  Future<List<SaleModel>> getSalesHistoryWithItems() async {
+    final db = await instance.database;
+    final salesRows = await db.query('sales', orderBy: 'date DESC');
+    final List<SaleModel> result = [];
+    for (final row in salesRows) {
+      final itemRows = await db.query(
+        'sale_items',
+        where: 'invoice_no = ?',
+        whereArgs: [row['invoice_no']],
+      );
+      final items = itemRows.map((im) {
+        return SaleItemModel(
+          id: im['id'] as String,
+          invoiceNo: im['invoice_no'] as String,
+          productId: im['product_id'] as String,
+          productName: im['product_name'] as String,
+          costPrice: (im['cost_price'] as num).toInt(),
+          sellingPrice: (im['selling_price'] as num).toInt(),
+          quantity: (im['quantity'] as num).toInt(),
+          subtotal: (im['subtotal'] as num).toInt(),
+        );
+      }).toList();
+
+      final methodStr = row['payment_method'] as String? ?? 'cash';
+      final method = PaymentMethod.values.firstWhere(
+        (m) => m.name == methodStr,
+        orElse: () => PaymentMethod.cash,
+      );
+
+      result.add(
+        SaleModel(
+          invoiceNo: row['invoice_no'] as String,
+          date: DateTime.tryParse(row['date'] as String? ?? '') ?? DateTime.now(),
+          customerName: row['customer_name'] as String? ?? 'Pelanggan Umum',
+          customerId: row['customer_id'] as String?,
+          totalAmount: (row['total_amount'] as num).toInt(),
+          discount: (row['discount'] as num).toInt(),
+          finalAmount: (row['final_amount'] as num).toInt(),
+          paymentMethod: method,
+          cashReceived: (row['cash_received'] as num).toInt(),
+          changeAmount: (row['change_amount'] as num).toInt(),
+          paymentStatus: row['payment_status'] as String? ?? 'paid',
+          dueDate: row['due_date'] != null ? DateTime.tryParse(row['due_date'] as String) : null,
+          items: items,
+        ),
+      );
+    }
+    return result;
+  }
+
+  /// Edit transaksi secara atomik: kembalikan stok/hutang/kas lama lalu terapkan data baru
+  Future<void> updateTransaction(SaleModel updatedSale) async {
+    final db = await instance.database;
+    final nowIso = DateTime.now().toIso8601String();
+
+    await db.transaction((txn) async {
+      final oldSales = await txn.query(
+        'sales',
+        where: 'invoice_no = ?',
+        whereArgs: [updatedSale.invoiceNo],
+        limit: 1,
+      );
+      if (oldSales.isEmpty) {
+        throw Exception('Transaksi ${updatedSale.invoiceNo} tidak ditemukan.');
+      }
+      final oldSale = oldSales.first;
+
+      // 1. Kembalikan stok lama
+      final oldItems = await txn.query(
+        'sale_items',
+        where: 'invoice_no = ?',
+        whereArgs: [updatedSale.invoiceNo],
+      );
+      for (final oldIt in oldItems) {
+        await txn.rawUpdate('''
+          UPDATE products SET stock = stock + ?, updated_at = ? WHERE id = ?
+        ''', [(oldIt['quantity'] as num).toInt(), nowIso, oldIt['product_id']]);
+      }
+
+      // 2. Kembalikan hutang pelanggan lama jika sebelumnya kredit
+      if (oldSale['payment_method'] == PaymentMethod.credit.name && oldSale['customer_id'] != null) {
+        await txn.rawUpdate('''
+          UPDATE customers
+          SET current_debt = MAX(0, current_debt - ?), updated_at = ?
+          WHERE id = ?
+        ''', [(oldSale['final_amount'] as num).toInt(), nowIso, oldSale['customer_id']]);
+      }
+
+      // 3. Hapus sale_items & mutasi kas lama terkait invoice
+      await txn.delete('sale_items', where: 'invoice_no = ?', whereArgs: [updatedSale.invoiceNo]);
+      await txn.delete('cash_movements', where: 'ref_no = ?', whereArgs: [updatedSale.invoiceNo]);
+
+      // 4. Perbarui header sales
+      await txn.update(
+        'sales',
+        updatedSale.toMap(),
+        where: 'invoice_no = ?',
+        whereArgs: [updatedSale.invoiceNo],
+      );
+
+      // 5. Simpan item baru & potong stok baru
+      for (final item in updatedSale.items) {
+        await txn.insert('sale_items', item.toMap());
+        await txn.rawUpdate('''
+          UPDATE products SET stock = stock - ?, updated_at = ? WHERE id = ?
+        ''', [item.quantity, nowIso, item.productId]);
+      }
+
+      // 6. Catat kas baru atau hutang baru
+      if (updatedSale.paymentMethod != PaymentMethod.credit) {
+        await txn.insert('cash_movements', {
+          'id': const Uuid().v4(),
+          'date': updatedSale.date.toIso8601String(),
+          'type': 'income',
+          'amount': updatedSale.finalAmount,
+          'category': 'Penjualan Kasir',
+          'notes': 'Faktur #${updatedSale.invoiceNo} (${updatedSale.paymentMethod.label}) [Edit]',
+          'ref_no': updatedSale.invoiceNo,
+        });
+      } else if (updatedSale.customerId != null) {
+        await txn.rawUpdate('''
+          UPDATE customers SET current_debt = current_debt + ?, updated_at = ? WHERE id = ?
+        ''', [updatedSale.finalAmount, nowIso, updatedSale.customerId]);
+      }
+    });
+  }
+
   // ================= TRANSAKSI KASIR (CHECKOUT) =================
   Future<void> saveTransaction(SaleModel sale) async {
     final db = await instance.database;
@@ -490,6 +627,25 @@ class AppDatabase {
     };
   }
 
+  Future<void> _clearDataTables(Transaction txn) async {
+    await txn.delete('sale_items');
+    await txn.delete('sales');
+    await txn.delete('cash_movements');
+    await txn.delete('customers');
+    await txn.delete('products');
+    await txn.delete('categories');
+  }
+
+  /// Hapus seluruh data toko (Reset Toko) secara atomik
+  Future<void> clearAllData() async {
+    final db = await instance.database;
+    await _ensureSettingsTable(db);
+    await db.transaction((txn) async {
+      await _clearDataTables(txn);
+      await txn.delete('app_settings');
+    });
+  }
+
   /// Pulihkan seluruh data toko dari Map JSON backup secara atomik
   Future<void> restoreFullBackupData(Map<String, dynamic> backup) async {
     final tables = backup['tables'];
@@ -499,12 +655,7 @@ class AppDatabase {
 
     final db = await instance.database;
     await db.transaction((txn) async {
-      await txn.delete('sale_items');
-      await txn.delete('sales');
-      await txn.delete('cash_movements');
-      await txn.delete('customers');
-      await txn.delete('products');
-      await txn.delete('categories');
+      await _clearDataTables(txn);
 
       const orderedTables = [
         'categories',

@@ -7,6 +7,7 @@ import '../../../core/widgets/adaptive_layout.dart';
 import '../../../models/category_model.dart';
 import '../../../models/product_model.dart';
 import '../controllers/pos_controller.dart';
+import '../../reports/presentation/sales_report_screen.dart';
 import 'barcode_scanner_modal.dart';
 import 'checkout_modal.dart';
 import 'tablet_cart_panel.dart';
@@ -283,10 +284,10 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                         return RefreshIndicator(
                           onRefresh: _filterProducts,
                           child: GridView.builder(
-                            padding: EdgeInsets.fromLTRB(16, 8, 16, isTablet ? 16 : 90),
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: columns,
-                              childAspectRatio: isTablet ? 0.92 : 0.88,
+                              mainAxisExtent: isTablet ? 182 : 168,
                               crossAxisSpacing: 10,
                               mainAxisSpacing: 10,
                             ),
@@ -298,6 +299,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
 
                               return Card(
                                 clipBehavior: Clip.antiAlias,
+                                margin: EdgeInsets.zero,
                                 child: InkWell(
                                   hoverColor: const Color(0xFFECFDF5),
                                   onTap: product.isOutOfStock
@@ -306,39 +308,44 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                           ref.read(posProvider.notifier).addToCart(product);
                                         },
                                   child: Padding(
-                                    padding: const EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(10),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: product.isOutOfStock
-                                                    ? const Color(0xFFFEE2E2)
-                                                    : product.isLowStock
-                                                        ? const Color(0xFFFEF3C7)
-                                                        : const Color(0xFFF1F5F9),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                product.isOutOfStock
-                                                    ? 'Habis'
-                                                    : 'Sisa: ${product.stock} ${product.unit}',
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
+                                            Flexible(
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
                                                   color: product.isOutOfStock
-                                                      ? const Color(0xFFDC2626)
+                                                      ? const Color(0xFFFEE2E2)
                                                       : product.isLowStock
-                                                          ? const Color(0xFFD97706)
-                                                          : const Color(0xFF64748B),
+                                                          ? const Color(0xFFFEF3C7)
+                                                          : const Color(0xFFF1F5F9),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  product.isOutOfStock
+                                                      ? 'Habis'
+                                                      : 'Sisa: ${product.stock} ${product.unit}',
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: product.isOutOfStock
+                                                        ? const Color(0xFFDC2626)
+                                                        : product.isLowStock
+                                                            ? const Color(0xFFD97706)
+                                                            : const Color(0xFF64748B),
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                            if (inCartQty > 0)
+                                            if (inCartQty > 0) ...[
+                                              const SizedBox(width: 4),
                                               CircleAvatar(
                                                 radius: 11,
                                                 backgroundColor: const Color(0xFF059669),
@@ -347,21 +354,25 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                                   style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                                                 ),
                                               ),
+                                            ],
                                           ],
                                         ),
-                                        const Spacer(),
-                                        Text(
-                                          product.name,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                        const SizedBox(height: 6),
+                                        Expanded(
+                                          child: Text(
+                                            product.name,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, height: 1.25),
+                                          ),
                                         ),
-                                        const SizedBox(height: 4),
                                         Text(
                                           CurrencyFormatter.formatRupiah(product.sellingPrice),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 15,
+                                            fontSize: 14,
                                             color: Color(0xFF059669),
                                           ),
                                         ),
@@ -377,6 +388,8 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                                   },
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: const Color(0xFF059669),
+                                              minimumSize: const Size(0, 32),
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                               padding: EdgeInsets.zero,
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                                             ),
@@ -414,6 +427,16 @@ class _PosScreenState extends ConsumerState<PosScreen> {
         appBar: AppBar(
           title: Text(isTablet ? 'Kasir Meja POS (Mode Tablet)' : 'Kasir POS (Toko)'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.receipt_long_outlined),
+              tooltip: 'Laporan & Edit Transaksi',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SalesReportScreen()),
+                ).then((_) => _filterProducts());
+              },
+            ),
             if (!isTablet && !posState.isEmpty)
               IconButton(
                 icon: const Icon(Icons.delete_sweep, color: Color(0xFFDC2626)),
@@ -442,60 +465,62 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                   ),
                 ],
               )
-            : _buildCatalogArea(isTablet: false),
-
-        // Floating Cart Bar hanya untuk HP (Mode Tablet sudah punya keranjang statis di kanan)
-        bottomSheet: !isTablet && !posState.isEmpty
-            ? Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, -4),
+            : Column(
+                children: [
+                  Expanded(child: _buildCatalogArea(isTablet: false)),
+                  if (!posState.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: const Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, -3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${posState.totalItemCount} Barang Terpilih',
+                                  style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  CurrencyFormatter.formatRupiah(posState.finalAmount),
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF059669)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: _showCartSheet,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF059669),
+                              minimumSize: const Size(120, 46),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('BAYAR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                SizedBox(width: 6),
+                                Icon(Icons.arrow_forward, size: 18),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                child: SafeArea(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${posState.totalItemCount} Barang Terpilih',
-                              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              CurrencyFormatter.formatRupiah(posState.finalAmount),
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF059669)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: _showCartSheet,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF059669),
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        ),
-                        child: const Row(
-                          children: [
-                            Text('BAYAR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            SizedBox(width: 6),
-                            Icon(Icons.arrow_forward, size: 18),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            : null,
+                ],
+              ),
       ),
     );
   }

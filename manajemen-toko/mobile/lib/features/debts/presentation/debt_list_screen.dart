@@ -116,29 +116,43 @@ class _DebtListScreenState extends State<DebtListScreen> {
     }
   }
 
-  Future<void> _showAddCustomerDialog() async {
-    final nameController = TextEditingController();
-    final phoneController = TextEditingController();
-    final limitController = TextEditingController(text: '1.000.000');
+  Future<void> _showCustomerFormDialog({CustomerModel? customer}) async {
+    final isEdit = customer != null;
+    final nameController = TextEditingController(text: customer?.name ?? '');
+    final phoneController = TextEditingController(text: customer?.phone ?? '');
+    final addressController = TextEditingController(text: customer?.address ?? '');
+    final limitController = TextEditingController(
+      text: customer != null && customer.creditLimit > 0
+          ? CurrencyFormatter.formatNumber(customer.creditLimit)
+          : (isEdit ? '0' : ''),
+    );
 
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Tambah Pelanggan Baru'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Pelanggan *')),
-            const SizedBox(height: 8),
-            TextField(controller: phoneController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'No. WhatsApp/HP')),
-            const SizedBox(height: 8),
-            TextField(
-              controller: limitController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [ThousandSeparatorInputFormatter()],
-              decoration: const InputDecoration(labelText: 'Batas Maksimal Hutang (Rp)', prefixText: 'Rp '),
-            ),
-          ],
+        title: Text(isEdit ? 'Edit Data Pelanggan' : 'Tambah Pelanggan Baru'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Pelanggan *')),
+              const SizedBox(height: 8),
+              TextField(controller: phoneController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'No. WhatsApp/HP')),
+              const SizedBox(height: 8),
+              TextField(controller: addressController, decoration: const InputDecoration(labelText: 'Alamat (Opsional)')),
+              const SizedBox(height: 8),
+              TextField(
+                controller: limitController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [ThousandSeparatorInputFormatter()],
+                decoration: const InputDecoration(
+                  labelText: 'Batas Limit Hutang (Opsional)',
+                  hintText: '0 (Isi 0 jika tidak boleh hutang)',
+                  prefixText: 'Rp ',
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
@@ -146,26 +160,26 @@ class _DebtListScreenState extends State<DebtListScreen> {
             onPressed: () async {
               if (nameController.text.trim().isEmpty) return;
               final limit = CurrencyFormatter.parseClean(limitController.text);
-              final db = await AppDatabase.instance.database;
-              await db.insert('customers', {
-                'id': const Uuid().v4(),
-                'name': nameController.text.trim(),
-                'phone': phoneController.text.trim(),
-                'address': '',
-                'credit_limit': limit,
-                'current_debt': 0,
-                'updated_at': DateTime.now().toIso8601String(),
-              });
+              final updated = CustomerModel(
+                id: customer?.id ?? const Uuid().v4(),
+                name: nameController.text.trim(),
+                phone: phoneController.text.trim(),
+                address: addressController.text.trim(),
+                creditLimit: limit,
+                currentDebt: customer?.currentDebt ?? 0,
+                updatedAt: DateTime.now(),
+              );
+              await AppDatabase.instance.upsertCustomer(updated);
               if (ctx.mounted) Navigator.pop(ctx, true);
             },
-            child: const Text('Simpan'),
+            child: Text(isEdit ? 'Simpan Perubahan' : 'Simpan'),
           ),
         ],
       ),
     );
 
     if (result == true) {
-      _loadCustomers();
+      await _loadCustomers();
     }
   }
 
@@ -237,28 +251,38 @@ class _DebtListScreenState extends State<DebtListScreen> {
                               c.phone.isNotEmpty ? c.phone : 'Tanpa nomor telepon',
                               style: const TextStyle(fontSize: 12),
                             ),
-                            trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  CurrencyFormatter.formatRupiah(c.currentDebt),
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: hasDebt ? const Color(0xFFDC2626) : const Color(0xFF64748B),
-                                  ),
-                                ),
-                                if (hasDebt)
-                                  InkWell(
-                                    onTap: () => _showPayDebtDialog(c),
-                                    child: const Text(
-                                      'Bayar Cicilan >',
-                                      style: TextStyle(color: Color(0xFF059669), fontSize: 11, fontWeight: FontWeight.bold),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      CurrencyFormatter.formatRupiah(c.currentDebt),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: hasDebt ? const Color(0xFFDC2626) : const Color(0xFF64748B),
+                                      ),
                                     ),
-                                  )
-                                else
-                                  const Text('Lunas (Rp 0)', style: TextStyle(color: Color(0xFF059669), fontSize: 11)),
+                                    if (hasDebt)
+                                      InkWell(
+                                        onTap: () => _showPayDebtDialog(c),
+                                        child: const Text(
+                                          'Bayar Cicilan >',
+                                          style: TextStyle(color: Color(0xFF059669), fontSize: 11, fontWeight: FontWeight.bold),
+                                        ),
+                                      )
+                                    else
+                                      const Text('Lunas (Rp 0)', style: TextStyle(color: Color(0xFF059669), fontSize: 11)),
+                                  ],
+                                ),
+                                IconButton(
+                                  tooltip: 'Edit Pelanggan',
+                                  icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF64748B)),
+                                  onPressed: () => _showCustomerFormDialog(customer: c),
+                                ),
                               ],
                             ),
                           ),
@@ -314,6 +338,11 @@ class _DebtListScreenState extends State<DebtListScreen> {
                             ),
                           ],
                         ),
+                      ),
+                      IconButton(
+                        tooltip: 'Edit Pelanggan',
+                        onPressed: () => _showCustomerFormDialog(customer: c),
+                        icon: const Icon(Icons.edit_outlined, color: Color(0xFF2563EB)),
                       ),
                     ],
                   ),
@@ -411,7 +440,7 @@ class _DebtListScreenState extends State<DebtListScreen> {
             )
           : _buildMasterList(isTablet: false),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddCustomerDialog,
+        onPressed: () => _showCustomerFormDialog(),
         icon: const Icon(Icons.person_add),
         label: const Text('Tambah Pelanggan'),
         backgroundColor: const Color(0xFF059669),

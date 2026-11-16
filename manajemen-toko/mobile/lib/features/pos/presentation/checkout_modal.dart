@@ -7,6 +7,7 @@ import '../../../models/customer_model.dart';
 import '../../../models/sale_model.dart';
 import '../controllers/pos_controller.dart';
 import 'qris_display_widget.dart';
+import 'quick_customer_dialog.dart';
 import 'receipt_dialog.dart';
 
 class CheckoutModal extends ConsumerStatefulWidget {
@@ -273,7 +274,28 @@ class _CheckoutModalState extends ConsumerState<CheckoutModal> {
 
             // KONTEN SPESIFIK: TEMPO (HUTANG)
             if (_selectedMethod == PaymentMethod.credit) ...[
-              const Text('Pilih Nama Pelanggan (Wajib Hutang)', style: TextStyle(fontWeight: FontWeight.bold)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Expanded(
+                    child: Text('Pilih Nama Pelanggan (Wajib Hutang)', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final added = await showQuickAddCustomerDialog(context);
+                      if (added != null && mounted) {
+                        setState(() {
+                          _customers.add(added);
+                          _selectedCustomer = added;
+                        });
+                        ref.read(posProvider.notifier).setCustomer(added);
+                      }
+                    },
+                    icon: const Icon(Icons.person_add_alt_1, size: 16),
+                    label: const Text('+ Pelanggan', style: TextStyle(fontSize: 12)),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               if (_isLoading)
                 const LinearProgressIndicator()

@@ -12,6 +12,7 @@ import 'package:toko_pos/features/pos/controllers/pos_controller.dart';
 import 'package:toko_pos/features/pos/presentation/qris_display_widget.dart';
 import 'package:toko_pos/features/pos/presentation/receipt_dialog.dart';
 import 'package:toko_pos/main.dart';
+import 'package:toko_pos/models/cash_movement_model.dart';
 import 'package:toko_pos/models/product_model.dart';
 import 'package:toko_pos/models/customer_model.dart';
 import 'package:toko_pos/models/sale_model.dart';
@@ -280,6 +281,79 @@ void main() {
       await db.restoreFullBackupData(backup);
       final restoredReport = await db.getSalesReport(start: startOfDay, end: endOfDay);
       expect(restoredReport['transactionCount'], report['transactionCount']);
+    });
+
+    test('ReportExportService generates cashbook journal CSV and products CSV', () {
+      final journalCsv = ReportExportService.instance.generateCashbookCsv([
+        CashMovementModel(
+          id: 'cm-1',
+          date: DateTime(2026, 11, 15, 9, 0),
+          type: CashType.expense,
+          amount: 50000,
+          category: 'Bayar Listrik',
+          notes: 'Token PLN',
+          refNo: 'REF-01',
+        ),
+      ]);
+      expect(journalCsv.startsWith('\uFEFF'), true);
+      expect(journalCsv.contains('Uang Keluar'), true);
+      expect(journalCsv.contains('Bayar Listrik'), true);
+      expect(journalCsv.contains('50000'), true);
+
+      final prodCsv = ReportExportService.instance.generateProductsCsv([
+        ProductModel(
+          id: 'p-1',
+          sku: 'SKU01',
+          barcode: '89912345',
+          name: 'Minyak Goreng 1L',
+          category: 'Sembako',
+          unit: 'pcs',
+          costPrice: 14000,
+          sellingPrice: 16500,
+          stock: 12,
+          minStock: 3,
+          updatedAt: DateTime(2026, 11, 15),
+        ),
+      ]);
+      expect(prodCsv.startsWith('\uFEFF'), true);
+      expect(prodCsv.contains('SKU01'), true);
+      expect(prodCsv.contains('Minyak Goreng 1L'), true);
+      expect(prodCsv.contains('16500'), true);
+    });
+
+    test('AppDatabase upsertCustomer allows 0 creditLimit and clearAllData resets all tables', () async {
+      final db = AppDatabase.instance;
+      await db.initInMemoryForTest();
+
+      final c = CustomerModel(
+        id: 'cust-zero-limit',
+        name: 'Pak Budi',
+        phone: '0812345',
+        creditLimit: 0,
+        currentDebt: 0,
+        updatedAt: DateTime.now(),
+      );
+      await db.upsertCustomer(c);
+      final customers = await db.getCustomers();
+      final saved = customers.firstWhere((item) => item.id == 'cust-zero-limit');
+      expect(saved.creditLimit, 0);
+
+      // Edit customer
+      await db.upsertCustomer(saved.copyWith(name: 'Pak Budi Updated', creditLimit: 250000));
+      final updatedCustomers = await db.getCustomers();
+      final edited = updatedCustomers.firstWhere((item) => item.id == 'cust-zero-limit');
+      expect(edited.name, 'Pak Budi Updated');
+      expect(edited.creditLimit, 250000);
+
+      // Clear all data (Reset Toko)
+      await db.setSetting('gas_webapp_url', 'https://example.com/exec');
+      await db.clearAllData();
+      expect(await db.getProducts(), isEmpty);
+      expect(await db.getCustomers(), isEmpty);
+      expect(await db.getCategories(), isEmpty);
+      expect(await db.getCashMovements(), isEmpty);
+      expect(await db.getSalesHistoryWithItems(), isEmpty);
+      expect(await db.getSetting('gas_webapp_url'), isNull);
     });
   });
 }

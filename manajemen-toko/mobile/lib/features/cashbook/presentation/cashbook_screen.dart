@@ -6,6 +6,7 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/adaptive_layout.dart';
 import '../../../models/cash_movement_model.dart';
+import '../../reports/presentation/sales_report_screen.dart';
 
 class CashbookScreen extends StatefulWidget {
   const CashbookScreen({super.key});
@@ -89,6 +90,23 @@ class _CashbookScreenState extends State<CashbookScreen> {
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Gagal ekspor CSV: $e')));
     }
+  }
+
+  Future<void> _exportJournalCsv() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ReportExportService.instance.exportAndShareCashbookCsv();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Gagal ekspor jurnal CSV: $e')));
+    }
+  }
+
+  Future<void> _openSalesReport() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SalesReportScreen()),
+    );
+    _loadCashData();
   }
 
   Future<void> _printPdfSummary() async {
@@ -260,8 +278,11 @@ class _CashbookScreenState extends State<CashbookScreen> {
                 ],
               ),
               const Divider(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     _isMonthlyReport ? 'OMZET & LABA BULAN INI' : 'OMZET & LABA HARI INI',
@@ -337,6 +358,23 @@ class _CashbookScreenState extends State<CashbookScreen> {
                   }).toList(),
                 ),
               ],
+              const Divider(height: 20),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: _openSalesReport,
+                    icon: const Icon(Icons.receipt_long_outlined, size: 18, color: Color(0xFF2563EB)),
+                    label: const Text('Laporan & Edit Transaksi', style: TextStyle(fontSize: 12, color: Color(0xFF2563EB))),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _exportJournalCsv,
+                    icon: const Icon(Icons.table_view_outlined, size: 18, color: Color(0xFF059669)),
+                    label: const Text('Ekspor Jurnal (CSV)', style: TextStyle(fontSize: 12, color: Color(0xFF059669))),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -535,6 +573,16 @@ class _CashbookScreenState extends State<CashbookScreen> {
       appBar: AppBar(
         title: const Text('Buku Kas & Laporan'),
         actions: [
+          IconButton(
+            tooltip: 'Laporan & Edit Transaksi',
+            icon: const Icon(Icons.receipt_long_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SalesReportScreen()),
+              ).then((_) => _loadCashData());
+            },
+          ),
           IconButton(
             tooltip: 'Ekspor Excel (.csv)',
             icon: const Icon(Icons.table_view_outlined),

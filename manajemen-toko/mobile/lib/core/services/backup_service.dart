@@ -39,6 +39,11 @@ class BackupService {
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('Isi file backup bukan objek JSON yang valid.');
     }
+    return await restoreFromMap(decoded);
+  }
+
+  /// Pulihkan database dari Map JSON backup yang sudah di-parse
+  Future<int> restoreFromMap(Map<String, dynamic> decoded) async {
     await AppDatabase.instance.restoreFullBackupData(decoded);
 
     final tables = decoded['tables'] as Map<String, dynamic>? ?? {};
@@ -46,8 +51,8 @@ class BackupService {
     return productCount;
   }
 
-  /// Buka pemilih file (.json) lalu pulihkan data toko
-  Future<int?> pickAndRestoreBackup() async {
+  /// Pilih file backup (.json) dan baca ringkasan isinya sebelum konfirmasi restore
+  Future<BackupPreview?> pickAndInspectBackup() async {
     final files = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
@@ -58,6 +63,44 @@ class BackupService {
     if (filePath == null) return null;
 
     final content = await File(filePath).readAsString();
-    return await restoreFromJsonString(content);
+    final decoded = jsonDecode(content);
+    if (decoded is! Map<String, dynamic> || decoded['tables'] is! Map<String, dynamic>) {
+      throw const FormatException('Format file backup tidak valid (tabel tidak ditemukan).');
+    }
+
+    final tables = decoded['tables'] as Map<String, dynamic>;
+    return BackupPreview(
+      fileName: files.single.name,
+      data: decoded,
+      productsCount: (tables['products'] as List?)?.length ?? 0,
+      salesCount: (tables['sales'] as List?)?.length ?? 0,
+      customersCount: (tables['customers'] as List?)?.length ?? 0,
+      cashMovementsCount: (tables['cash_movements'] as List?)?.length ?? 0,
+    );
   }
+
+  /// Buka pemilih file (.json) lalu pulihkan data toko
+  Future<int?> pickAndRestoreBackup() async {
+    final preview = await pickAndInspectBackup();
+    if (preview == null) return null;
+    return await restoreFromMap(preview.data);
+  }
+}
+
+class BackupPreview {
+  final String fileName;
+  final Map<String, dynamic> data;
+  final int productsCount;
+  final int salesCount;
+  final int customersCount;
+  final int cashMovementsCount;
+
+  const BackupPreview({
+    required this.fileName,
+    required this.data,
+    required this.productsCount,
+    required this.salesCount,
+    required this.customersCount,
+    required this.cashMovementsCount,
+  });
 }

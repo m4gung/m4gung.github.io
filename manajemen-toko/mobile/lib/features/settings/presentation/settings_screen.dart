@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
+import '../../../core/database/app_database.dart';
 import '../../../core/services/backup_service.dart';
 import '../../../core/services/google_sheets_sync_service.dart';
 import '../../../core/services/printer_service.dart';
+import '../../../core/services/report_export_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -189,35 +191,125 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _restoreBackup() async {
     final messenger = ScaffoldMessenger.of(context);
-    final confirm = await showDialog<bool>(
+    setState(() => _isBackingUp = true);
+    try {
+      final preview = await BackupService.instance.pickAndInspectBackup();
+      if (preview == null || !mounted) return;
+
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Pulihkan Data Toko?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('File: ${preview.fileName}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 8),
+              Text('• Produk: ${preview.productsCount} item'),
+              Text('• Transaksi: ${preview.salesCount} struk'),
+              Text('• Pelanggan: ${preview.customersCount} orang'),
+              Text('• Buku Kas: ${preview.cashMovementsCount} catatan'),
+              const SizedBox(height: 10),
+              const Text(
+                'Seluruh data toko saat ini akan digantikan oleh isi file backup tersebut. Lanjutkan?',
+                style: TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
+              child: const Text('Ya, Pulihkan'),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true) return;
+
+      final restoredProducts = await BackupService.instance.restoreFromMap(preview.data);
+      messenger.showSnackBar(
+        SnackBar(content: Text('Data berhasil dipulihkan! ($restoredProducts produk dimuat)')),
+      );
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Gagal memulihkan data: $e')));
+    } finally {
+      if (mounted) setState(() => _isBackingUp = false);
+    }
+  }
+
+  Future<void> _exportProductsCsv() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ReportExportService.instance.exportAndShareProductsCsv();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Gagal ekspor data produk: $e')));
+    }
+  }
+
+  Future<void> _clearAllData() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final firstConfirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Pulihkan Data Toko?'),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626)),
+            SizedBox(width: 8),
+            Expanded(child: Text('Hapus Semua Data?')),
+          ],
+        ),
         content: const Text(
-          'Data produk, pelanggan, transaksi, dan buku kas saat ini akan digantikan oleh isi file backup (.json). Lanjutkan?',
+          'Tindakan ini akan MENGHAPUS PERMANEN seluruh produk, kategori, riwayat transaksi penjualan, data pelanggan/piutang, buku kas, dan pengaturan sinkronisasi. Disarankan Ekspor Backup (.json) terlebih dahulu.',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
-            child: const Text('Ya, Pulihkan'),
+            child: const Text('Lanjutkan'),
           ),
         ],
       ),
     );
-    if (confirm != true) return;
+    if (firstConfirm != true || !mounted) return;
+
+    final secondConfirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Konfirmasi Terakhir — Reset Toko'),
+        content: const Text(
+          'Data yang sudah dihapus TIDAK DAPAT DIKEMBALIKAN. Yakin ingin mengosongkan seluruh database toko?',
+          style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF991B1B)),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF991B1B)),
+            child: const Text('Ya, Hapus Semua Data'),
+          ),
+        ],
+      ),
+    );
+    if (secondConfirm != true) return;
 
     setState(() => _isBackingUp = true);
     try {
-      final restoredProducts = await BackupService.instance.pickAndRestoreBackup();
-      if (restoredProducts != null) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('Data berhasil dipulihkan! ($restoredProducts produk dimuat)')),
-        );
+      await AppDatabase.instance.clearAllData();
+      if (mounted) {
+        setState(() {
+          _gasUrlController.clear();
+          _lastSyncAt = null;
+        });
       }
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Semua data toko berhasil dihapus (Reset Toko selesai).')),
+      );
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Gagal memulihkan data: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('Gagal menghapus data: $e')));
     } finally {
       if (mounted) setState(() => _isBackingUp = false);
     }
@@ -302,29 +394,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         style: TextStyle(fontSize: 12, color: Color(0xFF475569)),
                       ),
                       const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _isBackingUp ? null : _exportBackup,
-                              icon: const Icon(Icons.backup_outlined),
-                              label: Text(_isBackingUp ? 'Memproses...' : 'Ekspor Backup (.json)'),
-                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF059669)),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final exportBtn = ElevatedButton.icon(
+                            onPressed: _isBackingUp ? null : _exportBackup,
+                            icon: const Icon(Icons.backup_outlined),
+                            label: Text(_isBackingUp ? 'Memproses...' : 'Ekspor Backup (.json)'),
+                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF059669)),
+                          );
+                          final restoreBtn = OutlinedButton.icon(
+                            onPressed: _isBackingUp ? null : _restoreBackup,
+                            icon: const Icon(Icons.restore, color: Color(0xFFDC2626)),
+                            label: const Text('Pulihkan Data', style: TextStyle(color: Color(0xFFDC2626))),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(48),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _isBackingUp ? null : _restoreBackup,
-                              icon: const Icon(Icons.restore, color: Color(0xFFDC2626)),
-                              label: const Text('Pulihkan Data', style: TextStyle(color: Color(0xFFDC2626))),
-                              style: OutlinedButton.styleFrom(
-                                minimumSize: const Size.fromHeight(48),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            ),
-                          ),
-                        ],
+                          );
+                          if (constraints.maxWidth < 380) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [exportBtn, const SizedBox(height: 8), restoreBtn],
+                            );
+                          }
+                          return Row(
+                            children: [
+                              Expanded(child: exportBtn),
+                              const SizedBox(width: 10),
+                              Expanded(child: restoreBtn),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        onPressed: _isBackingUp ? null : _exportProductsCsv,
+                        icon: const Icon(Icons.table_chart_outlined, color: Color(0xFF2563EB)),
+                        label: const Text('Ekspor Master Data Produk (CSV)', style: TextStyle(color: Color(0xFF2563EB))),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(44),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
                       ),
                     ],
                   ),
@@ -675,6 +785,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
               ],
+              const SizedBox(height: 24),
+
+              // Section Hapus Semua Data (Reset Toko)
+              const Text(
+                'ZONA PEMBERSIHAN DATA',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFDC2626)),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: const Color(0xFFFEF2F2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Color(0xFFFECACA)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Hapus Semua Data Toko (Reset)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF991B1B)),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Menghapus seluruh produk, transaksi penjualan, piutang pelanggan, dan buku kas dari perangkat ini.',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF7F1D1D)),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        onPressed: _isBackingUp ? null : _clearAllData,
+                        icon: const Icon(Icons.delete_forever_outlined),
+                        label: const Text('Hapus Semua Data'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFDC2626),
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
