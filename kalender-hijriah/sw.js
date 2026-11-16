@@ -2,7 +2,7 @@
  * sw.js - Service Worker untuk Caching & PWA Offline
  */
 
-const CACHE_NAME = 'kalender-hijriah-v1';
+const CACHE_NAME = 'kalender-hijriah-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS_TO_CACHE = [
   './css/style.css',
   './js/hijri-engine.js',
   './js/ompo-uleng.js',
+  './js/bilangan-3.js',
   './js/primbon-engine.js',
   './js/prayer-engine.js',
   './js/holidays.js',

@@ -97,6 +97,37 @@ body {
   background: rgba(234, 179, 8, 0.32) !important;
 }
 
+/* Penanda Khusus Hari Bilangan 3 (Warna Merah) */
+.calendar-cell.is-bilangan-3 {
+  background: #fee2e2 !important; /* Merah muda cerah (Tailwind red-100) */
+  border-color: #f87171 !important; /* red-400 */
+}
+
+.calendar-cell.is-bilangan-3:hover {
+  background: #fecaca !important; /* red-200 */
+  border-color: #ef4444 !important;
+}
+
+.dark .calendar-cell.is-bilangan-3 {
+  background: rgba(239, 68, 68, 0.22) !important;
+  border-color: rgba(248, 113, 113, 0.55) !important;
+}
+
+.dark .calendar-cell.is-bilangan-3:hover {
+  background: rgba(239, 68, 68, 0.32) !important;
+}
+
+/* Jika bertepatan dengan Ompo Uleng kuning DAN Bilangan 3 merah */
+.calendar-cell.is-ompo-highlight.is-bilangan-3 {
+  background: linear-gradient(135deg, #fef9c3 48%, #fee2e2 52%) !important;
+  border-color: #ef4444 !important;
+}
+
+.dark .calendar-cell.is-ompo-highlight.is-bilangan-3 {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.25) 48%, rgba(239, 68, 68, 0.28) 52%) !important;
+  border-color: rgba(248, 113, 113, 0.7) !important;
+}
+
 .calendar-cell.is-other-month {
   opacity: 0.35;
   background: transparent;

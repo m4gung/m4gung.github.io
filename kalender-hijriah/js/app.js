@@ -47,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const selectedHijriTitle = document.getElementById('selectedHijriTitle');
   const selectedWetonBadge = document.getElementById('selectedWetonBadge');
   const selectedWetonWatak = document.getElementById('selectedWetonWatak');
+  const selectedBilangan3Box = document.getElementById('selectedBilangan3Box');
+  const selectedBilangan3Badge = document.getElementById('selectedBilangan3Badge');
+  const selectedBilangan3Desc = document.getElementById('selectedBilangan3Desc');
   const selectedBarisInfo = document.getElementById('selectedBarisInfo');
   const ompoDailyTable = document.getElementById('ompoDailyTable');
   const ompoExpTitle = document.getElementById('ompoExpTitle');
@@ -349,6 +352,12 @@ document.addEventListener('DOMContentLoaded', () => {
       cell.classList.add('is-ompo-highlight');
     }
 
+    // Tandai hari Bilangan 3 berwarna merah
+    const isBilangan3Day = typeof Bilangan3Engine !== 'undefined' && Bilangan3Engine.isBilangan3(dateObj);
+    if (isBilangan3Day && !isOtherMonth) {
+      cell.classList.add('is-bilangan-3');
+    }
+
     if (dayOfWeek === 5) cell.classList.add('is-friday'); // Jumat
     if (dayOfWeek === 0) cell.classList.add('is-sunday'); // Ahad
 
@@ -357,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
     topRow.className = 'flex items-start justify-between w-full';
 
     const gNum = document.createElement('span');
-    gNum.className = `text-sm sm:text-base font-bold ${holiday || dayOfWeek === 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100'}`;
+    gNum.className = `text-sm sm:text-base font-bold ${holiday || dayOfWeek === 0 || (isBilangan3Day && !isOtherMonth) ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100'}`;
     gNum.textContent = gDay;
 
     const hBadge = document.createElement('span');
@@ -396,6 +405,14 @@ document.addEventListener('DOMContentLoaded', () => {
       holDot.className = 'w-2 h-2 rounded-full bg-red-500 flex-shrink-0';
       holDot.title = holiday.name;
       bottomRow.appendChild(holDot);
+    }
+
+    if (isBilangan3Day && !isOtherMonth) {
+      const b3Badge = document.createElement('span');
+      b3Badge.className = 'text-[9px] px-1 py-0.2 rounded font-bold bg-red-500 text-white flex-shrink-0';
+      b3Badge.textContent = 'B3';
+      b3Badge.title = `Bilangan 3 (${hInfo.dayName})`;
+      bottomRow.appendChild(b3Badge);
     }
 
     if (activeEvents.length > 0) {
@@ -451,6 +468,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Weton
     selectedWetonBadge.textContent = `${primbon.weton} (Neptu ${primbon.totalNeptu})`;
     selectedWetonWatak.textContent = primbon.watak;
+
+    // Bilangan 3
+    if (selectedBilangan3Box && typeof Bilangan3Engine !== 'undefined') {
+      const targetDayName = Bilangan3Engine.getTargetDayName(gYear, gMonth);
+      const isB3 = Bilangan3Engine.isBilangan3(dateObj);
+      if (isB3) {
+        selectedBilangan3Box.classList.remove('hidden');
+        selectedBilangan3Badge.textContent = `Hari Bilangan 3 (${hInfo.dayName})`;
+        selectedBilangan3Desc.textContent = `Tanggal ini bertepatan dengan hari Bilangan 3 untuk bulan ${HijriEngine.GREGORIAN_MONTHS[gMonth - 1]} ${gYear} (${targetDayName}).`;
+      } else if (targetDayName) {
+        selectedBilangan3Box.classList.remove('hidden');
+        selectedBilangan3Badge.textContent = `Bulan ini: ${targetDayName}`;
+        selectedBilangan3Desc.textContent = `Untuk bulan ${HijriEngine.GREGORIAN_MONTHS[gMonth - 1]} ${gYear}, hari Bilangan 3 jatuh pada setiap hari ${targetDayName} (ditandai warna merah).`;
+      } else {
+        selectedBilangan3Box.classList.add('hidden');
+      }
+    }
 
     // Ompo Uleng Detail
     const rowIndex = OmpoUlengEngine.getRowIndex(hInfo.hijriDay) + 1;
